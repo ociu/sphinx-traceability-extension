@@ -1,6 +1,7 @@
 from sphinx.locale import _
 from docutils import nodes
 from sphinx.util.compat import Directive
+from docutils.parsers.rst import directives
 from sphinx.util.compat import make_admonition
 
 # ------------------------------------------------------------------------------
@@ -11,7 +12,6 @@ class item(nodes.Admonition, nodes.Element):
 
 class itemlist(nodes.General, nodes.Element):
     pass
-
 
 # visit/depart visitor functions for item output generation: same as admonition
 
@@ -25,17 +25,35 @@ def depart_item_node(self, node):
 # Directives
 
 class ItemDirective(Directive):
-
-    # this enables content in the directive
+    """
+    For each item, two nodes will be returned:
+    
+    * A target node
+    * An admonition node
+    
+    Also item list is filled with item information
+    """
+    # Required argument: id
+    required_arguments = 1
+    #Optional argument: caption (whitespace allowed)
+    optional_arguments = 1
+    final_argument_whitespace = True
+    #Options: the typical ones
+    option_spec = {'class': directives.class_option}
+    # Content allowed
     has_content = True
 
     def run(self):
         env = self.state.document.settings.env
+        caption = ''
 
-        targetid = "item-%d" % env.new_serialno('item')
+        targetid = directives.uri(self.arguments[0])
         targetnode = nodes.target('', '', ids=[targetid])
+        
+        if len(self.arguments) > 1:
+            caption = self.arguments[1]
 
-        ad = make_admonition(item, self.name, [_('Item')], self.options,
+        ad = make_admonition(item, self.name, [targetid], self.options,
                              self.content, self.lineno, self.content_offset,
                              self.block_text, self.state, self.state_machine)
 
@@ -46,9 +64,11 @@ class ItemDirective(Directive):
             'lineno': self.lineno,
             'item': ad[0].deepcopy(),
             'target': targetnode,
+            'caption': caption
         })
 
         return [targetnode] + ad
+
 
 class ItemlistDirective(Directive):
 
@@ -59,9 +79,12 @@ class ItemlistDirective(Directive):
 # Event handlers
 
 def purge_items(app, env, docname):
-
-    # Clean, if existing, ``item`` entries in ``traceability_all_items`` 
-    # environment variable, for all the source docs that have changed
+    """
+    Clean, if existing, ``item`` entries in ``traceability_all_items`` 
+    environment variable, for all the source docs that have changed
+    
+    This function should be triggered upon ``env-purge-doc`` event
+    """
     if not hasattr(env, 'traceability_all_items'):
         return
     env.traceability_all_items = [item for item in env.traceability_all_items
@@ -69,7 +92,10 @@ def purge_items(app, env, docname):
 
 
 def process_item_nodes(app, doctree, fromdocname):
-
+    """
+    
+    This function should be triggered upon ``doctree-resolved event``
+    """
     if not app.config.traceability_include_item_ids:
         for node in doctree.traverse(item):
             node.parent.remove(node)
@@ -86,26 +112,23 @@ def process_item_nodes(app, doctree, fromdocname):
         content = []
 
         for item_info in env.traceability_all_items:
+            id = item_info['target']['refid']
+            caption = ' ' + item_info['caption']
             para = nodes.paragraph()
             filename = env.doc2path(item_info['docname'], base=None)
-            description = (
-                _('(The original entry is located in %s, line %d and can be found ') %
-                (filename, item_info['lineno']))
-            para += nodes.Text(description, description)
 
             # Create a reference
             newnode = nodes.reference('', '')
-            innernode = nodes.emphasis(_('here'), _('here'))
+            innernode = nodes.emphasis(id + caption , id + caption)
             newnode['refdocname'] = item_info['docname']
             newnode['refuri'] = app.builder.get_relative_uri(
                 fromdocname, item_info['docname'])
-            newnode['refuri'] += '#' + item_info['target']['refid']
+            newnode['refuri'] += '#' + id
             newnode.append(innernode)
             para += newnode
-            para += nodes.Text('.)', '.)')
 
             # Insert into the itemlist
-            content.append(item_info['item'])
+            # content.append(item_info['item'])
             content.append(para)
 
         node.replace_self(content)

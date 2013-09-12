@@ -11,25 +11,29 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-.. admonition:: Hello
-   :name: one admonition
-   :class: one admonition class
+.. item:: REQ_0001 First requirement
+   :class: functional requirement
 
-   This is one admonition
+   This is one item
 
-.. item:: 00001
-   :name: First item
-   :class: important
+.. item:: REQ_0002
+   :class: critical requirement
 
    We have to extend this section
 
 This text is not part of any item
 
-.. item:: 00002
-   :name: Second title
+.. item:: REQ_0003 The great
    :class: not_so_important secondary
 
    Clean up all this.
+   
+
+Item list
+=========
+
+.. itemlist::
+
 
 Indices and tables
 ==================
@@ -38,4 +42,3 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
-.. itemlist::
