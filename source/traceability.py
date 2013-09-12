@@ -12,6 +12,9 @@ class item(nodes.Admonition, nodes.Element):
 class itemlist(nodes.General, nodes.Element):
     pass
 
+
+# visit/depart visitor functions for item output generation: same as admonition
+
 def visit_item_node(self, node):
     self.visit_admonition(node)
 
@@ -57,8 +60,8 @@ class ItemlistDirective(Directive):
 
 def purge_items(app, env, docname):
 
-    # Clean, if existing, ``item`` entries in ``traceability_all_items`` environment
-    # variable, for all the source docs that have changed
+    # Clean, if existing, ``item`` entries in ``traceability_all_items`` 
+    # environment variable, for all the source docs that have changed
     if not hasattr(env, 'traceability_all_items'):
         return
     env.traceability_all_items = [item for item in env.traceability_all_items
@@ -111,6 +114,7 @@ def process_item_nodes(app, doctree, fromdocname):
 # Extension setup
 
 def setup(app):
+
     app.add_config_value('traceability_include_item_ids', False, False)
 
     app.add_node(itemlist)
@@ -121,5 +125,6 @@ def setup(app):
 
     app.add_directive('item', ItemDirective)
     app.add_directive('itemlist', ItemlistDirective)
+
     app.connect('doctree-resolved', process_item_nodes)
     app.connect('env-purge-doc', purge_items)

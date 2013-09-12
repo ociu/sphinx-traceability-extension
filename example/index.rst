@@ -11,13 +11,23 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-.. item:: extend this
+.. admonition:: Hello
+   :name: one admonition
+   :class: one admonition class
+
+   This is one admonition
+
+.. item:: 00001
+   :name: First item
+   :class: important
 
    We have to extend this section
 
 This text is not part of any item
 
-.. item:: cleanup a bit
+.. item:: 00002
+   :name: Second title
+   :class: not_so_important secondary
 
    Clean up all this.
 
