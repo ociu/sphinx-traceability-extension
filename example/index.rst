@@ -9,24 +9,34 @@ Welcome to Example's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
-.. item:: REQ_0001 First requirement
+   SRS
+   SSS
+
+.. item:: r001 First requirement
    :class: functional requirement
 
    This is one item
 
-.. item:: REQ_0002
-   :class: critical requirement
+.. item:: r002
+   :class: critical
 
    We have to extend this section
 
 This text is not part of any item
 
-.. item:: REQ_0003 The great
-   :class: not_so_important secondary
+.. item:: r003 The great
+   :class: secondary
+   :trace: r002
 
    Clean up all this.
+
+.. item:: r005 Another
+   :class: terciary
+   :trace: r002 r003
+
+   Clean up all this again
    
 
 Item list
@@ -35,10 +45,17 @@ Item list
 .. itemlist::
 
 
+Links and references
+====================
+
+Item reference: :item:`r001`
+
+:item:`Item reference with alternative text<r001>`
+
+
 Indices and tables
 ==================
 
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
