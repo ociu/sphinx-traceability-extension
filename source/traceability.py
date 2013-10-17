@@ -60,6 +60,7 @@ class ItemDirective(Directive):
         env = self.state.document.settings.env
         caption = ''
         trace = []
+        messages = []
         
         targetid = self.arguments[0]
         targetnode = nodes.target('', '', ids=[targetid])
@@ -90,11 +91,11 @@ class ItemDirective(Directive):
                 'trace' : trace
             }
         else:
-            return [self.state.document.reporter.warning(
+            messages = [self.state.document.reporter.error(
                 'Traceability: duplicated item %s' % targetid,
                 line=self.lineno)]
                 
-        return [targetnode] + ad
+        return [targetnode] + ad + messages
 
 
 class ItemlistDirective(Directive):
