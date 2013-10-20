@@ -42,7 +42,25 @@ This text is not part of any item
 Item list
 =========
 
+List all items:
+
 .. itemlist::
+
+
+List all items beginning with ``r00``
+
+.. itemlist::
+   :filter: r00
+
+List system requirements (beginning with SYS)
+
+.. itemlist::
+   :filter: ^SYS
+
+List all well-formed SYS and SRS requirements
+
+.. itemlist::
+   :filter: ^S[YR]S_\d
 
 
 Links and references

@@ -86,8 +86,6 @@ pygments_style = 'sphinx'
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
 
-# Traceability extension: whether or not include item ID's in output
-traceability_include_item_ids = True
 
 # -- Options for HTML output ---------------------------------------------------
 
