@@ -227,20 +227,40 @@ def process_item_nodes(app, doctree, fromdocname):
     # Create table with related items, printing their target references.
     # Only source and target items matching respective regexp shall be included
     for node in doctree.traverse(item_matrix):
-        content = []
+        table = nodes.table()
+        tgroup = nodes.tgroup()
+        left_colspec = nodes.colspec(colwidth=5)
+        right_colspec = nodes.colspec(colwidth=5)
+        tgroup += [left_colspec, right_colspec]
+        tgroup += nodes.thead('',
+                      nodes.row('',
+                          nodes.entry('',
+                              nodes.paragraph('','Target')),
+                          nodes.entry('',
+                              nodes.paragraph('','Source'))))
+        tbody = nodes.tbody()
+        tgroup += tbody
+        table += tgroup
+ 
         for target_item in env.traceability_all_items:
             if re.match(node['target'], target_item):
-                content.append( make_item_ref(app, env, fromdocname, 
-                                     env.traceability_all_items[target_item]))
+                row = nodes.row()
+                left = nodes.entry()
+                left += make_item_ref(app, env, fromdocname, 
+                                     env.traceability_all_items[target_item])
                 
+                right = nodes.entry()
                 for source_item in env.traceability_all_items:
                     if re.match(node['source'], source_item) and \
                     target_item in \
                     env.traceability_all_items[source_item]['trace']:
-                        content.append( make_item_ref(app, env, fromdocname, 
-                                     env.traceability_all_items[source_item]))
+                        right += make_item_ref(app, env, fromdocname, 
+                                     env.traceability_all_items[source_item])
+                row += left
+                row += right
+                tbody += row
 
-        node.replace_self(content)
+        node.replace_self(table)
 
     # Item list: 
     # Create list with target references. Only items matching list regexp

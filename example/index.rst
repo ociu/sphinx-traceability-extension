@@ -69,6 +69,12 @@ All relationships
 
 .. item-matrix::
 
+Traceability from SRS to SSS
+
+.. item-matrix::
+   :target: SYS
+   :source: SRS
+
 
 Links and references
 ====================
