@@ -44,23 +44,30 @@ Item list
 
 List all items:
 
-.. itemlist::
+.. item-list::
 
 
 List all items beginning with ``r00``
 
-.. itemlist::
+.. item-list::
    :filter: r00
 
 List system requirements (beginning with SYS)
 
-.. itemlist::
+.. item-list::
    :filter: ^SYS
 
 List all well-formed SYS and SRS requirements
 
-.. itemlist::
+.. item-list::
    :filter: ^S[YR]S_\d
+
+Item matrix
+===========
+
+All relationships
+
+.. item-matrix::
 
 
 Links and references

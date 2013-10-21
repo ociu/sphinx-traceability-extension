@@ -9,12 +9,15 @@ from sphinx.util.nodes import make_refnode
 import re
 
 # -----------------------------------------------------------------------------
-# Declare new node types (based on others): item, itemlist
+# Declare new node types (based on others): item, item_list, item_matrix
 
 class item(nodes.Admonition, nodes.Element):
     pass
 
-class itemlist(nodes.General, nodes.Element):
+class item_list(nodes.General, nodes.Element):
+    pass
+
+class item_matrix(nodes.General, nodes.Element):
     pass
 
 # visit/depart visitor functions for item output generation: same as admonition
@@ -25,13 +28,14 @@ def visit_item_node(self, node):
 def depart_item_node(self, node):
     self.depart_admonition(node)
     
-
 # -----------------------------------------------------------------------------
 # Pending item cross reference node
 
 class pending_item_xref(nodes.Inline, nodes.Element):
-    """Node for item cross-references that cannot be resolved without complete
+    """
+    Node for item cross-references that cannot be resolved without complete
     information about all documents.
+
     """
     pass
 
@@ -40,7 +44,8 @@ class pending_item_xref(nodes.Inline, nodes.Element):
 
 class ItemDirective(Directive):
     """
-    Directive to declare items and theis traceability relationships
+    Directive to declare items and their traceability relationships.
+
     Syntax::
 
       .. item:: item_id [item_caption]
@@ -56,12 +61,12 @@ class ItemDirective(Directive):
     Also ``traceability_all_items`` storage is filled with item information
 
     """
-    #Required argument: id
+    # Required argument: id
     required_arguments = 1
-    #Optional argument: caption (whitespace allowed)
+    # Optional argument: caption (whitespace allowed)
     optional_arguments = 1
     final_argument_whitespace = True
-    #Options: the typical ones plus ``trace`` 
+    # Options: the typical ones plus ``trace`` 
     option_spec = {'class': directives.class_option,
                    'trace': directives.unchanged}
     # Content allowed
@@ -109,27 +114,27 @@ class ItemDirective(Directive):
         return [targetnode] + ad + messages
 
 
-class ItemlistDirective(Directive):
+class ItemListDirective(Directive):
     """
-    Directive to generate a list of items
+    Directive to generate a list of items.
     
     Syntax::
 
-      .. itemlist:: title
+      .. item-list:: title
          :filter: regexp
 
     """
     # Optional argument: title (whitespace allowed)
     optional_arguments = 1
     final_argument_whitespace = True
-    # Options: filter regexp
+    # Options
     option_spec = {'class': directives.class_option,
                    'filter': directives.unchanged}
     # Content disallowed
     has_content = False
 
     def run(self):
-        item_list_node = itemlist('')
+        item_list_node = item_list('')
 
         # Process title (optional argument)
         if len(self.arguments) > 0:
@@ -142,6 +147,53 @@ class ItemlistDirective(Directive):
             item_list_node['filter'] = ''            
 
         return [item_list_node]
+
+
+class ItemMatrixDirective(Directive):
+    """
+    Directive to generate a matrix of item cross-references, based on ``trace``
+    relationships.
+    
+    Syntax::
+
+      .. item-matrix:: title
+         :target: regexp
+         :source: regexp
+         :type: <<stereotype>> ...
+
+    """
+    # Optional argument: title (whitespace allowed)
+    optional_arguments = 1
+    final_argument_whitespace = True
+    # Options
+    option_spec = {'class': directives.class_option,
+                   'target': directives.unchanged,
+                   'source': directives.unchanged,
+                   'type': directives.unchanged}
+    # Content disallowed
+    has_content = False
+
+    def run(self):
+        item_matrix_node = item_matrix('')
+
+        # Process title (optional argument)
+        if len(self.arguments) > 0:
+            item_matrix_node['title'] = self.arguments[0]
+
+        # Process ``target`` & ``source`` options
+        for option in ('target', 'source'):
+            if option in self.options:
+                item_matrix_node[option] = self.options[option]
+            else:
+                item_matrix_node[option] = ''            
+
+        # Process ``type`` option, given as a string with <<...>> stereotypes
+        # separated by space. It is converted to a list.
+        if 'type' in self.options:
+            item_matrix_node['type'] = self.options['type'].split(' ')
+
+        return [item_matrix_node]
+
 
 # -----------------------------------------------------------------------------
 # Event handlers
@@ -165,34 +217,40 @@ def process_item_nodes(app, doctree, fromdocname):
     """
     This function should be triggered upon ``doctree-resolved event``
 
-    Replace all itemlist nodes with a list of the collected items.
+    Replace all item_list nodes with a list of the collected items.
     Augment each item with a backlink to the original location.
+
     """
     env = app.builder.env
 
+    # Item matrix:
+    # Create table with related items, printing their target references.
+    # Only source and target items matching respective regexp shall be included
+    for node in doctree.traverse(item_matrix):
+        content = []
+        for target_item in env.traceability_all_items:
+            if re.match(node['target'], target_item):
+                content.append( make_item_ref(app, env, fromdocname, 
+                                     env.traceability_all_items[target_item]))
+                
+                for source_item in env.traceability_all_items:
+                    if re.match(node['source'], source_item) and \
+                    target_item in \
+                    env.traceability_all_items[source_item]['trace']:
+                        content.append( make_item_ref(app, env, fromdocname, 
+                                     env.traceability_all_items[source_item]))
+
+        node.replace_self(content)
+
+    # Item list: 
     # Create list with target references. Only items matching list regexp
     # shall be included
-    for node in doctree.traverse(itemlist):
+    for node in doctree.traverse(item_list):
         content = []
         for item in env.traceability_all_items:
             if re.match(node['filter'], item):
-                item_info = env.traceability_all_items[item]
-                id = item_info['target']['refid']
-                caption = ' ' + item_info['caption']
-                para = nodes.paragraph()
-                filename = env.doc2path(item_info['docname'], base=None)
-                # Create a reference
-                newnode = nodes.reference('', '')
-                innernode = nodes.emphasis(id + caption , id + caption)
-                newnode['refdocname'] = item_info['docname']
-                newnode['refuri'] = app.builder.get_relative_uri(
-                                            fromdocname, item_info['docname'])
-                newnode['refuri'] += '#' + id
-                newnode.append(innernode)
-                para += newnode
-                # Insert into the itemlist
-                # content.append(item_info['item'])
-                content.append(para)
+                content.append( make_item_ref(app, env, fromdocname, 
+                                         env.traceability_all_items[item]))
         node.replace_self(content)
 
     # Resolve item cross references (from ``item`` role)
@@ -208,20 +266,51 @@ def process_item_nodes(app, doctree, fromdocname):
             node.replace_self([])
             env.warn_node('Traceability: item %s not found' %
                            node['reftarget'], node)
-                              
+
+# -----------------------------------------------------------------------------
+# Utility functions
+
+def make_item_ref(app, env, fromdocname, item_info):
+    """
+    Creates a reference node for an item, embedded in a paragraph. Reference
+    text adds also a caption if it exists, between parenthesis.
+    """
+
+    id = item_info['target']['refid']
+
+    if  item_info['caption'] != '':
+        caption = ' (' + item_info['caption'] + ')'
+    else:
+        caption = ''
+    
+    para = nodes.paragraph()
+    filename = env.doc2path(item_info['docname'], base=None)
+    newnode = nodes.reference('', '')
+    innernode = nodes.emphasis(id + caption , id + caption)
+    newnode['refdocname'] = item_info['docname']
+    newnode['refuri'] = app.builder.get_relative_uri(
+                                fromdocname, item_info['docname'])
+    newnode['refuri'] += '#' + id
+    newnode.append(innernode)
+    para += newnode
+
+    return para
+
 # -----------------------------------------------------------------------------
 # Extension setup
 
 def setup(app):
 
-    app.add_node(itemlist)
+    app.add_node(item_matrix)
+    app.add_node(item_list)
     app.add_node(item,
                  html=(visit_item_node, depart_item_node),
                  latex=(visit_item_node, depart_item_node),
                  text=(visit_item_node, depart_item_node))
 
     app.add_directive('item', ItemDirective)
-    app.add_directive('itemlist', ItemlistDirective)
+    app.add_directive('item-list', ItemListDirective)
+    app.add_directive('item-matrix', ItemMatrixDirective)
 
     app.connect('doctree-resolved', process_item_nodes)
     app.connect('env-purge-doc', purge_items)

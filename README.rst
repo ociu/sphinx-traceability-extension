@@ -41,7 +41,7 @@ the items to which the stereotype applies.
 
 ::
 
-  .. itemlist:: title
+  .. item-list:: title
      :filter: regexp
 
 This directive generates in place a list of items. A regular
@@ -50,7 +50,7 @@ whose identifier matches the expression are written in the list.
 
 ::
 
-  .. item_matrix:: title
+  .. item-matrix:: title
      :target: regexp
      :source: regexp
      :type: <<stereotype>> ...
