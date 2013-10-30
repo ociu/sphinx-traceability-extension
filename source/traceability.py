@@ -6,6 +6,7 @@ from sphinx.util.compat import make_admonition
 from sphinx.roles import XRefRole
 from sphinx import addnodes
 from sphinx.util.nodes import make_refnode
+from sphinx.environment import NoUri
 import re
 
 # -----------------------------------------------------------------------------
@@ -308,9 +309,13 @@ def make_item_ref(app, env, fromdocname, item_info):
     newnode = nodes.reference('', '')
     innernode = nodes.emphasis(id + caption , id + caption)
     newnode['refdocname'] = item_info['docname']
-    newnode['refuri'] = app.builder.get_relative_uri(
+    try:
+        newnode['refuri'] = app.builder.get_relative_uri(
                                 fromdocname, item_info['docname'])
-    newnode['refuri'] += '#' + id
+        newnode['refuri'] += '#' + id
+    except NoUri:
+        # ignore if no URI can be determined, e.g. for LaTeX output :(
+        pass
     newnode.append(innernode)
     para += newnode
 
