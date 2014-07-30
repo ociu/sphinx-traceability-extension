@@ -278,11 +278,12 @@ def process_item_nodes(app, doctree, fromdocname):
     for node in doctree.traverse(pending_item_xref):
         if node['reftarget'] in env.traceability_all_items:
             item_info = env.traceability_all_items[node['reftarget']]
-            node.replace_self( make_refnode(app.builder,
-                                            fromdocname,
-                                            item_info['docname'], 
-                                            item_info['target']['refid'],
-                                            node[0].deepcopy()))
+            node.replace_self( make_item_ref(app, env, fromdocname, item_info))
+            # node.replace_self( make_refnode(app.builder,
+            #                                 fromdocname,
+            #                                 item_info['docname'], 
+            #                                 item_info['target']['refid'],
+            #                                 node[0].deepcopy()))
         else:
             node.replace_self([])
             env.warn_node('Traceability: item %s not found' %
