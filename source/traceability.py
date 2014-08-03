@@ -267,27 +267,47 @@ def process_item_nodes(app, doctree, fromdocname):
     # Create list with target references. Only items matching list regexp
     # shall be included
     for node in doctree.traverse(item_list):
-        content = []
+        content = nodes.bullet_list()
         for item in env.traceability_all_items:
             if re.match(node['filter'], item):
-                content.append( make_item_ref(app, env, fromdocname, 
+                bullet_list_item = nodes.list_item()
+                paragraph = nodes.paragraph()
+                paragraph.append( make_item_ref(app, env, fromdocname, 
                                          env.traceability_all_items[item]))
+                bullet_list_item.append(paragraph)
+                content.append(bullet_list_item)
+
         node.replace_self(content)
 
     # Resolve item cross references (from ``item`` role)
     for node in doctree.traverse(pending_item_xref):
+        # Create a dummy reference to be used if target reference fails
+        new_node = make_refnode(app.builder,
+                                fromdocname,
+                                fromdocname, 
+                                'ITEM_NOT_FOUND',
+                                node[0].deepcopy(),
+                                node['reftarget'] + '??')
+        # If target exists, try to create the reference
         if node['reftarget'] in env.traceability_all_items:
             item_info = env.traceability_all_items[node['reftarget']]
-            node.replace_self( make_item_ref(app, env, fromdocname, item_info))
-            # node.replace_self( make_refnode(app.builder,
-            #                                 fromdocname,
-            #                                 item_info['docname'], 
-            #                                 item_info['target']['refid'],
-            #                                 node[0].deepcopy()))
+            try:
+                new_node = make_refnode(app.builder,
+                                        fromdocname,
+                                        item_info['docname'], 
+                                        item_info['target']['refid'],
+                                        node[0].deepcopy(),
+                                        node['reftarget'])
+            except NoUri:
+                # ignore if no URI can be determined, e.g. for LaTeX output :(
+                pass
+
         else:
-            node.replace_self([])
             env.warn_node('Traceability: item %s not found' %
                            node['reftarget'], node)
+        
+        node.replace_self(new_node)
+
 
 # -----------------------------------------------------------------------------
 # Utility functions
