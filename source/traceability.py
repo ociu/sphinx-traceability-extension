@@ -28,7 +28,12 @@ def visit_item_node(self, node):
 
 def depart_item_node(self, node):
     self.depart_admonition(node)
-    
+
+# Natural sort order
+
+def naturalsortkey(s):
+    return [int(part) if part.isdigit() else part for part in re.split('([0-9]+)', s)]
+
 # -----------------------------------------------------------------------------
 # Pending item cross reference node
 
@@ -223,6 +228,8 @@ def process_item_nodes(app, doctree, fromdocname):
 
     """
     env = app.builder.env
+    
+    all_items = sorted(env.traceability_all_items, key=naturalsortkey)
 
     # Item matrix:
     # Create table with related items, printing their target references.
@@ -243,7 +250,7 @@ def process_item_nodes(app, doctree, fromdocname):
         tgroup += tbody
         table += tgroup
  
-        for target_item in env.traceability_all_items:
+        for target_item in all_items:
             if re.match(node['target'], target_item):
                 row = nodes.row()
                 left = nodes.entry()
@@ -251,7 +258,7 @@ def process_item_nodes(app, doctree, fromdocname):
                                      env.traceability_all_items[target_item])
                 
                 right = nodes.entry()
-                for source_item in env.traceability_all_items:
+                for source_item in all_items:
                     if re.match(node['source'], source_item) and \
                     target_item in \
                     env.traceability_all_items[source_item]['trace']:
@@ -268,7 +275,7 @@ def process_item_nodes(app, doctree, fromdocname):
     # shall be included
     for node in doctree.traverse(item_list):
         content = nodes.bullet_list()
-        for item in env.traceability_all_items:
+        for item in all_items:
             if re.match(node['filter'], item):
                 bullet_list_item = nodes.list_item()
                 paragraph = nodes.paragraph()
