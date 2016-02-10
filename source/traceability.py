@@ -94,7 +94,7 @@ class ItemDirective(Directive):
         # Trace info is a string of item ids separated by space
         # It is converted to a list of item ids
         if 'trace' in self.options:
-            trace = self.options['trace'].split(' ')
+            trace = self.options['trace'].split()
             
         ad = make_admonition(item, self.name, [targetid], self.options,
                              self.content, self.lineno, self.content_offset,
