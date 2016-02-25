@@ -51,7 +51,7 @@ most typical in the systems / software engineering world). If no
 specific relationship type is to be set, just the generic ``:trace:``
 relationship name can be used.
 
-A configuration variable, ``item_relationships``, can be used to
+A configuration variable, ``traceability_relationships``, can be used to
 extend and customize the set of available relationships. See
 `Configuration`_ for details.
 
@@ -113,24 +113,11 @@ relationship.
 Configuration
 -------------
 
-``item_relationships`` configuration variable follows the rules
+``traceability_relationships`` configuration variable follows the rules
 above. It is a dictionary with relationship/reverse pairs.
 
-It has a predefined content that can be completely modified.  You can
-even overwrite it completely, specially in the case of
-internationalization, but normal usage is just to add new
-relationships::
-
-  item_relationships['new_relationship'] = 'new_reverse_relationship'
-
-or::
-
-  item_relationships['new_relationship'] = 'new_relationship'
-
-for bidirectional ones.
-
 This is the set of predefined relationships (mostly related with
-standard UML relationships)
+standard UML relationships):
 
 - fulfills: fulfilled_by
 - depends_on: impacts_on

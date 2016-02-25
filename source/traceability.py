@@ -29,18 +29,13 @@ def visit_item_node(self, node):
 def depart_item_node(self, node):
     self.depart_admonition(node)
 
-# Natural sort order
-
-def naturalsortkey(s):
-    return [int(part) if part.isdigit() else part for part in re.split('([0-9]+)', s)]
-
 # -----------------------------------------------------------------------------
 # Pending item cross reference node
 
 class pending_item_xref(nodes.Inline, nodes.Element):
     """
-    Node for item cross-references that cannot be resolved without complete
-    information about all documents.
+    Node for item cross-references that cannot be resolved without
+    complete information about all documents.
 
     """
     pass
@@ -55,7 +50,8 @@ class ItemDirective(Directive):
     Syntax::
 
       .. item:: item_id [item_caption]
-         :trace: [<<stereotype>>] other_item_id ...
+         :<<relationship>>:  other_item_id ...
+         ...
 
          [item_content]
 
@@ -72,9 +68,9 @@ class ItemDirective(Directive):
     # Optional argument: caption (whitespace allowed)
     optional_arguments = 1
     final_argument_whitespace = True
-    # Options: the typical ones plus ``trace`` 
-    option_spec = {'class': directives.class_option,
-                   'trace': directives.unchanged}
+    # Options: the typical ones plus every relationship (and reverse)
+    # defined in env.config.traceability_relationships
+    option_spec = {'class': directives.class_option}
     # Content allowed
     has_content = True
 
@@ -196,10 +192,9 @@ class ItemMatrixDirective(Directive):
         # Process ``type`` option, given as a string with <<...>> stereotypes
         # separated by space. It is converted to a list.
         if 'type' in self.options:
-            item_matrix_node['type'] = self.options['type'].split(' ')
+            item_matrix_node['type'] = self.options['type'].split()
 
         return [item_matrix_node]
-
 
 # -----------------------------------------------------------------------------
 # Event handlers
@@ -218,6 +213,7 @@ def purge_items(app, env, docname):
     for key in keys:
         if env.traceability_all_items[key]['docname'] == docname:
             del env.traceability_all_items[key]
+
 
 def process_item_nodes(app, doctree, fromdocname):
     """
@@ -316,13 +312,33 @@ def process_item_nodes(app, doctree, fromdocname):
         node.replace_self(new_node)
 
 
+def update_available_item_relationships(app):
+    """
+    Update directive option_spec with custom relationships defined in
+    configuration file ``traceability_relationships`` variable.  Both
+    keys (relationships) and values (reverse relationships) are added.
+
+    This handler should be called upon builder initialization, before
+    processing any directive.
+
+    """
+    print 'Available traceability relationships:'
+
+    for rel in (
+            app.config.traceability_relationships.keys() +
+            app.config.traceability_relationships.values()
+    ):
+        ItemDirective.option_spec[rel] = directives.unchanged
+        print rel
+
 # -----------------------------------------------------------------------------
 # Utility functions
 
 def make_item_ref(app, env, fromdocname, item_info):
     """
-    Creates a reference node for an item, embedded in a paragraph. Reference
-    text adds also a caption if it exists, between parenthesis.
+    Creates a reference node for an item, embedded in a
+    paragraph. Reference text adds also a caption if it exists,
+    between parenthesis.
     """
 
     id = item_info['target']['refid']
@@ -349,10 +365,27 @@ def make_item_ref(app, env, fromdocname, item_info):
 
     return para
 
+
+def naturalsortkey(s):
+    """Natural sort order"""
+    return [int(part) if part.isdigit() else part
+            for part in re.split('([0-9]+)', s)]
+
+
 # -----------------------------------------------------------------------------
 # Extension setup
 
 def setup(app):
+
+    # Create default relationships dictionary. Can be customized in conf.py
+    app.add_config_value('traceability_relationships',
+                         {'fulfills': 'fulfilled_by',
+                          'depends_on': 'impacts_on',
+                          'implements': 'implemented_by',
+                          'realizes': 'realized_by',
+                          'validates': 'validated_by',
+                          'trace': 'backtrace'},
+                         'env')
 
     app.add_node(item_matrix)
     app.add_node(item_list)
@@ -367,8 +400,8 @@ def setup(app):
 
     app.connect('doctree-resolved', process_item_nodes)
     app.connect('env-purge-doc', purge_items)
+    app.connect('builder-inited', update_available_item_relationships)
 
     app.add_role('item', XRefRole(nodeclass=pending_item_xref,
                                    innernodeclass=nodes.emphasis,
                                    warn_dangling=True))
-

@@ -19,6 +19,15 @@ Contents:
 
    This is one item
 
+   - More content
+   - More again
+
+     - And nested content
+     - *other* with **emphasis** and
+     - .. note:: a note
+
+          Yes, a note
+
 .. item:: r002
    :class: critical
 
