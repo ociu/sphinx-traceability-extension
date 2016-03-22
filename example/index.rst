@@ -19,6 +19,15 @@ Contents:
 
    This is one item
 
+   - More content
+   - More again
+
+     - And nested content
+     - *other* with **emphasis** and
+     - .. note:: a note
+
+          Yes, a note
+
 .. item:: r002
    :class: critical
 
@@ -38,6 +47,24 @@ This text is not part of any item
 
    Clean up all this again
    
+.. item:: r006 Depends on all
+   :class: terciary
+   :trace: r001
+           r002
+           r003 r005
+	
+   To demonstrate that bug #2 is solved
+   
+.. item:: r007 Depends on all with stereotypes
+   :class: terciary
+   :trace: <<covers>>    r001
+           <<depends_on>>
+           r002
+           <<fulfills>>  r003
+           r005
+	
+   To demonstrate stereotype usage in relationships
+
 
 Item list
 =========
