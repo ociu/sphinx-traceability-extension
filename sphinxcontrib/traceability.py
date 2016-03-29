@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+
+from __future__ import print_function
 from sphinx.locale import _
 from docutils import nodes
 from sphinx.util.compat import Directive
@@ -209,7 +212,7 @@ def purge_items(app, env, docname):
     """
     if not hasattr(env, 'traceability_all_items'):
         return
-    keys = env.traceability_all_items.keys()
+    keys = list(env.traceability_all_items.keys())
     for key in keys:
         if env.traceability_all_items[key]['docname'] == docname:
             del env.traceability_all_items[key]
@@ -322,14 +325,14 @@ def update_available_item_relationships(app):
     processing any directive.
 
     """
-    print 'Available traceability relationships:'
+    print('Available traceability relationships:')
 
     for rel in (
-            app.config.traceability_relationships.keys() +
-            app.config.traceability_relationships.values()
+            list(app.config.traceability_relationships.keys()) +
+            list(app.config.traceability_relationships.values())
     ):
         ItemDirective.option_spec[rel] = directives.unchanged
-        print rel
+        print(rel)
 
 # -----------------------------------------------------------------------------
 # Utility functions
