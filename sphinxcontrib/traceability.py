@@ -242,27 +242,27 @@ def process_item_nodes(app, doctree, fromdocname):
         tgroup += nodes.thead('',
                       nodes.row('',
                           nodes.entry('',
-                              nodes.paragraph('','Target')),
+                              nodes.paragraph('','Source')),
                           nodes.entry('',
-                              nodes.paragraph('','Source'))))
+                              nodes.paragraph('','Target'))))
         tbody = nodes.tbody()
         tgroup += tbody
         table += tgroup
  
-        for target_item in all_items:
-            if re.match(node['target'], target_item):
+        for source_item in all_items:
+            if re.match(node['source'], source_item):
                 row = nodes.row()
                 left = nodes.entry()
                 left += make_item_ref(app, env, fromdocname, 
-                                     env.traceability_all_items[target_item])
+                                     env.traceability_all_items[source_item])
                 
                 right = nodes.entry()
-                for source_item in all_items:
-                    if re.match(node['source'], source_item) and \
+                for target_item in all_items:
+                    if re.match(node['target'], target_item) and \
                     target_item in \
                     env.traceability_all_items[source_item]['trace']:
                         right += make_item_ref(app, env, fromdocname, 
-                                     env.traceability_all_items[source_item])
+                                     env.traceability_all_items[target_item])
                 row += left
                 row += right
                 tbody += row
