@@ -16,9 +16,9 @@ import sys, os
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('../../../../sphinxcontrib'))
-sys.path.append(os.path.join(os.path.dirname(__name__), '../package'))
-sys.path.append(os.path.join(os.path.dirname(__name__), '../package/test'))
+#sys.path.insert(0, os.path.abspath('../../../../sphinxcontrib')) # use this for manual build
+#sys.path.append(os.path.join(os.path.dirname(__name__), '../package')) # use this for manual build
+#sys.path.append(os.path.join(os.path.dirname(__name__), '../package/test')) # use this for manual build
 
 # -- General configuration -----------------------------------------------------
 
@@ -27,8 +27,8 @@ sys.path.append(os.path.join(os.path.dirname(__name__), '../package/test'))
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'traceability']
-#extensions = ['sphinx.ext.autodoc', 'sphinxcontrib.traceability']
+#extensions = ['sphinx.ext.autodoc', 'traceability'] # use this for manual build
+extensions = ['sphinx.ext.autodoc', 'sphinxcontrib.traceability']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
