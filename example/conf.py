@@ -293,5 +293,8 @@ intersphinx_mapping = {'http://docs.python.org/': None}
 # Key is the relationship you'll generally set and value is the reverse.
 # Use same key/value for bidirectional relationships.
 traceability_relationships = {
-    'trace': 'traced_by'
+    'trace': 'traced_by',
+    'fulfills': 'fulfilled_by',
+    'implements': 'implemented_by',
+    'validates': 'validated_by'
 }
