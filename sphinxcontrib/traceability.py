@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
-from sphinx.locale import _
 from docutils import nodes
 from sphinx.util.compat import Directive
 from docutils.parsers.rst import directives
 from sphinx.util.compat import make_admonition
 from sphinx.roles import XRefRole
-from sphinx import addnodes
 from sphinx.util.nodes import make_refnode
 from sphinx.environment import NoUri
 import re
@@ -15,25 +13,32 @@ import re
 # -----------------------------------------------------------------------------
 # Declare new node types (based on others): item, item_list, item_matrix
 
+
 class item(nodes.Admonition, nodes.Element):
     pass
+
 
 class item_list(nodes.General, nodes.Element):
     pass
 
+
 class item_matrix(nodes.General, nodes.Element):
     pass
+
 
 # visit/depart visitor functions for item output generation: same as admonition
 
 def visit_item_node(self, node):
     self.visit_admonition(node)
 
+
 def depart_item_node(self, node):
     self.depart_admonition(node)
 
+
 # -----------------------------------------------------------------------------
 # Pending item cross reference node
+
 
 class pending_item_xref(nodes.Inline, nodes.Element):
     """
@@ -43,8 +48,10 @@ class pending_item_xref(nodes.Inline, nodes.Element):
     """
     pass
 
+
 # -----------------------------------------------------------------------------
 # Directives
+
 
 class ItemDirective(Directive):
     """
@@ -59,10 +66,10 @@ class ItemDirective(Directive):
          [item_content]
 
     When run, for each item, two nodes will be returned:
-    
+
     * A target node
     * An admonition node
-    
+
     Also ``traceability_all_items`` storage is filled with item information
 
     """
@@ -81,23 +88,23 @@ class ItemDirective(Directive):
         env = self.state.document.settings.env
         caption = ''
         messages = []
-        
+
         targetid = self.arguments[0]
         targetnode = nodes.target('', '', ids=[targetid])
-        
+
         # Item caption is the text following the mandatory id argument
         if len(self.arguments) > 1:
             caption = self.arguments[1]
-            
+
         ad = make_admonition(item, self.name, [targetid], self.options,
                              self.content, self.lineno, self.content_offset,
                              self.block_text, self.state, self.state_machine)
 
         if not hasattr(env, 'traceability_all_items'):
             env.traceability_all_items = {}
-        
+
         if targetid not in env.traceability_all_items:
-            env.traceability_all_items[targetid] =  {
+            env.traceability_all_items[targetid] = {
                 'docname': env.docname,
                 'lineno': self.lineno,
                 'item': ad[0].deepcopy(),
@@ -105,11 +112,11 @@ class ItemDirective(Directive):
                 'caption': caption,
             }
             # Add relationships to item. All relationship data is a string of
-            # item ids separated by space. It is splitted in  a list of item ids
+            # item ids separated by space. It is splitted in a list of item ids
             for rel in list(env.relationships.keys()):
                 if rel in self.options:
                     env.traceability_all_items[targetid][rel] = \
-                    self.options[rel].split()
+                        self.options[rel].split()
                 else:
                     env.traceability_all_items[targetid][rel] = []
 
@@ -117,14 +124,14 @@ class ItemDirective(Directive):
             messages = [self.state.document.reporter.error(
                 'Traceability: duplicated item %s' % targetid,
                 line=self.lineno)]
-                
+
         return [targetnode] + ad + messages
 
 
 class ItemListDirective(Directive):
     """
     Directive to generate a list of items.
-    
+
     Syntax::
 
       .. item-list:: title
@@ -151,7 +158,7 @@ class ItemListDirective(Directive):
         if 'filter' in self.options:
             item_list_node['filter'] = self.options['filter']
         else:
-            item_list_node['filter'] = ''            
+            item_list_node['filter'] = ''
 
         return [item_list_node]
 
@@ -160,7 +167,7 @@ class ItemMatrixDirective(Directive):
     """
     Directive to generate a matrix of item cross-references, based on ``trace``
     relationships.
-    
+
     Syntax::
 
       .. item-matrix:: title
@@ -192,7 +199,7 @@ class ItemMatrixDirective(Directive):
             if option in self.options:
                 item_matrix_node[option] = self.options[option]
             else:
-                item_matrix_node[option] = ''            
+                item_matrix_node[option] = ''
 
         # Process ``type`` option, given as a string with relationship types
         # separated by space. It is converted to a list.
@@ -203,14 +210,15 @@ class ItemMatrixDirective(Directive):
 
         return [item_matrix_node]
 
+
 # -----------------------------------------------------------------------------
 # Event handlers
 
 def purge_items(app, env, docname):
     """
-    Clean, if existing, ``item`` entries in ``traceability_all_items`` 
+    Clean, if existing, ``item`` entries in ``traceability_all_items``
     environment variable, for all the source docs being purged.
-    
+
     This function should be triggered upon ``env-purge-doc`` event.
 
     """
@@ -231,7 +239,7 @@ def process_item_nodes(app, doctree, fromdocname):
 
     """
     env = app.builder.env
-    
+
     all_items = sorted(env.traceability_all_items, key=naturalsortkey)
 
     # Item matrix:
@@ -243,36 +251,35 @@ def process_item_nodes(app, doctree, fromdocname):
         left_colspec = nodes.colspec(colwidth=5)
         right_colspec = nodes.colspec(colwidth=5)
         tgroup += [left_colspec, right_colspec]
-        tgroup += nodes.thead('',
-                      nodes.row('',
-                          nodes.entry('',
-                              nodes.paragraph('','Source')),
-                          nodes.entry('',
-                              nodes.paragraph('','Target'))))
+        tgroup += nodes.thead('', nodes.row(
+            '',
+            nodes.entry('', nodes.paragraph('', 'Source')),
+            nodes.entry('', nodes.paragraph('', 'Target'))))
         tbody = nodes.tbody()
         tgroup += tbody
         table += tgroup
- 
+
         for source_item in all_items:
             if re.match(node['source'], source_item):
                 row = nodes.row()
                 left = nodes.entry()
-                left += make_item_ref(app, env, fromdocname, 
-                                     env.traceability_all_items[source_item])
-                
+                left += make_item_ref(app, env, fromdocname,
+                                      env.traceability_all_items[source_item])
                 right = nodes.entry()
                 for target_item in all_items:
-                    if re.match(node['target'], target_item) and \
-                    are_related(env, source_item, target_item, node['type']):
-                        right += make_item_ref(app, env, fromdocname, 
-                                     env.traceability_all_items[target_item])
+                    if (re.match(node['target'], target_item) and
+                            are_related(
+                                env, source_item, target_item, node['type'])):
+                        right += make_item_ref(
+                            app, env, fromdocname,
+                            env.traceability_all_items[target_item])
                 row += left
                 row += right
                 tbody += row
 
         node.replace_self(table)
 
-    # Item list: 
+    # Item list:
     # Create list with target references. Only items matching list regexp
     # shall be included
     for node in doctree.traverse(item_list):
@@ -281,8 +288,9 @@ def process_item_nodes(app, doctree, fromdocname):
             if re.match(node['filter'], item):
                 bullet_list_item = nodes.list_item()
                 paragraph = nodes.paragraph()
-                paragraph.append( make_item_ref(app, env, fromdocname, 
-                                         env.traceability_all_items[item]))
+                paragraph.append(
+                    make_item_ref(app, env, fromdocname,
+                                  env.traceability_all_items[item]))
                 bullet_list_item.append(paragraph)
                 content.append(bullet_list_item)
 
@@ -293,7 +301,7 @@ def process_item_nodes(app, doctree, fromdocname):
         # Create a dummy reference to be used if target reference fails
         new_node = make_refnode(app.builder,
                                 fromdocname,
-                                fromdocname, 
+                                fromdocname,
                                 'ITEM_NOT_FOUND',
                                 node[0].deepcopy(),
                                 node['reftarget'] + '??')
@@ -303,7 +311,7 @@ def process_item_nodes(app, doctree, fromdocname):
             try:
                 new_node = make_refnode(app.builder,
                                         fromdocname,
-                                        item_info['docname'], 
+                                        item_info['docname'],
                                         item_info['target']['refid'],
                                         node[0].deepcopy(),
                                         node['reftarget'])
@@ -312,9 +320,9 @@ def process_item_nodes(app, doctree, fromdocname):
                 pass
 
         else:
-            env.warn_node('Traceability: item %s not found' %
-                           node['reftarget'], node)
-        
+            env.warn_node(
+                'Traceability: item %s not found' % node['reftarget'], node)
+
         node.replace_self(new_node)
 
 
@@ -333,17 +341,18 @@ def update_available_item_relationships(app):
     """
     env = app.builder.env
     env.relationships = {}
-    
+
     for rel in list(app.config.traceability_relationships.keys()):
         env.relationships[rel] = app.config.traceability_relationships[rel]
         env.relationships[app.config.traceability_relationships[rel]] = rel
 
     print('Available traceability relationships:')
-    
+
     for rel in sorted(list(env.relationships.keys())):
         ItemDirective.option_spec[rel] = directives.unchanged
         print(rel)
-        
+
+
 # -----------------------------------------------------------------------------
 # Utility functions
 
@@ -356,19 +365,18 @@ def make_item_ref(app, env, fromdocname, item_info):
     """
     id = item_info['target']['refid']
 
-    if  item_info['caption'] != '':
+    if item_info['caption'] != '':
         caption = ' (' + item_info['caption'] + ')'
     else:
         caption = ''
-    
+
     para = nodes.paragraph()
-    filename = env.doc2path(item_info['docname'], base=None)
     newnode = nodes.reference('', '')
-    innernode = nodes.emphasis(id + caption , id + caption)
+    innernode = nodes.emphasis(id + caption, id + caption)
     newnode['refdocname'] = item_info['docname']
     try:
-        newnode['refuri'] = app.builder.get_relative_uri(
-                                fromdocname, item_info['docname'])
+        newnode['refuri'] = app.builder.get_relative_uri(fromdocname,
+                                                         item_info['docname'])
         newnode['refuri'] += '#' + id
     except NoUri:
         # ignore if no URI can be determined, e.g. for LaTeX output :(
@@ -399,9 +407,9 @@ def are_related(env, source, target, relationships):
         relationships = list(env.relationships.keys())
 
     for rel in relationships:
-        if \
-        target in env.traceability_all_items[source][rel] or \
-        source in env.traceability_all_items[target][env.relationships[rel]]:
+        if (target in env.traceability_all_items[source][rel] or
+            source in
+                env.traceability_all_items[target][env.relationships[rel]]):
             return True
 
     return False
@@ -438,5 +446,5 @@ def setup(app):
     app.connect('builder-inited', update_available_item_relationships)
 
     app.add_role('item', XRefRole(nodeclass=pending_item_xref,
-                                   innernodeclass=nodes.emphasis,
-                                   warn_dangling=True))
+                                  innernodeclass=nodes.emphasis,
+                                  warn_dangling=True))
