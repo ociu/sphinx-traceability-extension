@@ -15,6 +15,18 @@ Contents
    prod_code
    test_code
 
+Traceability Matrix
+-------------------
+
+Bi-directional traceability (forward = requirements -> test cases,
+backward = test cases -> requirements) of the software requirements and the test
+cases provide information about missing requirements and/or missing test cases.
+
+.. item-matrix:: title
+   :source: SW_REQ_
+   :target: SW_TEST_
+   :type: validates validated_by
+
 Indices and tables
 ==================
 

@@ -101,6 +101,14 @@ Traceability from SRS to SSS
 .. item-matrix::
    :target: SYS
    :source: SRS
+   :type:   fulfills
+	    
+Traceability from SSS to SRS
+
+.. item-matrix::
+   :target: SRS
+   :source: SYS
+   :type:   fulfilled_by
 
 
 Links and references

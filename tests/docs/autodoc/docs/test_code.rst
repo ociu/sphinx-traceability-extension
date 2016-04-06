@@ -1,18 +1,40 @@
 =========
-Test code
+Test Code
 =========
 
-Package Level Requirements
-==========================
+Software Test Specification
+===========================
 
-This section could specify software test requirements on the package level
-which are related to software requirements on the package level.
+.. item-list::
+   :filter: ^SW_TEST_
 
-Module Level Requirements
-=========================
+Integration Level Test Specification
+====================================
 
-This section specifies "integration test" and "unit test" requirements on
-the module level (related to the Module Level Requirements).
+This section could specify test cases on the integration level.
+
+Unit Level Test Specification
+=============================
+
+This section specifies test cases on the unit level.
 
 .. automodule:: test_code
    :members:
+
+.. item:: SW_TEST_002 The abstract method shall raise a
+                      NotImplementedError.
+    :validates: SW_REQ_002
+
+.. item:: SW_TEST_003 The "cat" class shall have the animal class as
+                      superclass.
+    :validates: SW_REQ_003
+
+    This test case references a missing requirement.
+
+.. item:: SW_TEST_004 The concrete implementation of the "cat" class
+                      method "talk" shall return "Meow!".
+    :validates: SW_REQ_004
+
+.. item:: SW_TEST_006 The concrete implementation of the "dog" class
+                      method "talk" shall return "Woof!".
+    :validates: SW_REQ_006

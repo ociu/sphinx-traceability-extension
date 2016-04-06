@@ -80,7 +80,6 @@ class ItemDirective(Directive):
     def run(self):
         env = self.state.document.settings.env
         caption = ''
-        trace = []
         messages = []
         
         targetid = self.arguments[0]
@@ -89,11 +88,6 @@ class ItemDirective(Directive):
         # Item caption is the text following the mandatory id argument
         if len(self.arguments) > 1:
             caption = self.arguments[1]
-
-        # Trace info is a string of item ids separated by space
-        # It is converted to a list of item ids
-        if 'trace' in self.options:
-            trace = self.options['trace'].split()
             
         ad = make_admonition(item, self.name, [targetid], self.options,
                              self.content, self.lineno, self.content_offset,
@@ -109,8 +103,16 @@ class ItemDirective(Directive):
                 'item': ad[0].deepcopy(),
                 'target': targetnode,
                 'caption': caption,
-                'trace' : trace
             }
+            # Add relationships to item. All relationship data is a string of
+            # item ids separated by space. It is splitted in  a list of item ids
+            for rel in list(env.relationships.keys()):
+                if rel in self.options:
+                    env.traceability_all_items[targetid][rel] = \
+                    self.options[rel].split()
+                else:
+                    env.traceability_all_items[targetid][rel] = []
+
         else:
             messages = [self.state.document.reporter.error(
                 'Traceability: duplicated item %s' % targetid,
@@ -192,10 +194,12 @@ class ItemMatrixDirective(Directive):
             else:
                 item_matrix_node[option] = ''            
 
-        # Process ``type`` option, given as a string with <<...>> stereotypes
+        # Process ``type`` option, given as a string with relationship types
         # separated by space. It is converted to a list.
         if 'type' in self.options:
             item_matrix_node['type'] = self.options['type'].split()
+        else:
+            item_matrix_node['type'] = []
 
         return [item_matrix_node]
 
@@ -242,27 +246,26 @@ def process_item_nodes(app, doctree, fromdocname):
         tgroup += nodes.thead('',
                       nodes.row('',
                           nodes.entry('',
-                              nodes.paragraph('','Target')),
+                              nodes.paragraph('','Source')),
                           nodes.entry('',
-                              nodes.paragraph('','Source'))))
+                              nodes.paragraph('','Target'))))
         tbody = nodes.tbody()
         tgroup += tbody
         table += tgroup
  
-        for target_item in all_items:
-            if re.match(node['target'], target_item):
+        for source_item in all_items:
+            if re.match(node['source'], source_item):
                 row = nodes.row()
                 left = nodes.entry()
                 left += make_item_ref(app, env, fromdocname, 
-                                     env.traceability_all_items[target_item])
+                                     env.traceability_all_items[source_item])
                 
                 right = nodes.entry()
-                for source_item in all_items:
-                    if re.match(node['source'], source_item) and \
-                    target_item in \
-                    env.traceability_all_items[source_item]['trace']:
+                for target_item in all_items:
+                    if re.match(node['target'], target_item) and \
+                    are_related(env, source_item, target_item, node['type']):
                         right += make_item_ref(app, env, fromdocname, 
-                                     env.traceability_all_items[source_item])
+                                     env.traceability_all_items[target_item])
                 row += left
                 row += right
                 tbody += row
@@ -324,16 +327,23 @@ def update_available_item_relationships(app):
     This handler should be called upon builder initialization, before
     processing any directive.
 
-    """
-    print('Available traceability relationships:')
+    Function also sets an environment variable ``relationships`` with the full
+    list of relationships (with reverse relationships also as keys)
 
-    for rel in (
-            list(app.config.traceability_relationships.keys()) +
-            list(app.config.traceability_relationships.values())
-    ):
+    """
+    env = app.builder.env
+    env.relationships = {}
+    
+    for rel in list(app.config.traceability_relationships.keys()):
+        env.relationships[rel] = app.config.traceability_relationships[rel]
+        env.relationships[app.config.traceability_relationships[rel]] = rel
+
+    print('Available traceability relationships:')
+    
+    for rel in sorted(list(env.relationships.keys())):
         ItemDirective.option_spec[rel] = directives.unchanged
         print(rel)
-
+        
 # -----------------------------------------------------------------------------
 # Utility functions
 
@@ -342,8 +352,8 @@ def make_item_ref(app, env, fromdocname, item_info):
     Creates a reference node for an item, embedded in a
     paragraph. Reference text adds also a caption if it exists,
     between parenthesis.
-    """
 
+    """
     id = item_info['target']['refid']
 
     if  item_info['caption'] != '':
@@ -373,6 +383,28 @@ def naturalsortkey(s):
     """Natural sort order"""
     return [int(part) if part.isdigit() else part
             for part in re.split('([0-9]+)', s)]
+
+
+def are_related(env, source, target, relationships):
+    """
+    Returns ``True`` if ``source`` and ``target`` items are related
+    according a list, ``relationships``, of relationship types.
+    ``False`` is returned otherwise
+
+    If the list of relationship types is empty, all available relationship
+    types are to be considered.
+
+    """
+    if not relationships:
+        relationships = list(env.relationships.keys())
+
+    for rel in relationships:
+        if \
+        target in env.traceability_all_items[source][rel] or \
+        source in env.traceability_all_items[target][env.relationships[rel]]:
+            return True
+
+    return False
 
 
 # -----------------------------------------------------------------------------

@@ -2,17 +2,24 @@
 Production code
 ===============
 
-Package Level Requirements
-==========================
+Software Requirement Specification
+==================================
 
-This section could specify software requirements on the package level
-which are related to "integration test" software test requirements.
+.. item-list::
+   :filter: ^SW_REQ_
 
-Module Level Requirements
-=========================
+Integration Level Requirements
+==============================
 
-This section specifies software requirements on the module level
-which are related to "integration test" and "unit test" software requirements.
+This section could specify software requirements on the integration level
+(interaction of unit level entities) which are related to "integration test"
+requirements.
+
+Unit Level Requirements
+=======================
+
+This section specifies software requirements on the unit level (classes,
+methods, functions) which are related to "unit test" requirements.
 
 .. automodule:: prod_code
    :members:
