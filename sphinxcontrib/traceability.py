@@ -14,7 +14,7 @@ import re
 # Declare new node types (based on others): item, item_list, item_matrix
 
 
-class item(nodes.Admonition, nodes.Element):
+class item(nodes.General, nodes.Element):
     pass
 
 
@@ -24,16 +24,6 @@ class item_list(nodes.General, nodes.Element):
 
 class item_matrix(nodes.General, nodes.Element):
     pass
-
-
-# visit/depart visitor functions for item output generation: same as admonition
-
-def visit_item_node(self, node):
-    self.visit_admonition(node)
-
-
-def depart_item_node(self, node):
-    self.depart_admonition(node)
 
 
 # -----------------------------------------------------------------------------
@@ -96,9 +86,10 @@ class ItemDirective(Directive):
         if len(self.arguments) > 1:
             caption = self.arguments[1]
 
-        ad = make_admonition(item, self.name, [targetid], self.options,
-                             self.content, self.lineno, self.content_offset,
-                             self.block_text, self.state, self.state_machine)
+        ad = make_admonition(nodes.admonition, self.name, [targetid],
+                             self.options, self.content, self.lineno,
+                             self.content_offset, self.block_text,
+                             self.state, self.state_machine)
 
         if not hasattr(env, 'traceability_all_items'):
             env.traceability_all_items = {}
@@ -359,14 +350,13 @@ def update_available_item_relationships(app):
 def make_item_ref(app, env, fromdocname, item_info):
     """
     Creates a reference node for an item, embedded in a
-    paragraph. Reference text adds also a caption if it exists,
-    between parenthesis.
+    paragraph. Reference text adds also a caption if it exists.
 
     """
     id = item_info['target']['refid']
 
     if item_info['caption'] != '':
-        caption = ' (' + item_info['caption'] + ')'
+        caption = ', ' + item_info['caption']
     else:
         caption = ''
 
@@ -432,10 +422,7 @@ def setup(app):
 
     app.add_node(item_matrix)
     app.add_node(item_list)
-    app.add_node(item,
-                 html=(visit_item_node, depart_item_node),
-                 latex=(visit_item_node, depart_item_node),
-                 text=(visit_item_node, depart_item_node))
+    app.add_node(item)
 
     app.add_directive('item', ItemDirective)
     app.add_directive('item-list', ItemListDirective)

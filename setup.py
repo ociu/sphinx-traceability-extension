@@ -7,10 +7,10 @@ requires = ['Sphinx>=0.6']
 
 setup(
     name='sphinxcontrib-traceability',
-    version='0.0.1',
+    version='0.1.0',
     url='https://github.com/ociu/sphinx-traceability-extension',
     license='GNU GENERAL PUBLIC LICENSE',
-    author='ociu',
+    author='Oscar Ciudad',
     author_email='oscar@jacho.net',
     description='Sphinx traceability extension',
     long_description=open("README.rst").read(),
