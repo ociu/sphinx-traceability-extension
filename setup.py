@@ -2,13 +2,15 @@
 
 from setuptools import setup, find_packages
 
+project_url = 'https://github.com/ociu/sphinx-traceability-extension'
 
 requires = ['Sphinx>=0.6']
 
 setup(
     name='sphinxcontrib-traceability',
     version='0.1.0',
-    url='https://github.com/ociu/sphinx-traceability-extension',
+    url=project_url,
+    download_url=project_url + '/archive/v0.1.0.tar.gz',
     license='GNU General Public License v3 (GPLv3)',
     author='Oscar Ciudad',
     author_email='oscar@jacho.net',
@@ -39,4 +41,12 @@ setup(
     include_package_data=True,
     install_requires=requires,
     namespace_packages=['sphinxcontrib'],
+    keywords = ['traceability',
+                'requirements engineering',
+                'requirements management',
+                'software engineering',
+                'systems engineering',
+                'sphinx',
+                'requirements'
+            ]
 )
