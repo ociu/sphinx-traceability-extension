@@ -4,7 +4,6 @@ from __future__ import print_function
 from docutils import nodes
 from sphinx.util.compat import Directive
 from docutils.parsers.rst import directives
-from sphinx.util.compat import make_admonition
 from sphinx.roles import XRefRole
 from sphinx.util.nodes import make_refnode
 from sphinx.environment import NoUri
@@ -86,10 +85,15 @@ class ItemDirective(Directive):
         if len(self.arguments) > 1:
             caption = self.arguments[1]
 
-        ad = make_admonition(nodes.admonition, self.name, [targetid],
-                             self.options, self.content, self.lineno,
-                             self.content_offset, self.block_text,
-                             self.state, self.state_machine)
+        # Insert item id, caption and content as a tem/definition rst element.
+        # Caption, if exists, will be the first, highlighted, definition line.
+        template = [targetid]
+        if caption:
+            template.extend(['  *' + caption + '*', ''])
+        for line in self.content:
+            template.append('  ' + line)
+        self.state_machine.insert_input(
+            template, self.state_machine.document.attributes['source'])
 
         if not hasattr(env, 'traceability_all_items'):
             env.traceability_all_items = {}
@@ -98,7 +102,6 @@ class ItemDirective(Directive):
             env.traceability_all_items[targetid] = {
                 'docname': env.docname,
                 'lineno': self.lineno,
-                'item': ad[0].deepcopy(),
                 'target': targetnode,
                 'caption': caption,
             }
@@ -116,7 +119,7 @@ class ItemDirective(Directive):
                 'Traceability: duplicated item %s' % targetid,
                 line=self.lineno)]
 
-        return [targetnode] + ad + messages
+        return [targetnode] + messages
 
 
 class ItemListDirective(Directive):
