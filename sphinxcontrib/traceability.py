@@ -88,8 +88,11 @@ class ItemDirective(Directive):
         # Item caption is the text following the mandatory id argument
         if len(self.arguments) > 1:
             caption = self.arguments[1]
-            
-        ad = make_admonition(item, self.name, [targetid], self.options,
+            itemtitle = targetid + ' : ' + caption
+        else:
+            itemtitle = targetid
+
+        ad = make_admonition(item, self.name, [itemtitle], self.options,
                              self.content, self.lineno, self.content_offset,
                              self.block_text, self.state, self.state_machine)
 
