@@ -1,6 +1,9 @@
 Sphinx traceability extension
 =============================
 
+.. image:: https://badge.fury.io/py/sphinxcontrib-traceability.svg
+    :target: https://badge.fury.io/py/sphinxcontrib-traceability
+
 Traceability extension for Sphinx documentation generator.
 
 This extension adds directives and roles that serve to identify and
