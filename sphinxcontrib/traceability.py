@@ -95,9 +95,6 @@ class ItemDirective(Directive):
         self.state_machine.insert_input(
             template, self.state_machine.document.attributes['source'])
 
-        if not hasattr(env, 'traceability_all_items'):
-            env.traceability_all_items = {}
-
         if targetid not in env.traceability_all_items:
             env.traceability_all_items[targetid] = {
                 'docname': env.docname,
@@ -216,8 +213,6 @@ def purge_items(app, env, docname):
     This function should be triggered upon ``env-purge-doc`` event.
 
     """
-    if not hasattr(env, 'traceability_all_items'):
-        return
     keys = list(env.traceability_all_items.keys())
     for key in keys:
         if env.traceability_all_items[key]['docname'] == docname:
@@ -347,6 +342,19 @@ def update_available_item_relationships(app):
         print(rel)
 
 
+def initialize_environment(app):
+    """
+    Perform initializations needed before the build process starts.
+    """
+    env = app.builder.env
+
+    # Assure ``traceability_all_items`` will always be there.
+    if not hasattr(env, 'traceability_all_items'):
+        env.traceability_all_items = {}
+
+    update_available_item_relationships(app)
+
+
 # -----------------------------------------------------------------------------
 # Utility functions
 
@@ -433,7 +441,7 @@ def setup(app):
 
     app.connect('doctree-resolved', process_item_nodes)
     app.connect('env-purge-doc', purge_items)
-    app.connect('builder-inited', update_available_item_relationships)
+    app.connect('builder-inited', initialize_environment)
 
     app.add_role('item', XRefRole(nodeclass=pending_item_xref,
                                   innernodeclass=nodes.emphasis,
