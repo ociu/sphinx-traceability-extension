@@ -24,7 +24,7 @@ class TestCat(unittest.TestCase):
 
     def test_cat_shall_inherit_from_animal(self):
         """
-        .. item:: SW_TEST_003 The "cat" class shall have the animal class as
+         .. item:: SW_TEST_003 The "cat" class shall have the animal class as
                               superclass.
             :validates: SW_REQ_003
         """
