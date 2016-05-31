@@ -17,8 +17,8 @@ import sys, os
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('../../../../sphinxcontrib')) # use this for manual build
-sys.path.append(os.path.abspath('../package/package'))
-sys.path.append(os.path.abspath('../package/test'))
+sys.path.append(os.path.abspath('../package'))
+sys.path.append(os.path.abspath('../test'))
 
 # -- General configuration -----------------------------------------------------
 
