@@ -32,13 +32,10 @@ class Cat(Animal):
     """
     Animal cat "implementation"
 
-#    .. item:: SW_REQ_003 A "cat" class shall implement the abstract animal
-#                         interface.
-#        :implements: SW_REQ_001
-#        :validated_by: SW_TEST_003
-
-    This class does not have a requirement which should be referenced by
-    SW_TEST_003.
+    .. item:: SW_REQ_003 A "cat" class shall implement the abstract animal
+                         interface.
+        :implements: SW_REQ_001
+        :validated_by: SW_TEST_003
     """
     def talk(self):
         """
