@@ -36,9 +36,6 @@ class Cat(Animal):
                          interface.
         :implements: SW_REQ_001
         :validated_by: SW_TEST_003
-
-    This class does not have a requirement which should be referenced by
-    SW_TEST_003.
     """
     def talk(self):
         """

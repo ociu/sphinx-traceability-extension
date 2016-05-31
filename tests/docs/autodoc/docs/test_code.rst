@@ -5,7 +5,7 @@ Test Code
 Software Test Specification
 ===========================
 
-Listing of all software tests:
+The following list references all software tests.
 
 .. item-list::
    :filter: ^SW_TEST_

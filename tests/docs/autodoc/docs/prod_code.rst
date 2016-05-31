@@ -5,10 +5,20 @@ Production code
 Software Requirement Specification
 ==================================
 
-Listing of all software requirements:
+The following list references all software requirements.
 
 .. item-list::
    :filter: ^SW_REQ_
+
+Requirement Impact Analysis
+===========================
+
+The listed "Target" requirements are impacted by the corresponding "Source" requirements.
+
+.. item-matrix:: Impact
+   :source: SW_REQ_
+   :target: SW_REQ_
+   :type: impacts_on
 
 Integration Level Requirements
 ==============================
