@@ -7,6 +7,8 @@ from docutils.parsers.rst import directives
 from sphinx.roles import XRefRole
 from sphinx.util.nodes import make_refnode
 from sphinx.environment import NoUri
+from jinja2 import Template
+from textwrap import dedent
 import re
 
 # -----------------------------------------------------------------------------
@@ -57,7 +59,7 @@ class ItemDirective(Directive):
     When run, for each item, two nodes will be returned:
 
     * A target node
-    * An admonition node
+    * A custom node generated from a template (by default: term & definition)
 
     Also ``traceability_all_items`` storage is filled with item information
 
@@ -81,26 +83,23 @@ class ItemDirective(Directive):
         targetid = self.arguments[0]
         targetnode = nodes.target('', '', ids=[targetid])
 
-        # Item caption is the text following the mandatory id argument
+        # Item caption is the text following the mandatory id argument.
+        # Caption should be considered a line of text. Remove line breaks.
         if len(self.arguments) > 1:
-            caption = self.arguments[1]
+            caption = self.arguments[1].replace('\n', ' ')
 
-        # Insert item id, caption and content as a tem/definition rst element.
-        # Caption, if exists, will be the first, highlighted, definition line.
-        template = [targetid]
-        if caption:
-            template.extend(['  *' + caption + '*', ''])
-        for line in self.content:
-            template.append('  ' + line)
-        self.state_machine.insert_input(
-            template, self.state_machine.document.attributes['source'])
-
+        # Store item info
         if targetid not in env.traceability_all_items:
             env.traceability_all_items[targetid] = {
+                'id': targetid,
+                'type': self.name,
+                'class':
+                self.options['class'] if 'class' in self.options else [],
                 'docname': env.docname,
                 'lineno': self.lineno,
                 'target': targetnode,
                 'caption': caption,
+                'content': '\n'.join(self.content)
             }
             # Add relationships to item. All relationship data is a string of
             # item ids separated by space. It is splitted in a list of item ids
@@ -112,9 +111,16 @@ class ItemDirective(Directive):
                     env.traceability_all_items[targetid][rel] = []
 
         else:
+            # Duplicate items not allowed. Duplicate will even not be shown
             messages = [self.state.document.reporter.error(
                 'Traceability: duplicated item %s' % targetid,
                 line=self.lineno)]
+
+        # Render template
+        template = Template(dedent(env.config.traceability_item_template))
+        self.state_machine.insert_input(
+            template.render(**env.traceability_all_items[targetid]).split('\n'),
+            self.state_machine.document.attributes['source'])
 
         return [targetnode] + messages
 
@@ -324,8 +330,9 @@ def update_available_item_relationships(app):
     This handler should be called upon builder initialization, before
     processing any directive.
 
-    Function also sets an environment variable ``relationships`` with the full
-    list of relationships (with reverse relationships also as keys)
+    Function also sets an environment variable ``relationships`` with
+    the full list of relationships (with reverse relationships also as
+    keys)
 
     """
     env = app.builder.env
@@ -335,11 +342,8 @@ def update_available_item_relationships(app):
         env.relationships[rel] = app.config.traceability_relationships[rel]
         env.relationships[app.config.traceability_relationships[rel]] = rel
 
-    print('Available traceability relationships:')
-
     for rel in sorted(list(env.relationships.keys())):
         ItemDirective.option_spec[rel] = directives.unchanged
-        print(rel)
 
 
 def initialize_environment(app):
@@ -400,8 +404,8 @@ def are_related(env, source, target, relationships):
     according a list, ``relationships``, of relationship types.
     ``False`` is returned otherwise
 
-    If the list of relationship types is empty, all available relationship
-    types are to be considered.
+    If the list of relationship types is empty, all available
+    relationship types are to be considered.
 
     """
     if not relationships:
@@ -429,6 +433,17 @@ def setup(app):
                           'realizes': 'realized_by',
                           'validates': 'validated_by',
                           'trace': 'backtrace'},
+                         'env')
+
+    # Customizable templates
+    app.add_config_value('traceability_item_template',
+                         """
+                         {{ id }}
+                         {%- if caption %}
+                             **{{ caption }}**
+                         {% endif %}
+                             {{ content|indent(4) }}
+                         """,
                          'env')
 
     app.add_node(item_matrix)
