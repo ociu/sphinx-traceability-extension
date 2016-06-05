@@ -119,6 +119,18 @@ class ItemDirective(Directive):
                 'Traceability: duplicated item %s' % targetid,
                 line=self.lineno)]
 
+        # Search for validated_by relationships in all ItemDirectives. If there
+        # are found some without a corresponding ItemDirective inform the user.
+        for targetid in env.traceability_all_items:
+            for rel in list(env.relationships.keys()):
+                if rel == 'validated_by':
+                    for referencedid in env.traceability_all_items[targetid][rel]:
+                        if referencedid not in env.traceability_all_items:
+                            print('missing item: {} (referenced by {} as validated_by'')'.format(referencedid, targetid))
+                            #messages = [self.state.document.reporter.error(
+                            #    'Traceability: missing referenced item %s' % referencedid,
+                            #    line=self.lineno)]
+
         return [targetnode] + messages
 
 
