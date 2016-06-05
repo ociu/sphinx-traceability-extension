@@ -55,7 +55,7 @@ class Dog(Animal):
 
     .. item:: SW_REQ_005 A "dog" class shall implement the abstract animal interface.
         :implements: SW_REQ_001
-        :validated_by: SW_TEST_005
+        :validated_by: SW_TEST_005 SW_TEST_010
     """
 
     def talk(self):
