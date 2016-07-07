@@ -237,31 +237,6 @@ def process_item_nodes(app, doctree, fromdocname):
 
     all_items = sorted(env.traceability_all_items, key=naturalsortkey)
 
-
-    # Search for validated_by relationships in all ItemDirectives. If there
-    # are found some without a corresponding ItemDirective inform the user.
-    # (The dict 'items_referencing_missing_items' uses the referencing
-    # item as keys and a list of missing 'referenced_item' as value.
-    # Attention: referenced item is related to the relationship 'validated_by'
-    # only.)
-    items_referencing_missing_items = {}
-    for referencing_item in env.traceability_all_items:
-        for rel in list(env.relationships.keys()):
-            if rel == 'validated_by':
-                for referenced_item in env.traceability_all_items[referencing_item][rel]:
-                    if referenced_item not in env.traceability_all_items:
-                        if referencing_item not in items_referencing_missing_items.keys():
-                            missing_referenced_items = []
-                            missing_referenced_items.append(referenced_item)
-                            items_referencing_missing_items[referencing_item] = missing_referenced_items
-                        else:
-                            missing_referenced_items = items_referencing_missing_items.get(referencing_item)
-                            missing_referenced_items.append(referenced_item)
-                            items_referencing_missing_items[referencing_item] = (missing_referenced_items)
-    if items_referencing_missing_items:
-        for referencing_item, referenced_item in items_referencing_missing_items.items():
-            app.builder.warn('missing item ID(s) {} (referenced by {} as validated_by)'.format(referenced_item, referencing_item))
-
     # Item matrix:
     # Create table with related items, printing their target references.
     # Only source and target items matching respective regexp shall be included
@@ -383,6 +358,30 @@ def initialize_environment(app):
 
     update_available_item_relationships(app)
 
+def item_verification(app, env):
+    # Search for validated_by relationships in all ItemDirectives. If there
+    # are found some without a corresponding ItemDirective inform the user.
+    # (The dict 'items_referencing_missing_items' uses the referencing
+    # item as keys and a list of missing 'referenced_item' as value.
+    # Attention: referenced item is related to the relationship 'validated_by'
+    # only.)
+    items_referencing_missing_items = {}
+    for referencing_item in env.traceability_all_items:
+        for rel in list(env.relationships.keys()):
+            if rel == 'validated_by':
+                for referenced_item in env.traceability_all_items[referencing_item][rel]:
+                    if referenced_item not in env.traceability_all_items:
+                        if referencing_item not in items_referencing_missing_items.keys():
+                            missing_referenced_items = []
+                            missing_referenced_items.append(referenced_item)
+                            items_referencing_missing_items[referencing_item] = missing_referenced_items
+                        else:
+                            missing_referenced_items = items_referencing_missing_items.get(referencing_item)
+                            missing_referenced_items.append(referenced_item)
+                            items_referencing_missing_items[referencing_item] = (missing_referenced_items)
+    if items_referencing_missing_items:
+        for referencing_item, referenced_item in items_referencing_missing_items.items():
+            app.builder.warn('missing item ID(s) {} (referenced by {} as validated_by)'.format(referenced_item, referencing_item))
 
 # -----------------------------------------------------------------------------
 # Utility functions
@@ -482,6 +481,7 @@ def setup(app):
     app.connect('doctree-resolved', process_item_nodes)
     app.connect('env-purge-doc', purge_items)
     app.connect('builder-inited', initialize_environment)
+    app.connect('env-updated', item_verification)
 
     app.add_role('item', XRefRole(nodeclass=pending_item_xref,
                                   innernodeclass=nodes.emphasis,
