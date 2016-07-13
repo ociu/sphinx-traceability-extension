@@ -298,3 +298,25 @@ traceability_relationships = {
     'implements': 'implemented_by',
     'validates': 'validated_by'
 }
+
+traceability_item_template = """
+    {% if type == 'requirement' %}
+    :superscript:`[{{ id }}` {{ caption }}:
+    {{ content }} :subscript:`{{ id }}]`
+    {% else %}
+    {{ id }}
+    {%- if caption %}
+        **{{ caption }}**
+    {% endif %}
+        {{ content|indent(4) }}
+    {% endif %}
+    """
+
+
+def setup(app):
+
+    from traceability import ItemDirective
+    # New directive types: treated exactly as ``item`` directive, but
+    # using a different name. Item template can be customized for
+    # these types
+    app.add_directive('requirement', ItemDirective)

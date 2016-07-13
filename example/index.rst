@@ -66,6 +66,12 @@ This text is not part of any item
    To demonstrate stereotype usage in relationships
 
 
+.. requirement:: r100 A requirement using the ``requirement`` type
+
+   This item has been defined using other directive. It easily extends
+   rst semantics
+
+
 Item list
 =========
 
@@ -94,18 +100,18 @@ Item matrix
 
 All relationships
 
-.. item-matrix::
+.. item-matrix:: All
 
 Traceability from SRS to SSS
 
-.. item-matrix::
+.. item-matrix:: SRS to SSS
    :target: SYS
    :source: SRS
    :type:   fulfills
 	    
 Traceability from SSS to SRS
 
-.. item-matrix::
+.. item-matrix:: SSS to SRS
    :target: SRS
    :source: SYS
    :type:   fulfilled_by

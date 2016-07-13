@@ -130,6 +130,18 @@ standard UML relationships):
 - trace: backtrace (this is kept mainly for backwards compatibility)
 
 
+Advanced configuration
+----------------------
+
+By default, items are written as term/definition tuples, but this is
+fully customizable by defining ``traceability_item_template``
+configuration variable.  It uses `Jinja2 templating language
+<http://jinja.pocoo.org/docs/dev/templates/>`_.
+
+.. note:: using this template mechanism is not trivial. A good
+          knowledge of Jinja2 is required.
+
+
 Examples
 --------
 

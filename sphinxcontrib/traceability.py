@@ -93,8 +93,7 @@ class ItemDirective(Directive):
             env.traceability_all_items[targetid] = {
                 'id': targetid,
                 'type': self.name,
-                'class':
-                self.options['class'] if 'class' in self.options else [],
+                'class': self.options.get('class', []),
                 'docname': env.docname,
                 'lineno': self.lineno,
                 'target': targetnode,
@@ -162,15 +161,15 @@ class ItemListDirective(Directive):
 
 class ItemMatrixDirective(Directive):
     """
-    Directive to generate a matrix of item cross-references, based on ``trace``
-    relationships.
+    Directive to generate a matrix of item cross-references, based on
+    a given set of relationship types.
 
     Syntax::
 
       .. item-matrix:: title
          :target: regexp
          :source: regexp
-         :type: <<stereotype>> ...
+         :type: <<relationship>> ...
 
     """
     # Optional argument: title (whitespace allowed)
