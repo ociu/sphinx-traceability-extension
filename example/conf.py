@@ -296,22 +296,27 @@ traceability_relationships = {
     'trace': 'traced_by',
     'fulfills': 'fulfilled_by',
     'implements': 'implemented_by',
-    'validates': 'validated_by'
+    'validates': 'validated_by',
+    'ext_toolname': ''
 }
 
-traceability_item_template = """
-    {% if type == 'requirement' %}
-    :superscript:`[{{ id }}` {{ caption }}:
-    {{ content }} :subscript:`{{ id }}]`
-    {% else %}
-    {{ id }}
-    {%- if caption %}
-        **{{ caption }}**
-    {% endif %}
-        {{ content|indent(4) }}
-    {% endif %}
-    """
+traceability_render_relationship_per_item = True
 
+traceability_relationship_to_string = {
+    'trace': 'Traces',
+    'traced_by': 'Traced by',
+    'fulfills': 'Fulfills',
+    'fulfilled_by': 'Fulfilled by',
+    'implements': 'Implements',
+    'implemented_by': 'Implemented by',
+    'validates': 'Validates',
+    'validated_by': 'Validated by',
+    'ext_toolname': 'Referento to toolname'
+}
+ 
+traceability_external_relationship_to_url = {
+    'ext_toolname': 'http://toolname.company.com/field1/field2/workitem?field3'
+}
 
 def setup(app):
 

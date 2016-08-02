@@ -38,6 +38,7 @@ This text is not part of any item
 .. item:: r003 The great
    :class: secondary
    :trace: r002
+   :ext_toolname: namespace:group:document
 
    Clean up all this.
 
@@ -57,10 +58,9 @@ This text is not part of any item
    
 .. item:: r007 Depends on all with stereotypes
    :class: terciary
-   :trace: <<covers>>    r001
-           <<depends_on>>
-           r002
-           <<fulfills>>  r003
+   :trace: r001
+   :validates: r002
+   :fulfills:  r003
            r005
 	
    To demonstrate stereotype usage in relationships

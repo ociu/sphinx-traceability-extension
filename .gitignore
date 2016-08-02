@@ -1,4 +1,5 @@
 *.egg-info
+.*.swp
 *.pyc
 
 example/_build

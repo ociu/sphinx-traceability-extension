@@ -7,9 +7,16 @@ from docutils.parsers.rst import directives
 from sphinx.roles import XRefRole
 from sphinx.util.nodes import make_refnode
 from sphinx.environment import NoUri
-from jinja2 import Template
+from sphinx.errors import ExtensionError
 from textwrap import dedent
 import re
+
+# External relationship: starts with ext_
+# An external relationship is a relationship where the item to link to is not in the
+# traceability system, but on an external tool. Translating the link to a clickable
+# hyperlink is done through the config traceability_external_relationship_to_url.
+regexp_external_relationship = re.compile('^ext_.*')
+external_link_fieldname = 'field'
 
 # -----------------------------------------------------------------------------
 # Declare new node types (based on others): item, item_list, item_matrix
@@ -59,7 +66,8 @@ class ItemDirective(Directive):
     When run, for each item, two nodes will be returned:
 
     * A target node
-    * A custom node generated from a template (by default: term & definition)
+    * A custom node with id + caption, to be replaced with relationship links
+    * A node containing the content of the item
 
     Also ``traceability_all_items`` storage is filled with item information
 
@@ -83,45 +91,68 @@ class ItemDirective(Directive):
         targetid = self.arguments[0]
         targetnode = nodes.target('', '', ids=[targetid])
 
+        itemnode = item('')
+        itemnode['id'] = targetid
+
         # Item caption is the text following the mandatory id argument.
         # Caption should be considered a line of text. Remove line breaks.
         if len(self.arguments) > 1:
             caption = self.arguments[1].replace('\n', ' ')
 
         # Store item info
-        if targetid not in env.traceability_all_items:
-            env.traceability_all_items[targetid] = {
-                'id': targetid,
-                'type': self.name,
-                'class': self.options.get('class', []),
-                'docname': env.docname,
-                'lineno': self.lineno,
-                'target': targetnode,
-                'caption': caption,
-                'content': '\n'.join(self.content)
-            }
-            # Add relationships to item. All relationship data is a string of
-            # item ids separated by space. It is splitted in a list of item ids
-            for rel in list(env.relationships.keys()):
-                if rel in self.options:
-                    env.traceability_all_items[targetid][rel] = \
-                        self.options[rel].split()
-                else:
-                    env.traceability_all_items[targetid][rel] = []
-
-        else:
+        if targetid in env.traceability_all_items and env.traceability_all_items[targetid]['placeholder'] is False:
             # Duplicate items not allowed. Duplicate will even not be shown
             messages = [self.state.document.reporter.error(
                 'Traceability: duplicated item %s' % targetid,
                 line=self.lineno)]
+        else:
+            if targetid not in env.traceability_all_items:
+                env.traceability_all_items[targetid] = {}
+            env.traceability_all_items[targetid]['id'] = targetid
+            env.traceability_all_items[targetid]['placeholder'] = False
+            env.traceability_all_items[targetid]['type'] = self.name
+            env.traceability_all_items[targetid]['class'] = self.options.get('class', [])
+            env.traceability_all_items[targetid]['docname'] = env.docname
+            env.traceability_all_items[targetid]['lineno'] = self.lineno
+            env.traceability_all_items[targetid]['target'] = targetnode
+            env.traceability_all_items[targetid]['caption'] = caption
+            env.traceability_all_items[targetid]['content'] = '\n'.join(self.content)
 
-        # Render template
-        template = Template(dedent(env.config.traceability_item_template))
-        self.state_machine.insert_input(
-            template.render(**env.traceability_all_items[targetid]).split('\n'),
+            # Add empty relationships to item.
+            initialize_relationships_for_item(env, targetid)
+
+            # Add found relationships to item. All relationship data is a string of 
+            # item ids separated by space. It is splitted in a list of item ids
+            for rel in list(env.relationships.keys()):
+                if rel in self.options:
+                    revrel = env.relationships[rel]
+                    related_ids = self.options[rel].split()
+                    for related_id in related_ids:
+                        env.traceability_all_items[targetid][rel].append(related_id)
+                        # Check if the reverse relationship exists (non empty string)
+                        if not revrel:
+                            continue
+                        # If the related item does not exist yet, create a placeholder item
+                        if (related_id not in env.traceability_all_items):
+                            env.traceability_all_items[related_id] = {
+                                    'id': related_id,
+                                    'placeholder': True,
+                                    'type': self.name,
+                                    'class': self.options.get('class', []),
+                                    'docname': 'placeholder'
+                            }
+                            initialize_relationships_for_item(env, related_id)
+                        # Also add the reverse relationship to the related item
+                        env.traceability_all_items[related_id][revrel].append(targetid)
+
+        # Output content of item to document
+        template = []
+        for line in self.content:
+            template.append('    ' + line)
+        self.state_machine.insert_input(template,
             self.state_machine.document.attributes['source'])
 
-        return [targetnode] + messages
+        return [targetnode, itemnode] + messages
 
 
 class ItemListDirective(Directive):
@@ -210,20 +241,6 @@ class ItemMatrixDirective(Directive):
 # -----------------------------------------------------------------------------
 # Event handlers
 
-def purge_items(app, env, docname):
-    """
-    Clean, if existing, ``item`` entries in ``traceability_all_items``
-    environment variable, for all the source docs being purged.
-
-    This function should be triggered upon ``env-purge-doc`` event.
-
-    """
-    keys = list(env.traceability_all_items.keys())
-    for key in keys:
-        if env.traceability_all_items[key]['docname'] == docname:
-            del env.traceability_all_items[key]
-
-
 def process_item_nodes(app, doctree, fromdocname):
     """
     This function should be triggered upon ``doctree-resolved event``
@@ -234,7 +251,17 @@ def process_item_nodes(app, doctree, fromdocname):
     """
     env = app.builder.env
 
-    all_items = sorted(env.traceability_all_items, key=naturalsortkey)
+    all_item_ids = sorted(env.traceability_all_items, key=naturalsortkey)
+
+    # Sanity: check if all items that are referenced indeed exist, when it is no external reference
+    for source_id in all_item_ids:
+        source_item = env.traceability_all_items[source_id]
+        for relationship in env.relationships:
+            if not regexp_external_relationship.search(relationship):
+                for target_id in source_item[relationship]:
+                    if target_id not in env.traceability_all_items or \
+                            env.traceability_all_items[target_id]['placeholder'] is True:
+                        raise ExtensionError('Item ' + target_id + ' is not defined ')
 
     # Item matrix:
     # Create table with related items, printing their target references.
@@ -253,20 +280,26 @@ def process_item_nodes(app, doctree, fromdocname):
         tgroup += tbody
         table += tgroup
 
-        for source_item in all_items:
-            if re.match(node['source'], source_item):
+        for source_id in all_item_ids:
+            if re.match(node['source'], source_id):
+                source_item = env.traceability_all_items[source_id]
                 row = nodes.row()
                 left = nodes.entry()
-                left += make_item_ref(app, env, fromdocname,
-                                      env.traceability_all_items[source_item])
+                left += make_internal_item_ref(app, env, fromdocname,
+                                      env.traceability_all_items[source_id])
                 right = nodes.entry()
-                for target_item in all_items:
-                    if (re.match(node['target'], target_item) and
+                for relationship in node['type']:
+                    if regexp_external_relationship.search(relationship):
+                        for target_id in source_item[relationship]:
+                            right += make_external_item_ref(app, env, target_id, relationship)
+                for target_id in all_item_ids:
+                    target_item = env.traceability_all_items[target_id]
+                    if (re.match(node['target'], target_id) and
                             are_related(
-                                env, source_item, target_item, node['type'])):
-                        right += make_item_ref(
+                                env, source_id, target_id, node['type'])):
+                        right += make_internal_item_ref(
                             app, env, fromdocname,
-                            env.traceability_all_items[target_item])
+                            env.traceability_all_items[target_id])
                 row += left
                 row += right
                 tbody += row
@@ -278,13 +311,13 @@ def process_item_nodes(app, doctree, fromdocname):
     # shall be included
     for node in doctree.traverse(item_list):
         content = nodes.bullet_list()
-        for item in all_items:
-            if re.match(node['filter'], item):
+        for i in all_item_ids:
+            if re.match(node['filter'], i):
                 bullet_list_item = nodes.list_item()
                 paragraph = nodes.paragraph()
                 paragraph.append(
-                    make_item_ref(app, env, fromdocname,
-                                  env.traceability_all_items[item]))
+                    make_internal_item_ref(app, env, fromdocname,
+                                  env.traceability_all_items[i]))
                 bullet_list_item.append(paragraph)
                 content.append(bullet_list_item)
 
@@ -319,6 +352,49 @@ def process_item_nodes(app, doctree, fromdocname):
 
         node.replace_self(new_node)
 
+    # Item: replace item nodes, with admonition, list of relationships
+    for node in doctree.traverse(item):
+        currentitem = env.traceability_all_items[node['id']]
+        cont = nodes.container()
+        admon = nodes.admonition()
+        title = nodes.title()
+        header = currentitem['id']
+        if currentitem['caption']:
+            header += ' : ' + currentitem['caption']
+        txt = nodes.Text(header)
+        title.append(txt)
+        admon.append(title)
+        cont.append(admon)
+        if app.config.traceability_render_relationship_per_item:
+            par = nodes.paragraph()
+            dl = nodes.definition_list()
+            for rel in sorted(list(env.relationships.keys())):
+                if rel in currentitem and currentitem[rel]:
+                    dli = nodes.definition_list_item()
+                    dt = nodes.term()
+                    if rel in app.config.traceability_relationship_to_string:
+                        relstr = app.config.traceability_relationship_to_string[rel]
+                    else:
+                        continue
+                    txt = nodes.Text(relstr)
+                    dt.append(txt)
+                    dli.append(dt)
+                    for tgt in currentitem[rel]:
+                        dd = nodes.definition()
+                        p = nodes.paragraph()
+                        if regexp_external_relationship.search(rel):
+                            link = make_external_item_ref(app, env, tgt, rel)
+                        else:
+                            link = make_internal_item_ref(app, env, fromdocname, env.traceability_all_items[tgt], False)
+                        p.append(link)
+                        dd.append(p)
+                        dli.append(dd)
+                    dl.append(dli)
+            par.append(dl)
+            cont.append(par)
+        ## Note: content should be displayed during read of RST file, as it contains other RST objects
+        node.replace_self(cont)
+
 
 def update_available_item_relationships(app):
     """
@@ -339,7 +415,9 @@ def update_available_item_relationships(app):
 
     for rel in list(app.config.traceability_relationships.keys()):
         env.relationships[rel] = app.config.traceability_relationships[rel]
-        env.relationships[app.config.traceability_relationships[rel]] = rel
+        # When reverse relationship exists, add it as well
+        if app.config.traceability_relationships[rel]:
+            env.relationships[app.config.traceability_relationships[rel]] = rel
 
     for rel in sorted(list(env.relationships.keys())):
         ItemDirective.option_spec[rel] = directives.unchanged
@@ -352,8 +430,10 @@ def initialize_environment(app):
     env = app.builder.env
 
     # Assure ``traceability_all_items`` will always be there.
-    if not hasattr(env, 'traceability_all_items'):
-        env.traceability_all_items = {}
+    # It needs to be empty on every (re-)build. As the script automatically
+    # generates placeholders when parsing the reverse relationships, the
+    # database of items needs to be empty on every re-build.
+    env.traceability_all_items = {}
 
     update_available_item_relationships(app)
 
@@ -361,7 +441,30 @@ def initialize_environment(app):
 # -----------------------------------------------------------------------------
 # Utility functions
 
-def make_item_ref(app, env, fromdocname, item_info):
+def initialize_relationships_for_item(env, id):
+    for rel in list(env.relationships.keys()):
+        if rel:
+            if rel not in env.traceability_all_items[id]:
+                env.traceability_all_items[id][rel] = []
+
+def make_external_item_ref(app, env, targettext, relationship):
+    if relationship not in app.config.traceability_external_relationship_to_url:
+        return
+    para = nodes.paragraph()
+    link = nodes.reference()
+    txt = nodes.Text(targettext)
+    tgt_strs = targettext.split(':') #syntax = field1:field2:field3:...
+    url = app.config.traceability_external_relationship_to_url[relationship]
+    cnt = 0
+    for tgt_str in tgt_strs:
+        cnt += 1
+        url = url.replace(external_link_fieldname+str(cnt), tgt_str)
+    link['refuri'] = url
+    link.append(txt)
+    para += link
+    return para
+ 
+def make_internal_item_ref(app, env, fromdocname, item_info, caption=True):
     """
     Creates a reference node for an item, embedded in a
     paragraph. Reference text adds also a caption if it exists.
@@ -369,8 +472,8 @@ def make_item_ref(app, env, fromdocname, item_info):
     """
     id = item_info['target']['refid']
 
-    if item_info['caption'] != '':
-        caption = ', ' + item_info['caption']
+    if item_info['caption'] != '' and caption:
+        caption = ' : ' + item_info['caption']
     else:
         caption = ''
 
@@ -406,14 +509,14 @@ def are_related(env, source, target, relationships):
     If the list of relationship types is empty, all available
     relationship types are to be considered.
 
+    There is not need to check the reverse relationship, as these are
+    added to the dict during the parsing of the documents.
     """
     if not relationships:
         relationships = list(env.relationships.keys())
 
     for rel in relationships:
-        if (target in env.traceability_all_items[source][rel] or
-            source in
-                env.traceability_all_items[target][env.relationships[rel]]):
+        if target in env.traceability_all_items[source][rel]:
             return True
 
     return False
@@ -431,19 +534,35 @@ def setup(app):
                           'implements': 'implemented_by',
                           'realizes': 'realized_by',
                           'validates': 'validated_by',
-                          'trace': 'backtrace'},
+                          'trace': 'backtrace',
+                          'ext_toolname': ''},
                          'env')
 
-    # Customizable templates
-    app.add_config_value('traceability_item_template',
-                         """
-                         {{ id }}
-                         {%- if caption %}
-                             **{{ caption }}**
-                         {% endif %}
-                             {{ content|indent(4) }}
-                         """,
-                         'env')
+    # Configuration for translating the relationship keywords to rendered text
+    app.add_config_value('traceability_relationship_to_string',
+                         {'fulfills': 'Fulfills',
+                          'fulfilled_by': 'Fulfilled by',
+                          'depends_on': 'Depends on',
+                          'impacts_on': 'Impacts on',
+                          'implements': 'Implements',
+                          'implemented_by': 'Implemented by',
+                          'realizes': 'Realizes',
+                          'realized_by': 'Realized by',
+                          'validates': 'Validates',
+                          'validated_by': 'Validated by',
+                          'trace': 'Traces',
+                          'backtrace': 'Back traces',
+                          'ext_toolname': 'Referento to toolname'},
+                        'env')
+
+    # Configuration for translating external relationship to url
+    app.add_config_value('traceability_external_relationship_to_url',
+                         {'ext_toolname': 'http://toolname.company.com/field1/workitem?field2'},
+                        'env')
+
+    # Configuration for enabling the rendering of the relations on every item
+    app.add_config_value('traceability_render_relationship_per_item',
+                         False, 'env')
 
     app.add_node(item_matrix)
     app.add_node(item_list)
@@ -454,7 +573,6 @@ def setup(app):
     app.add_directive('item-matrix', ItemMatrixDirective)
 
     app.connect('doctree-resolved', process_item_nodes)
-    app.connect('env-purge-doc', purge_items)
     app.connect('builder-inited', initialize_environment)
 
     app.add_role('item', XRefRole(nodeclass=pending_item_xref,

@@ -47,6 +47,8 @@ setup(
                 'software engineering',
                 'systems engineering',
                 'sphinx',
-                'requirements'
+                'requirements',
+                'ISO26262',
+                'ASIL'
             ]
 )

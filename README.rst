@@ -32,7 +32,7 @@ contained by the directive itself (``item_content``). If no
 ``item_content`` is defined, the directive just marks with ``item_id``
 the position of the document where it is defined. An optional text can
 be defined with ``item_caption`` and it will be used in cross
-references instead of ``item_id``.
+references in combination with ``item_id``.
 
 The extension also checks for uniqueness of item identifiers through
 all files of a Sphinx project, in a similar way to standard Sphinx
@@ -55,7 +55,9 @@ specific relationship type is to be set, just the generic ``:trace:``
 relationship name can be used.
 
 A configuration variable, ``traceability_relationships``, can be used to
-extend and customize the set of available relationships. See
+extend and customize the set of available relationships. A configuration
+variable, ``traceability_relationship_to_string``, needs to be defined in
+order to translate the relationship tags to readable text. See
 `Configuration`_ for details.
 
 ::
@@ -90,8 +92,8 @@ caption, if existing) shall be used in generated link text, but it can
 be overwritten with ``:role:`Text <target>``` Sphinx syntax.
 
 
-More on relationships
----------------------
+Automatic reverse relationships
+-------------------------------
 
 When setting a relationship from one item to another, this extension
 always considers the reverse relationship and sets it automatically
@@ -112,6 +114,17 @@ traceability matrix from source A to target B according a relationship
 will have its automatic reverse matrix form B to A using its reverse
 relationship.
 
+External relations
+------------------
+
+The plugin supports defining relationships to external tools. The default
+configuration holds an example ``ext_toolname`` relationship, with no
+reverse relationship. Using this directive, one can link to other documents.
+The plugin will insert a http reference, which can be configured through the
+``traceability_external_relationship_to_url`` configuration variable. External
+relationships are defined to have a 'ext_' prefix. As the generated http
+reference can contain multiple fields per reference, the fields are seperated
+by a semicolon. See `Configuration`_ for details.
 
 Configuration
 -------------
@@ -128,19 +141,21 @@ standard UML relationships):
 - realizes: realized_by
 - validates: validated_by
 - trace: backtrace (this is kept mainly for backwards compatibility)
+- ext_toolname: None (external relationships should not have a reverse
+  relationship)
 
+``traceability_relationship_to_string`` configuration variable is needed
+in order to translate the relationship tags to readable format.
 
-Advanced configuration
-----------------------
+By default an item is rendered as an admonition containing the id and the
+given caption. The ``traceability_render_relationship_per_item`` configuration
+variable allows to print a list of relationships to other items on every
+rendered item.
 
-By default, items are written as term/definition tuples, but this is
-fully customizable by defining ``traceability_item_template``
-configuration variable.  It uses `Jinja2 templating language
-<http://jinja.pocoo.org/docs/dev/templates/>`_.
-
-.. note:: using this template mechanism is not trivial. A good
-          knowledge of Jinja2 is required.
-
+In `External relations`_ the linking to external http pages is explained. The
+``traceability_external_relationship_to_url`` translates a relationship to
+a url. Use field1, field2, etc for indicating where which field of the target
+id should be put.
 
 Examples
 --------
