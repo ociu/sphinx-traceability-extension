@@ -16,7 +16,7 @@ import sys, os
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('../sphinxcontrib'))
+sys.path.insert(0, os.path.abspath('../mlx'))
 
 # -- General configuration -----------------------------------------------------
 
@@ -41,7 +41,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Example'
-copyright = u'2013, Oscar Ciudad'
+copyright = u'2017, Stein Heselmans'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -184,7 +184,7 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
   ('index', 'Example.tex', u'Example Documentation',
-   u'Oscar Ciudad', 'manual'),
+   u'Stein Heselmans', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -214,7 +214,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'example', u'Example Documentation',
-     [u'Oscar Ciudad'], 1)
+     [u'Stein Heselmans'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -228,7 +228,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   ('index', 'Example', u'Example Documentation',
-   u'Oscar Ciudad', 'Example', 'One line description of project.',
+   u'Stein Heselmans', 'Example', 'One line description of project.',
    'Miscellaneous'),
 ]
 
@@ -246,9 +246,9 @@ texinfo_documents = [
 
 # Bibliographic Dublin Core info.
 epub_title = u'Example'
-epub_author = u'Oscar Ciudad'
-epub_publisher = u'Oscar Ciudad'
-epub_copyright = u'2013, Oscar Ciudad'
+epub_author = u'Stein Heselmans'
+epub_publisher = u'Stein Heselmans'
+epub_copyright = u'2017, Stein Heselmans'
 
 # The language of the text. It defaults to the language option
 # or en if the language is not set.
@@ -294,24 +294,32 @@ intersphinx_mapping = {'http://docs.python.org/': None}
 # Use same key/value for bidirectional relationships.
 traceability_relationships = {
     'trace': 'traced_by',
+    'depends_on': 'impacts_on',
     'fulfills': 'fulfilled_by',
     'implements': 'implemented_by',
-    'validates': 'validated_by'
+    'validates': 'validated_by',
+    'ext_toolname': ''
 }
 
-traceability_item_template = """
-    {% if type == 'requirement' %}
-    :superscript:`[{{ id }}` {{ caption }}:
-    {{ content }} :subscript:`{{ id }}]`
-    {% else %}
-    {{ id }}
-    {%- if caption %}
-        **{{ caption }}**
-    {% endif %}
-        {{ content|indent(4) }}
-    {% endif %}
-    """
+traceability_render_relationship_per_item = True
 
+traceability_relationship_to_string = {
+    'trace': 'Traces',
+    'traced_by': 'Traced by',
+    'depends_on': 'Depends on',
+    'impacts_on': 'Impacts on',
+    'fulfills': 'Fulfills',
+    'fulfilled_by': 'Fulfilled by',
+    'implements': 'Implements',
+    'implemented_by': 'Implemented by',
+    'validates': 'Validates',
+    'validated_by': 'Validated by',
+    'ext_toolname': 'Referento to toolname'
+}
+
+traceability_external_relationship_to_url = {
+    'ext_toolname': 'http://toolname.company.com/field1/field2/workitem?field3'
+}
 
 def setup(app):
 

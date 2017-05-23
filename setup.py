@@ -2,19 +2,20 @@
 
 from setuptools import setup, find_packages
 
-project_url = 'https://github.com/ociu/sphinx-traceability-extension'
+project_url = 'https://github.com/SteinHeselmans/sphinx-traceability-extension'
+version = '1.2.0'
 
-requires = ['Sphinx>=0.6']
+requires = ['Sphinx>=0.6', 'docutils']
 
 setup(
-    name='sphinxcontrib-traceability',
-    version='0.1.2',
+    name='mlx.traceability',
+    version=version,
     url=project_url,
-    download_url=project_url + '/archive/v0.1.2.tar.gz',
+    download_url=project_url + '/tarball/' + version,
     license='GNU General Public License v3 (GPLv3)',
-    author='Oscar Ciudad',
-    author_email='oscar@jacho.net',
-    description='Sphinx traceability extension',
+    author='Stein Heselmans',
+    author_email='teh@melexis.com',
+    description='Sphinx traceability extension (Melexis fork)',
     long_description=open("README.rst").read(),
     zip_safe=False,
     classifiers=[
@@ -40,13 +41,16 @@ setup(
     packages=find_packages(exclude=['tests', 'example']),
     include_package_data=True,
     install_requires=requires,
-    namespace_packages=['sphinxcontrib'],
+    namespace_packages=['mlx'],
     keywords = ['traceability',
                 'requirements engineering',
                 'requirements management',
                 'software engineering',
                 'systems engineering',
                 'sphinx',
-                'requirements'
+                'requirements',
+                'ASPICE',
+                'ISO26262',
+                'ASIL'
             ]
 )
