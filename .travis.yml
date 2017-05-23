@@ -3,6 +3,7 @@ language: python
 script: ls
 
 deploy:
+  # test pypi
   - provider: pypi
     distributions: sdist
     server: https://testpypi.python.org/pypi
@@ -12,6 +13,7 @@ deploy:
     on:
       branch: master
       tags: false
+  # production pypi
   - provider: pypi
     distributions: sdist
     user: SteinHeselmans
