@@ -47,22 +47,22 @@ This text is not part of any item
    :trace: r002 r003
 
    Clean up all this again
-   
+
 .. item:: r006 Depends on all
    :class: terciary
    :trace: r001
            r002
            r003 r005
-	
+
    To demonstrate that bug #2 is solved
-   
+
 .. item:: r007 Depends on all with stereotypes
    :class: terciary
    :trace: r001
    :validates: r002
    :fulfills:  r003
            r005
-	
+
    To demonstrate stereotype usage in relationships
 
 
@@ -108,13 +108,21 @@ Traceability from SRS to SSS
    :target: SYS
    :source: SRS
    :type:   fulfills
-	    
+
 Traceability from SSS to SRS
 
 .. item-matrix:: SSS to SRS
    :target: SRS
    :source: SYS
    :type:   fulfilled_by
+
+Item tree
+=========
+
+.. item-tree:: SYS
+    :top: SYS
+    :top_relation_filter: depends_on
+    :type: fulfilled_by
 
 
 Links and references

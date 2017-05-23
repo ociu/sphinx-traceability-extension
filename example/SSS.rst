@@ -18,6 +18,7 @@ Saying hello
 Saying goodbye
 --------------
 .. item:: SYS_0002 Saying goodbye
+   :depends_on: SYS_0001
 
    The systems will say goodbye
 
