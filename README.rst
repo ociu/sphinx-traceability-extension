@@ -68,7 +68,7 @@ Valid relationships
 ===================
 
 Python variable *traceability_relationsips* can be defined in order to override the
-:ref:`default configuration <traceability_default_config>` of the traceability plugin.
+default configuration of the traceability plugin.
 It is a *set* of relationship pairs: the *key* is the name of the forward relationship, while the *value* holds the
 name of the corresponding reverse relationship.
 
@@ -90,7 +90,7 @@ Stringification of relationships
 ================================
 
 Python variable *traceability_relationship_to_string* can be defined in order to override the
-:ref:`default configuration <traceability_default_config>` of the traceability plugin.
+default configuration of the traceability plugin.
 It is a *set* of relationship stringifications: the *key* is the name of the (forward or reverse) relationship, while
 the *value* holds the string representation (as to be rendered in html) of the relationship.
 
