@@ -1,5 +1,3 @@
-.. _traceability_readme:
-
 ==========================
 Sphinx Traceability plugin
 ==========================
