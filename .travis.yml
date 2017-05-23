@@ -1,7 +1,8 @@
 language: python
+
 script: ls
+
 deploy:
-  matrix:
   - provider: pypi
     distributions: sdist
     server: https://testpypi.python.org/pypi
