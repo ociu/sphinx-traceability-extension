@@ -7,14 +7,14 @@ project_url = 'https://github.com/ociu/sphinx-traceability-extension'
 requires = ['Sphinx>=0.6']
 
 setup(
-    name='sphinxcontrib-traceability',
-    version='0.1.2',
+    name='mlx.traceability',
+    version='1.3.0',
     url=project_url,
-    download_url=project_url + '/archive/v0.1.2.tar.gz',
+    download_url=project_url + '/archive/v1.3.0.tar.gz',
     license='GNU General Public License v3 (GPLv3)',
-    author='Oscar Ciudad',
-    author_email='oscar@jacho.net',
-    description='Sphinx traceability extension',
+    author='Stein Heselmans',
+    author_email='teh@melexis.com',
+    description='Sphinx traceability extension (Melexis fork)',
     long_description=open("README.rst").read(),
     zip_safe=False,
     classifiers=[
@@ -48,6 +48,7 @@ setup(
                 'systems engineering',
                 'sphinx',
                 'requirements',
+                'ASPICE',
                 'ISO26262',
                 'ASIL'
             ]
