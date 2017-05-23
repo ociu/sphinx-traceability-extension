@@ -3,13 +3,15 @@
 from setuptools import setup, find_packages
 
 project_url = 'https://github.com/SteinHeselmans/sphinx-traceability-extension'
+version = '1.3.0'
 
 requires = ['Sphinx>=0.6', 'docutils']
 
 setup(
     name='mlx.traceability',
-    version='1.3.0',
+    version=version,
     url=project_url,
+    download_url=project_url + '/tarball/' + version,
     license='GNU General Public License v3 (GPLv3)',
     author='Stein Heselmans',
     author_email='teh@melexis.com',
@@ -39,7 +41,7 @@ setup(
     packages=find_packages(exclude=['tests', 'example']),
     include_package_data=True,
     install_requires=requires,
-    namespace_packages=['sphinxcontrib'],
+    namespace_packages=['mlx'],
     keywords = ['traceability',
                 'requirements engineering',
                 'requirements management',
