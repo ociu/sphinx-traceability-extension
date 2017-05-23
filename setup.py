@@ -2,15 +2,14 @@
 
 from setuptools import setup, find_packages
 
-project_url = 'https://github.com/ociu/sphinx-traceability-extension'
+project_url = 'https://github.com/SteinHeselmans/sphinx-traceability-extension'
 
-requires = ['Sphinx>=0.6']
+requires = ['Sphinx>=0.6', 'docutils']
 
 setup(
     name='mlx.traceability',
     version='1.3.0',
     url=project_url,
-    download_url=project_url + '/archive/v1.3.0.tar.gz',
     license='GNU General Public License v3 (GPLv3)',
     author='Stein Heselmans',
     author_email='teh@melexis.com',
