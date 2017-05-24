@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 project_url = 'https://github.com/SteinHeselmans/sphinx-traceability-extension'
-version = '1.2.2'
+version = '1.2.3'
 
 requires = ['Sphinx>=0.6', 'docutils']
 
@@ -52,5 +52,5 @@ setup(
                 'ASPICE',
                 'ISO26262',
                 'ASIL'
-            ]
+            ],
 )
