@@ -1,6 +1,0 @@
-# Include the readme file
-include README.rst
-
-# Include the assets - javascript
-include assets/*.js
-
