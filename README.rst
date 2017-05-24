@@ -160,7 +160,7 @@ has this prototype:
 The callback is executed while parsing the documentation item from your rst-file. Note that not all items are
 available at the time this callback executes, the *all_items* parameter is a growing set of documentation objects.
 
-In some project (e.g. 9037x) this callback is used to assign a relation to an ASIL attribute (also a documentation
+In some project this callback is used to assign a relation to an ASIL attribute (also a documentation
 object) to all of the requirements.
 
 Example of no callback per item:
@@ -340,18 +340,8 @@ the nested bullet list. This action is repeated recursively.
 Process
 -------
 
-The SWCC process has a Guideline for documenting in Restructured Text (RST). It holds guidelines for using
+The Melexis.SWCC process has a Guideline for documenting in Restructured Text (RST). It holds guidelines for using
 the traceability plugin with naming conventions, templates, etc.
 
 .. _traceability_license:
 
--------
-License
--------
-
-Copyright (C) 2017 Melexis N.V.
-
-The Software is being delivered 'AS IS' and Melexis, whether explicitly or implicitly, makes no warranty as to its
-Use or performance. The user accepts the Melexis Firmware License Agreement.
-
-Melexis confidential & proprietary
