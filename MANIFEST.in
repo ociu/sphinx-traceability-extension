@@ -2,5 +2,5 @@
 include README.rst
 
 # Include the assets - javascript
-include assets/*.js
+include mlx/assets/*.js
 
