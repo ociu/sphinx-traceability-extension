@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 project_url = 'https://github.com/SteinHeselmans/sphinx-traceability-extension'
-version = '1.2.3'
+version = '1.2.4'
 
 requires = ['Sphinx>=0.6', 'docutils']
 
@@ -53,4 +53,5 @@ setup(
                 'ISO26262',
                 'ASIL'
             ],
+    package_data={'mlx.traceability': ['assets/*.js']},
 )

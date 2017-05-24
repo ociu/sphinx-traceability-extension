@@ -2,5 +2,5 @@
 include README.rst
 
 # Include the assets - javascript
-include assets/traceability.js
+include assets/*.js
 
