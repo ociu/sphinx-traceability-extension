@@ -244,7 +244,7 @@ Documentation items can be defined using the *item* directive, specifying:
 
 - the name (id) of the documenation item
 - caption or short description of the documentation item
-- internal/external relationships to other documentation items
+- internal/external relationships to other documentation items (details in next paragraph)
 - content of documentation item including any rst content including text, images, formulas, code-blocks, etc.
 
 .. code-block:: rest
@@ -254,6 +254,18 @@ Documentation items can be defined using the *item* directive, specifying:
         :ext_polarion_reference: project_x:workitem_y
 
         According to the Polarion reference, the software **shall** implement my first requirement.
+
+The relations to other documentation items can be specified as:
+
+- a space seperated list of item ID's, or
+- items can be linked to on a newline (tabulated)
+
+.. code-block:: rest
+
+    .. item:: SWRQT-MY_FIRST_REQUIREMENT Caption of my first requirement
+        :validated_by:
+            ITEST-MY_FIRST_INTEGRATION_TEST
+            ITEST-MY_SECOND_INTEGRATION_TEST
 
 .. _traceability_usage_item_linking:
 
