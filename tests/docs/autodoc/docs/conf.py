@@ -27,7 +27,7 @@ sys.path.append(os.path.abspath('../test'))
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.autosummary', 'traceability'] # use this for manual build
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.autosummary', 'mlx.traceability'] # use this for manual build
 #extensions = ['sphinx.ext.autodoc', 'sphinxcontrib.traceability']
 
 # Add any paths that contain templates here, relative to this directory.
