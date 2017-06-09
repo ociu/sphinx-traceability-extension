@@ -4,3 +4,15 @@ include README.rst
 # Include the assets - javascript
 include mlx/assets/*.js
 
+
+# added by check_manifest.py
+include LICENSE
+include NOTICE
+include tox.ini
+recursive-include example *.bat
+recursive-include example *.py
+recursive-include example *.rst
+recursive-include example Makefile
+recursive-include tests *.py
+recursive-include tests *.rst
+recursive-include tests *.txt
