@@ -12,7 +12,9 @@ import re
 from sphinx.util.compat import Directive
 from sphinx.roles import XRefRole
 from sphinx.util.nodes import make_refnode
-from sphinx.util.logging import getLogger
+from sphinx import __version__ as sphinx_version
+if sphinx_version >= '1.6.0':
+    from sphinx.util.logging import getLogger
 from sphinx.environment import NoUri
 from docutils import nodes
 from docutils.parsers.rst import directives
@@ -23,6 +25,20 @@ from docutils.parsers.rst import directives
 # hyperlink is done through the config traceability_external_relationship_to_url.
 REGEXP_EXTERNAL_RELATIONSHIP = re.compile('^ext_.*')
 EXTERNAL_LINK_FIELDNAME = 'field'
+
+def report_warning(env, msg, docname, lineno=None):
+    '''Convenience function for logging a warning
+
+    Args:
+        msg (str): Message of the warning
+        docname (str): Name of the document on which the error occured
+        lineno (str): Line number in the document on which the error occured
+    '''
+    if sphinx_version >= '1.6.0':
+        logger = getLogger(__name__)
+        logger.warning(msg, location=(docname, lineno))
+    else:
+        env.warn(docname, msg, lineno=lineno)
 
 # -----------------------------------------------------------------------------
 # Declare new node types (based on others): Item, ItemList, ItemMatrix, ItemTree
@@ -230,7 +246,6 @@ class ItemMatrixDirective(Directive):
 
     def run(self):
         env = self.state.document.settings.env
-        logger = getLogger(__name__)
 
         item_matrix_node = ItemMatrix('')
 
@@ -255,7 +270,7 @@ class ItemMatrixDirective(Directive):
         # Check if given relationships are in configuration
         for rel in item_matrix_node['type']:
             if rel not in env.relationships:
-                logger.warning('Traceability: unknown relation for item-matrix: %s' % rel, location=(env.docname, self.lineno))
+                report_warning(env, 'Traceability: unknown relation for item-matrix: %s' % rel, env.docname, self.lineno)
 
         return [item_matrix_node]
 
@@ -285,7 +300,6 @@ class ItemTreeDirective(Directive):
 
     def run(self):
         env = self.state.document.settings.env
-        logger = getLogger(__name__)
 
         item_tree_node = ItemTree('')
 
@@ -309,7 +323,7 @@ class ItemTreeDirective(Directive):
         # Check if given relationships are in configuration
         for rel in item_tree_node['top_relation_filter']:
             if rel not in env.relationships:
-                logger.warning('Traceability: unknown relation for item-tree: %s' % rel, location=(env.docname, self.lineno))
+                report_warning(env, 'Traceability: unknown relation for item-tree: %s' % rel, env.docname, self.lineno)
 
         # Process ``type`` option, given as a string with relationship types
         # separated by space. It is converted to a list.
@@ -323,10 +337,10 @@ class ItemTreeDirective(Directive):
         # endless treeview (and endless recursion in python --> exception)
         for rel in item_tree_node['type']:
             if rel not in env.relationships:
-                logger.warning('Traceability: unknown relation for item-tree: %s' % rel, location=(env.docname, self.lineno))
+                report_warning(env, 'Traceability: unknown relation for item-tree: %s' % rel, env.docname, self.lineno)
                 continue
             if env.relationships[rel] in item_tree_node['type']:
-                logger.warning('Traceability: combination of forward+reverse relations for item-tree: %s' % rel, location=(env.docname, self.lineno))
+                report_warning(env, 'Traceability: combination of forward+reverse relations for item-tree: %s' % rel, env.docname, self.lineno)
                 raise ValueError('Traceability: combination of forward+reverse relations for item-tree: %s' % rel)
 
         return [item_tree_node]
@@ -344,7 +358,6 @@ def process_item_nodes(app, doctree, fromdocname):
 
     """
     env = app.builder.env
-    logger = getLogger(__name__)
 
     all_item_ids = sorted(env.traceability_all_items, key=naturalsortkey)
 
@@ -440,7 +453,7 @@ def process_item_nodes(app, doctree, fromdocname):
         if node['reftarget'] in env.traceability_all_items:
             item_info = env.traceability_all_items[node['reftarget']]
             if item_info['placeholder'] is True:
-                logger.warning('Traceability: cannot link to %s, item is not defined' % item_info['id'], location=node)
+                report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_info['id'], node)
             else:
                 try:
                     new_node = make_refnode(app.builder,
@@ -454,7 +467,7 @@ def process_item_nodes(app, doctree, fromdocname):
                     pass
 
         else:
-            logger.warning('Traceability: item %s not found' % node['reftarget'], location=node)
+            report_warning(env, 'Traceability: item %s not found' % node['reftarget'], node)
 
         node.replace_self(new_node)
 
@@ -640,14 +653,13 @@ def make_internal_item_ref(app, node, fromdocname, item_id, caption=True):
 
     """
     env = app.builder.env
-    logger = getLogger(__name__)
     item_info = env.traceability_all_items[item_id]
 
     p_node = nodes.paragraph()
 
     # Only create link when target item exists, warn otherwise (in html and terminal)
     if item_info['placeholder'] is True:
-        logger.warning('Traceability: cannot link to %s, item is not defined' % item_id, location=node)
+        report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_id, node)
         txt = nodes.Text('%s not defined, broken link' % item_id)
         p_node.append(txt)
     else:
