@@ -71,6 +71,15 @@ This text is not part of any item
    This item has been defined using other directive. It easily extends
    rst semantics
 
+.. item:: r008 Requirement with invalid reference to other one
+    :trace: non_existing_requirement
+
+    Ai caramba, this should report a broken link to an non existing requirement.
+
+.. item:: r009 Requirement with invalid relation kind to other one
+    :non_existing_relation: r007
+
+    Ai caramba, this should report a warning as the relation kind does not exist.
 
 Item list
 =========
@@ -116,14 +125,45 @@ Traceability from SSS to SRS
    :source: SYS
    :type:   fulfilled_by
 
+Another matrix that should spawn a warning as the relation in *type* does not exist
+
+.. item-matrix:: SSS to SRS
+   :target: SRS
+   :source: SYS
+   :type:   non_existing_relation
+
 Item tree
 =========
+
+Succesfull SYS tree
 
 .. item-tree:: SYS
     :top: SYS
     :top_relation_filter: depends_on
     :type: fulfilled_by
 
+Another tree that should spawn a warning as the relation in *top_relation_filter* does not exist.
+
+.. item-tree:: warning for unknown relation
+    :top: SYS
+    :top_relation_filter: non_existing_relation
+    :type: fulfilled_by
+
+Another tree that should spawn a warning as the relation in *type* does not exist
+
+.. item-tree:: warning for unknown relation
+    :top: SYS
+    :top_relation_filter: depends_on
+    :type: non_existing_relation
+
+.. only:: TEST_FOR_ENDLESS_RECURSION
+
+    Another tree that should spawn a warning as the forward and reverse relation are in the *type* field.
+
+    .. item-tree:: warning for forward+reverse
+        :top: SYS
+        :top_relation_filter: depends_on
+        :type: fulfilled_by fulfills
 
 Links and references
 ====================

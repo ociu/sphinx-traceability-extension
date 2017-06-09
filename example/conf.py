@@ -25,7 +25,17 @@ sys.path.insert(0, os.path.abspath('../mlx'))
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest', 'sphinx.ext.coverage', 'sphinx.ext.ifconfig', 'sphinx.ext.viewcode', 'sphinx.ext.graphviz', 'traceability']
+extensions = ['sphinx.ext.autodoc',
+    'sphinx.ext.doctest',
+    'sphinx.ext.coverage',
+    'sphinx.ext.ifconfig',
+    'sphinx.ext.viewcode',
+    'sphinx.ext.graphviz',
+    'traceability',
+    'sphinx_selective_exclude.eager_only',
+    'sphinx_selective_exclude.modindex_exclude',
+    'sphinx_selective_exclude.search_auto_exclude'
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
