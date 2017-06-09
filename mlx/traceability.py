@@ -12,9 +12,13 @@ import re
 from sphinx.util.compat import Directive
 from sphinx.roles import XRefRole
 from sphinx.util.nodes import make_refnode
+from sphinx import __version__ as sphinx_version
+if sphinx_version >= '1.6.0':
+    from sphinx.util.logging import getLogger
 from sphinx.environment import NoUri
 from docutils import nodes
 from docutils.parsers.rst import directives
+from docutils.utils import get_source_line
 
 # External relationship: starts with ext_
 # An external relationship is a relationship where the item to link to is not in the
@@ -22,6 +26,23 @@ from docutils.parsers.rst import directives
 # hyperlink is done through the config traceability_external_relationship_to_url.
 REGEXP_EXTERNAL_RELATIONSHIP = re.compile('^ext_.*')
 EXTERNAL_LINK_FIELDNAME = 'field'
+
+def report_warning(env, msg, docname, lineno=None):
+    '''Convenience function for logging a warning
+
+    Args:
+        msg (str): Message of the warning
+        docname (str): Name of the document on which the error occured
+        lineno (str): Line number in the document on which the error occured
+    '''
+    if sphinx_version >= '1.6.0':
+        logger = getLogger(__name__)
+        if lineno:
+            logger.warning(msg, location=(docname, lineno))
+        else:
+            logger.warning(msg, location=docname)
+    else:
+        env.warn(docname, msg, lineno=lineno)
 
 # -----------------------------------------------------------------------------
 # Declare new node types (based on others): Item, ItemList, ItemMatrix, ItemTree
@@ -253,7 +274,7 @@ class ItemMatrixDirective(Directive):
         # Check if given relationships are in configuration
         for rel in item_matrix_node['type']:
             if rel not in env.relationships:
-                env.warn(env.docname, 'Traceability: unknown relation for item-matrix: %s' % rel)
+                report_warning(env, 'Traceability: unknown relation for item-matrix: %s' % rel, env.docname, self.lineno)
 
         return [item_matrix_node]
 
@@ -306,7 +327,7 @@ class ItemTreeDirective(Directive):
         # Check if given relationships are in configuration
         for rel in item_tree_node['top_relation_filter']:
             if rel not in env.relationships:
-                env.warn(env.docname, 'Traceability: unknown relation for item-tree: %s' % rel)
+                report_warning(env, 'Traceability: unknown relation for item-tree: %s' % rel, env.docname, self.lineno)
 
         # Process ``type`` option, given as a string with relationship types
         # separated by space. It is converted to a list.
@@ -320,9 +341,10 @@ class ItemTreeDirective(Directive):
         # endless treeview (and endless recursion in python --> exception)
         for rel in item_tree_node['type']:
             if rel not in env.relationships:
-                env.warn(env.docname, 'Traceability: unknown relation for item-tree: %s' % rel)
+                report_warning(env, 'Traceability: unknown relation for item-tree: %s' % rel, env.docname, self.lineno)
+                continue
             if env.relationships[rel] in item_tree_node['type']:
-                env.warn(env.docname, 'Traceability: combination of forward+reverse relations for item-tree: %s' % rel)
+                report_warning(env, 'Traceability: combination of forward+reverse relations for item-tree: %s' % rel, env.docname, self.lineno)
                 raise ValueError('Traceability: combination of forward+reverse relations for item-tree: %s' % rel)
 
         return [item_tree_node]
@@ -435,7 +457,7 @@ def process_item_nodes(app, doctree, fromdocname):
         if node['reftarget'] in env.traceability_all_items:
             item_info = env.traceability_all_items[node['reftarget']]
             if item_info['placeholder'] is True:
-                env.warn_node('Traceability: cannot link to %s, item is not defined' % item_info['id'], node)
+                report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_info['id'], get_source_line(node))
             else:
                 try:
                     new_node = make_refnode(app.builder,
@@ -449,8 +471,7 @@ def process_item_nodes(app, doctree, fromdocname):
                     pass
 
         else:
-            env.warn_node(
-                'Traceability: item %s not found' % node['reftarget'], node)
+            report_warning(env, 'Traceability: item %s not found' % node['reftarget'], get_source_line(node))
 
         node.replace_self(new_node)
 
@@ -562,6 +583,8 @@ def is_item_top_level(env, itemid, topregex, relations):
     False, otherwise.
     '''
     for relation in relations:
+        if relation not in env.relationships:
+            continue
         if env.traceability_all_items[itemid][relation]:
             for tgt in env.traceability_all_items[itemid][relation]:
                 if re.match(topregex, tgt):
@@ -589,6 +612,8 @@ def generate_bullet_list_tree(app, env, node, fromdocname, itemid):
     childcontent.set_class('bonsai')
     #Then recurse one level, and add dependencies
     for relation in node['type']:
+        if relation not in env.relationships:
+            continue
         if not env.traceability_all_items[itemid][relation]:
             continue
         for target in env.traceability_all_items[itemid][relation]:
@@ -638,7 +663,7 @@ def make_internal_item_ref(app, node, fromdocname, item_id, caption=True):
 
     # Only create link when target item exists, warn otherwise (in html and terminal)
     if item_info['placeholder'] is True:
-        env.warn_node('Traceability: cannot link to %s, item is not defined' % item_id, node)
+        report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_id, get_source_line(node))
         txt = nodes.Text('%s not defined, broken link' % item_id)
         p_node.append(txt)
     else:
@@ -683,6 +708,9 @@ def are_related(env, source, target, relationships):
     """
     if not relationships:
         relationships = list(env.relationships.keys())
+
+    if source not in env.relationships:
+        return False
 
     for rel in relationships:
         if target in env.traceability_all_items[source][rel]:

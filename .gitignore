@@ -2,6 +2,7 @@
 .*.swp
 *.pyc
 
+dist/
 example/_build
 tests/docs/basic/_build
 tests/docs/autodoc/docs/_build
