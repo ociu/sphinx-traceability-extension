@@ -32,9 +32,7 @@ before_install:
 
 install:
   - pip install tox
-  - pip install sphinx_selective_exclude.eager_only
-  - pip install sphinx_selective_exclude.modindex_exclude
-  - pip install sphinx_selective_exclude.search_auto_exclude
+  - pip install sphinx_selective_exclude
   - virtualenv --version
   - easy_install --version
   - pip --version
