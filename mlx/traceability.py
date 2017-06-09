@@ -18,6 +18,7 @@ if sphinx_version >= '1.6.0':
 from sphinx.environment import NoUri
 from docutils import nodes
 from docutils.parsers.rst import directives
+from docutils.utils import get_source_line
 
 # External relationship: starts with ext_
 # An external relationship is a relationship where the item to link to is not in the
@@ -36,7 +37,10 @@ def report_warning(env, msg, docname, lineno=None):
     '''
     if sphinx_version >= '1.6.0':
         logger = getLogger(__name__)
-        logger.warning(msg, location=(docname)) #TODO: use lineno
+        if lineno:
+            logger.warning(msg, location=(docname, lineno))
+        else:
+            logger.warning(msg, location=docname)
     else:
         env.warn(docname, msg, lineno=lineno)
 
@@ -453,7 +457,7 @@ def process_item_nodes(app, doctree, fromdocname):
         if node['reftarget'] in env.traceability_all_items:
             item_info = env.traceability_all_items[node['reftarget']]
             if item_info['placeholder'] is True:
-                report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_info['id'], node)
+                report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_info['id'], get_source_line(node))
             else:
                 try:
                     new_node = make_refnode(app.builder,
@@ -467,7 +471,7 @@ def process_item_nodes(app, doctree, fromdocname):
                     pass
 
         else:
-            report_warning(env, 'Traceability: item %s not found' % node['reftarget'], node)
+            report_warning(env, 'Traceability: item %s not found' % node['reftarget'], get_source_line(node))
 
         node.replace_self(new_node)
 
@@ -659,7 +663,7 @@ def make_internal_item_ref(app, node, fromdocname, item_id, caption=True):
 
     # Only create link when target item exists, warn otherwise (in html and terminal)
     if item_info['placeholder'] is True:
-        report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_id, node)
+        report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_id, get_source_line(node))
         txt = nodes.Text('%s not defined, broken link' % item_id)
         p_node.append(txt)
     else:
