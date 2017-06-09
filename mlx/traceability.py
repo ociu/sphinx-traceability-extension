@@ -36,7 +36,7 @@ def report_warning(env, msg, docname, lineno=None):
     '''
     if sphinx_version >= '1.6.0':
         logger = getLogger(__name__)
-        logger.warning(msg, location=(docname, lineno))
+        logger.warning(msg, location=(docname)) #TODO: use lineno
     else:
         env.warn(docname, msg, lineno=lineno)
 
