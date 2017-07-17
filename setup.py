@@ -2,8 +2,8 @@
 
 from setuptools import setup, find_packages
 
-project_url = 'https://github.com/SteinHeselmans/sphinx-traceability-extension'
-version = '1.3.2'
+project_url = 'https://github.com/melexis/sphinx-traceability-extension'
+version = '1.4.0'
 
 requires = ['Sphinx>=0.6', 'docutils']
 
