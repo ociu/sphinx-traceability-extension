@@ -471,7 +471,6 @@ def process_item_nodes(app, doctree, fromdocname):
                     pass
 
         else:
-            #env.warn_node('Traceability: item %s not found' % node['reftarget'], node)
             report_warning(env, 'Traceability: item %s not found' % node['reftarget'], fromdocname, get_source_line(node))
 
         node.replace_self(new_node)
