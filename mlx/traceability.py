@@ -457,7 +457,7 @@ def process_item_nodes(app, doctree, fromdocname):
         if node['reftarget'] in env.traceability_all_items:
             item_info = env.traceability_all_items[node['reftarget']]
             if item_info['placeholder'] is True:
-                report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_info['id'], get_source_line(node))
+                report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_info['id'], fromdocname, get_source_line(node))
             else:
                 try:
                     new_node = make_refnode(app.builder,
@@ -471,7 +471,7 @@ def process_item_nodes(app, doctree, fromdocname):
                     pass
 
         else:
-            report_warning(env, 'Traceability: item %s not found' % node['reftarget'], get_source_line(node))
+            report_warning(env, 'Traceability: item %s not found' % node['reftarget'], fromdocname, get_source_line(node))
 
         node.replace_self(new_node)
 
@@ -663,7 +663,7 @@ def make_internal_item_ref(app, node, fromdocname, item_id, caption=True):
 
     # Only create link when target item exists, warn otherwise (in html and terminal)
     if item_info['placeholder'] is True:
-        report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_id, get_source_line(node))
+        report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_id, fromdocname, get_source_line(node))
         txt = nodes.Text('%s not defined, broken link' % item_id)
         p_node.append(txt)
     else:
