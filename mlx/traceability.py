@@ -713,7 +713,7 @@ def are_related(env, source, target, relationships):
         return False
 
     for rel in relationships:
-        if rel not in env.relationships.keys():
+        if rel not in env.traceability_all_items[source]:
             continue
         if target in env.traceability_all_items[source][rel]:
             return True
