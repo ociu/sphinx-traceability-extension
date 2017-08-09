@@ -709,10 +709,12 @@ def are_related(env, source, target, relationships):
     if not relationships:
         relationships = list(env.relationships.keys())
 
-    if source not in env.relationships:
+    if source not in env.traceability_all_items:
         return False
 
     for rel in relationships:
+        if rel not in env.relationships.keys():
+            continue
         if target in env.traceability_all_items[source][rel]:
             return True
 
