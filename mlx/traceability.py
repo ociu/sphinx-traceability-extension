@@ -134,51 +134,45 @@ class ItemDirective(Directive):
             caption = self.arguments[1].replace('\n', ' ')
 
         # Store item info
-        if targetid in env.traceability_all_items and env.traceability_all_items[targetid]['placeholder'] is False:
-            # Duplicate items not allowed. Duplicate will even not be shown
-            messages = [self.state.document.reporter.error(
-                'Traceability: duplicated item %s' % targetid,
-                line=self.lineno)]
-        else:
-            if targetid not in env.traceability_all_items:
-                env.traceability_all_items[targetid] = {}
-            env.traceability_all_items[targetid]['id'] = targetid
-            env.traceability_all_items[targetid]['placeholder'] = False
-            env.traceability_all_items[targetid]['type'] = self.name
-            env.traceability_all_items[targetid]['class'] = self.options.get('class', [])
-            env.traceability_all_items[targetid]['docname'] = env.docname
-            env.traceability_all_items[targetid]['lineno'] = self.lineno
-            env.traceability_all_items[targetid]['target'] = targetnode
-            env.traceability_all_items[targetid]['caption'] = caption
-            env.traceability_all_items[targetid]['content'] = '\n'.join(self.content)
+        if targetid not in env.traceability_all_items:
+            env.traceability_all_items[targetid] = {}
+        env.traceability_all_items[targetid]['id'] = targetid
+        env.traceability_all_items[targetid]['placeholder'] = False
+        env.traceability_all_items[targetid]['type'] = self.name
+        env.traceability_all_items[targetid]['class'] = self.options.get('class', [])
+        env.traceability_all_items[targetid]['docname'] = env.docname
+        env.traceability_all_items[targetid]['lineno'] = self.lineno
+        env.traceability_all_items[targetid]['target'] = targetnode
+        env.traceability_all_items[targetid]['caption'] = caption
+        env.traceability_all_items[targetid]['content'] = '\n'.join(self.content)
 
-            # Add empty relationships to item.
-            initialize_relationships(env, targetid)
+        # Add empty relationships to item.
+        initialize_relationships(env, targetid)
 
-            # Add found relationships to item. All relationship data is a string of
-            # item ids separated by space. It is splitted in a list of item ids
-            for rel in list(env.relationships.keys()):
-                if rel in self.options:
-                    revrel = env.relationships[rel]
-                    related_ids = self.options[rel].split()
-                    for related_id in related_ids:
-                        env.traceability_all_items[targetid][rel].append(related_id)
-                        # Check if the reverse relationship exists (non empty string)
-                        if not revrel:
-                            continue
-                        # If the related item does not exist yet, create a placeholder item
-                        if (related_id not in env.traceability_all_items):
-                            env.traceability_all_items[related_id] = {
-                                'id': related_id,
-                                'placeholder': True,
-                            }
-                            initialize_relationships(env, related_id)
-                        # Also add the reverse relationship to the related item
-                        env.traceability_all_items[related_id][revrel].append(targetid)
+        # Add found relationships to item. All relationship data is a string of
+        # item ids separated by space. It is splitted in a list of item ids
+        for rel in list(env.relationships.keys()):
+            if rel in self.options:
+                revrel = env.relationships[rel]
+                related_ids = self.options[rel].split()
+                for related_id in related_ids:
+                    env.traceability_all_items[targetid][rel].append(related_id)
+                    # Check if the reverse relationship exists (non empty string)
+                    if not revrel:
+                        continue
+                    # If the related item does not exist yet, create a placeholder item
+                    if (related_id not in env.traceability_all_items):
+                        env.traceability_all_items[related_id] = {
+                            'id': related_id,
+                            'placeholder': True,
+                        }
+                        initialize_relationships(env, related_id)
+                    # Also add the reverse relationship to the related item
+                    env.traceability_all_items[related_id][revrel].append(targetid)
 
-            # Custom callback for modifying items
-            if app.config.traceability_callback_per_item:
-                app.config.traceability_callback_per_item(targetid, env.traceability_all_items)
+        # Custom callback for modifying items
+        if app.config.traceability_callback_per_item:
+            app.config.traceability_callback_per_item(targetid, env.traceability_all_items)
 
         # Output content of item to document
         template = []
@@ -556,7 +550,8 @@ def initialize_environment(app):
     # It needs to be empty on every (re-)build. As the script automatically
     # generates placeholders when parsing the reverse relationships, the
     # database of items needs to be empty on every re-build.
-    env.traceability_all_items = {}
+    if not hasattr(env, 'traceability_all_items'):
+        env.traceability_all_items = {}
 
     init_available_relationships(app)
 
