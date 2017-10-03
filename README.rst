@@ -62,6 +62,17 @@ First the plugin needs to be enabled in the *extensions* variable:
         ...
     ]
 
+Second the path to the static javascript assets needs to be added to the sphinx ``html_static_path``
+variable.
+
+.. code-block::
+
+    import os
+    import mlx.traceability
+
+    html_static_path = [os.path.join(os.path.dirname(mlx.traceability.__file__), 'assets')]
+
+
 .. _traceability_config_relations:
 
 Valid relationships
