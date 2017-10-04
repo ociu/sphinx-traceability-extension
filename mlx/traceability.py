@@ -156,7 +156,8 @@ class ItemDirective(Directive):
                 revrel = env.relationships[rel]
                 related_ids = self.options[rel].split()
                 for related_id in related_ids:
-                    env.traceability_all_items[targetid][rel].append(related_id)
+                    if related_id not in env.traceability_all_items[targetid][rel]:
+                        env.traceability_all_items[targetid][rel].append(related_id)
                     # Check if the reverse relationship exists (non empty string)
                     if not revrel:
                         continue
@@ -168,7 +169,8 @@ class ItemDirective(Directive):
                         }
                         initialize_relationships(env, related_id)
                     # Also add the reverse relationship to the related item
-                    env.traceability_all_items[related_id][revrel].append(targetid)
+                    if targetid not in env.traceability_all_items[related_id][revrel]:
+                        env.traceability_all_items[related_id][revrel].append(targetid)
 
         # Custom callback for modifying items
         if app.config.traceability_callback_per_item:
