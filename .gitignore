@@ -1,7 +1,7 @@
 *.egg-info
 .*.swp
 *.pyc
-
+build/
 dist/
 example/_build
 tests/docs/basic/_build
