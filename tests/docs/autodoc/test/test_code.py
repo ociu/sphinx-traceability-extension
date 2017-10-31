@@ -5,6 +5,8 @@ An exemplary test code module.
 """
 
 import unittest
+import sys
+sys.path.append("tests/docs/autodoc/package")
 from prod_code import Animal, Cat, Dog
 
 
@@ -17,7 +19,8 @@ class TestAnimal(unittest.TestCase):
             :validates: SW_REQ_002
         """
         a = Animal('unspecific animal')
-        self.assertRaises(NotImplementedError, a.talk())
+        with self.assertRaises(NotImplementedError):
+            a.talk()
 
 
 class TestCat(unittest.TestCase):
@@ -28,8 +31,7 @@ class TestCat(unittest.TestCase):
                               superclass.
             :validates: SW_REQ_003
         """
-        c = Cat('amy')
-        self.assertTrue(issubclass(c, Animal))
+        self.assertTrue(issubclass(Cat, Animal))
 
     def test_cat_shall_meow(self):
         """
