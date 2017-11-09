@@ -32,6 +32,7 @@ class TestTraceableItem(TestCase):
         self.assertEqual(1, len(out))
         self.assertEqual(out[0], self.identification_tgt)
         # Add the same explicit relation, should not change (no duplicates)
+        # TODO: assert error to be logged
         item.add_relation(self.fwd_relation, self.identification_tgt)
         out = item.get_relations(self.fwd_relation)
         self.assertEqual(1, len(out))
@@ -42,6 +43,7 @@ class TestTraceableItem(TestCase):
         self.assertEqual(1, len(out))
         self.assertEqual(out[0], self.identification_tgt)
         # Add the same implicit relation, should not change (is already explicit)
+        # TODO: assert warning to be logged
         item.add_relation(self.fwd_relation, self.identification_tgt, implicit=True)
         out = item.get_relations(self.fwd_relation)
         self.assertEqual(1, len(out))

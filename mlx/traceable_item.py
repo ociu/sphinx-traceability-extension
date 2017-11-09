@@ -9,6 +9,7 @@ class TraceableCollection(object):
     def __init__(self):
         '''Initializer for container of traceable items'''
         self.relations = {}
+        self.items = {}
 
     def add_relation_pair(self, forward, reverse=NO_REVERSE_RELATION_STR):
         '''
@@ -44,7 +45,20 @@ class TraceableCollection(object):
         Args:
             item (TraceableItem): Traceable item to add
         '''
-        self.items[item.get_id()] = item;
+        self.items[item.get_id()] = item
+
+    def get_item(self, itemid):
+        '''
+        Get a TraceableItem from the list
+
+        Args:
+            itemid (str): Identification of traceable item to get
+        Returns:
+            TraceableItem: Object for traceable item
+        '''
+        if itemid in self.items.keys():
+            return self.items[itemid]
+        return None
 
     def purge(self, docname):
         '''

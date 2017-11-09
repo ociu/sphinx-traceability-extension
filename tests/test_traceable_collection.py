@@ -9,6 +9,9 @@ class TestTraceableCollection(TestCase):
     rev_relation = 'some-random-reverse-relation'
     identification_tgt = 'another-item-to-target'
 
+    def test_init(self):
+        coll = dut.TraceableCollection()
+
     def test_add_relation_pair_bidir(self):
         coll = dut.TraceableCollection()
         # Initially no relations, so no reverse
@@ -29,3 +32,16 @@ class TestTraceableCollection(TestCase):
         self.assertEqual(coll.NO_REVERSE_RELATION_STR, coll.get_reverse_relation(self.fwd_relation))
         self.assertIsNone(coll.get_reverse_relation(self.rev_relation))
 
+    def test_add_item(self):
+        coll = dut.TraceableCollection()
+        # Initially no items
+        self.assertIsNone(coll.get_item(self.identification_src))
+        # Add an item
+        item = dut.TraceableItem(self.identification_src)
+        coll.add_item(item)
+        self.assertEqual(item, coll.get_item(self.identification_src))
+        # Add same item: should give warning
+        # TODO: assert error to be logged
+        coll.add_item(item)
+        self.assertEqual(1, len(coll.items))
+        self.assertEqual(item, coll.get_item(self.identification_src))
