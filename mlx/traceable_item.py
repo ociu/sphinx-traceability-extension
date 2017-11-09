@@ -60,6 +60,15 @@ class TraceableCollection(object):
             return self.items[itemid]
         return None
 
+    def remove_item(self, itemid):
+        '''
+        Remove item from container
+
+        Args:
+            itemid (str): Identification of item to remove
+        '''
+        del self.items[itemid]
+
     def purge(self, docname):
         '''
         Purge any item from the list which matches the given docname
@@ -67,9 +76,9 @@ class TraceableCollection(object):
         Args:
             docname (str): Name of the document to purge for
         '''
-        for item in self.items:
-            if item.get_doc_name() == docname:
-                del self.items[item.get_id()]
+        for itemid in self.items.keys():
+            if self.items[itemid].docname == docname:
+                self.remove_item(itemid)
 
     def add_relation(self, sourceid, relation, targetid):
         '''

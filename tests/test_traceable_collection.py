@@ -62,6 +62,20 @@ class TestTraceableCollection(TestCase):
                               self.fwd_relation,
                               self.identification_tgt)
 
+    def test_purge(self):
+        coll = dut.TraceableCollection()
+        item1 = dut.TraceableItem(self.identification_src)
+        item1.set_document('a.rst', 111)
+        coll.add_item(item1)
+        self.assertEqual('a.rst', coll.get_item(self.identification_src).docname)
+        item2 = dut.TraceableItem(self.identification_tgt)
+        item2.set_document('b.rst', 222)
+        coll.add_item(item2)
+        self.assertEqual('b.rst', coll.get_item(self.identification_tgt).docname)
+        coll.purge('a.rst')
+        self.assertIsNone(coll.get_item(self.identification_src))
+        self.assertEqual(self.identification_tgt, coll.get_item(self.identification_tgt).get_id())
+
     def test_add_relation_unknown_relation(self):
         # with unknown relation, warning is expected
         # TODO: expect error to be logged
