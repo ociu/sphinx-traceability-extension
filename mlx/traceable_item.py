@@ -1,21 +1,28 @@
 
-class TraceableItemCollection(dict):
+class TraceableCollection(object):
     '''
     Storage for a collection of TraceableItems
     '''
 
-    def add_relation_pair(self, forward, reverse):
+    NO_REVERSE_RELATION_STR = ''
+
+    def __init__(self):
+        '''Initializer for container of traceable items'''
+        self.relations = {}
+
+    def add_relation_pair(self, forward, reverse=NO_REVERSE_RELATION_STR):
         '''
         Add a relation pair to the collection
 
         Args:
             forward (str): Keyword for the forward relation
-            reverse (str): Keyword for the reverse relation
+            reverse (str): Keyword for the reverse relation, or NO_REVERSE_RELATION_STR for external relations
         '''
-        if not self.relations:
-            self.relations = {}
+        # Link forward to reverse relation
         self.relations[forward] = reverse
-        self.relations[reverse] = forward
+        # Link reverse to forward relation
+        if reverse != self.NO_REVERSE_RELATION_STR:
+            self.relations[reverse] = forward
 
     def get_reverse_relation(self, forward):
         '''
