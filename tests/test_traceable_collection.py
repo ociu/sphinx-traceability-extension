@@ -62,20 +62,6 @@ class TestTraceableCollection(TestCase):
                               self.fwd_relation,
                               self.identification_tgt)
 
-    def test_purge(self):
-        coll = dut.TraceableCollection()
-        item1 = dut.TraceableItem(self.identification_src)
-        item1.set_document('a.rst', 111)
-        coll.add_item(item1)
-        self.assertEqual('a.rst', coll.get_item(self.identification_src).docname)
-        item2 = dut.TraceableItem(self.identification_tgt)
-        item2.set_document('b.rst', 222)
-        coll.add_item(item2)
-        self.assertEqual('b.rst', coll.get_item(self.identification_tgt).docname)
-        coll.purge('a.rst')
-        self.assertIsNone(coll.get_item(self.identification_src))
-        self.assertEqual(self.identification_tgt, coll.get_item(self.identification_tgt).get_id())
-
     def test_add_relation_unknown_relation(self):
         # with unknown relation, warning is expected
         # TODO: expect error to be logged
@@ -164,3 +150,110 @@ class TestTraceableCollection(TestCase):
         self.assertEqual(0, len(relations))
         # Assert item2 is not existent
         self.assertIsNone(coll.get_item(self.identification_tgt))
+
+    def test_remove_item_with_implicit_relations(self):
+        # Normal addition of relation, everything is there
+        coll = dut.TraceableCollection()
+        item1 = dut.TraceableItem(self.identification_src)
+        item2 = dut.TraceableItem(self.identification_tgt)
+        coll.add_item(item1)
+        coll.add_item(item2)
+        coll.add_relation_pair(self.fwd_relation, self.rev_relation)
+        coll.add_relation(self.identification_src,
+                          self.fwd_relation,
+                          self.identification_tgt)
+        # Assert forward relation is created
+        relations = item1.get_relations(self.fwd_relation)
+        self.assertEqual(1, len(relations))
+        self.assertEqual(relations[0], self.identification_tgt)
+        # Assert reverse relation is created
+        relations = item2.get_relations(self.rev_relation)
+        self.assertEqual(1, len(relations))
+        self.assertEqual(relations[0], self.identification_src)
+        # Remove
+        coll.remove_item(self.identification_src)
+        # Assert item is gone
+        self.assertIsNone(coll.get_item(self.identification_src))
+        # Assert implicit relations to this item are removed
+        relations = item2.get_relations(self.rev_relation)
+        self.assertEqual(0, len(relations))
+
+    def test_remove_item_with_explicit_relations(self):
+        # Normal addition of relation, everything is there
+        coll = dut.TraceableCollection()
+        item1 = dut.TraceableItem(self.identification_src)
+        item2 = dut.TraceableItem(self.identification_tgt)
+        coll.add_item(item1)
+        coll.add_item(item2)
+        coll.add_relation_pair(self.fwd_relation, self.rev_relation)
+        coll.add_relation(self.identification_src,
+                          self.fwd_relation,
+                          self.identification_tgt)
+        # Assert forward relation is created
+        relations = item1.get_relations(self.fwd_relation)
+        self.assertEqual(1, len(relations))
+        self.assertEqual(relations[0], self.identification_tgt)
+        # Assert reverse relation is created
+        relations = item2.get_relations(self.rev_relation)
+        self.assertEqual(1, len(relations))
+        self.assertEqual(relations[0], self.identification_src)
+        # Remove
+        coll.remove_item(self.identification_tgt)
+        # Assert item is gone
+        self.assertIsNone(coll.get_item(self.identification_tgt))
+        # Assert explicit relations to this item are not removed
+        relations = item1.get_relations(self.fwd_relation)
+        self.assertEqual(1, len(relations))
+        self.assertEqual(relations[0], self.identification_tgt)
+
+    def test_purge(self):
+        coll = dut.TraceableCollection()
+        # Add item in first document
+        item1 = dut.TraceableItem(self.identification_src)
+        item1.set_document('a.rst', 111)
+        coll.add_item(item1)
+        self.assertEqual('a.rst', coll.get_item(self.identification_src).docname)
+        # Add item in second document
+        item2 = dut.TraceableItem(self.identification_tgt)
+        item2.set_document('b.rst', 222)
+        coll.add_item(item2)
+        self.assertEqual('b.rst', coll.get_item(self.identification_tgt).docname)
+        # Purge first document
+        coll.purge('a.rst')
+        # Assert first item is gone, second one is still there
+        self.assertIsNone(coll.get_item(self.identification_src))
+        self.assertEqual(self.identification_tgt, coll.get_item(self.identification_tgt).get_id())
+        # Purge second document
+        coll.purge('b.rst')
+        # Assert second item is gone
+        self.assertIsNone(coll.get_item(self.identification_tgt))
+
+    def test_purge_with_relations(self):
+        coll = dut.TraceableCollection()
+        # Add item in first document
+        item1 = dut.TraceableItem(self.identification_src)
+        item1.set_document('a.rst', 111)
+        coll.add_item(item1)
+        # Add item in second document
+        item2 = dut.TraceableItem(self.identification_tgt)
+        item2.set_document('b.rst', 222)
+        coll.add_item(item2)
+        # Add relation in between them
+        coll.add_relation_pair(self.fwd_relation, self.rev_relation)
+        coll.add_relation(self.identification_src,
+                          self.fwd_relation,
+                          self.identification_tgt)
+        relations = item1.get_relations(self.fwd_relation)
+        self.assertEqual(1, len(relations))
+        self.assertEqual(relations[0], self.identification_tgt)
+        relations = item2.get_relations(self.rev_relation)
+        self.assertEqual(1, len(relations))
+        self.assertEqual(relations[0], self.identification_src)
+        # Purge first document
+        coll.purge('a.rst')
+        # Assert first item is gone, second one is still there
+        self.assertIsNone(coll.get_item(self.identification_src))
+        self.assertEqual(self.identification_tgt, coll.get_item(self.identification_tgt).get_id())
+        # Assert implicit relation to first item is removed
+        relations = item2.get_relations(self.rev_relation)
+        self.assertEqual(0, len(relations))

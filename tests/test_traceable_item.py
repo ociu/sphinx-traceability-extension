@@ -129,5 +129,38 @@ class TestTraceableItem(TestCase):
         self.assertEqual(1, len(relations))
         self.assertEqual(relations[0], self.identification_tgt)
 
+    def test_remove_relation_explicit(self):
+        item = dut.TraceableItem(self.identification)
+        # Add an explicit relation
+        item.add_relation(self.fwd_relation, self.identification_tgt)
+        relations = item.get_relations(self.fwd_relation)
+        self.assertEqual(1, len(relations))
+        self.assertEqual(relations[0], self.identification_tgt)
+        # Remove relation to self and implicit relations, no effect
+        item.remove_relations(self.identification)
+        item.remove_relations(self.identification_tgt, explicit=False, implicit=True)
+        relations = item.get_relations(self.fwd_relation)
+        self.assertEqual(1, len(relations))
+        self.assertEqual(relations[0], self.identification_tgt)
+        # Remove explicit relation to tgt, should be removed
+        item.remove_relations(self.identification_tgt, explicit=True, implicit=False)
+        relations = item.get_relations(self.fwd_relation)
+        self.assertEqual(0, len(relations))
 
-
+    def test_remove_relation_implicit(self):
+        item = dut.TraceableItem(self.identification)
+        # Add an implicit relation
+        item.add_relation(self.fwd_relation, self.identification_tgt, implicit=True)
+        relations = item.get_relations(self.fwd_relation)
+        self.assertEqual(1, len(relations))
+        self.assertEqual(relations[0], self.identification_tgt)
+        # Remove relation to self and explicit relations, no effect
+        item.remove_relations(self.identification)
+        item.remove_relations(self.identification_tgt, explicit=True, implicit=False)
+        relations = item.get_relations(self.fwd_relation)
+        self.assertEqual(1, len(relations))
+        self.assertEqual(relations[0], self.identification_tgt)
+        # Remove implicit relation to tgt, should be removed
+        item.remove_relations(self.identification_tgt, explicit=False, implicit=True)
+        relations = item.get_relations(self.fwd_relation)
+        self.assertEqual(0, len(relations))

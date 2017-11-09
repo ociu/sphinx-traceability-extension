@@ -60,18 +60,24 @@ class TraceableCollection(object):
             return self.items[itemid]
         return None
 
-    def remove_item(self, itemid):
+    def remove_item(self, tgtid):
         '''
         Remove item from container
 
+        Note: any implicit relations to the removed item are also removed.
+
         Args:
-            itemid (str): Identification of item to remove
+            tgtid (str): Identification of item to remove
         '''
-        del self.items[itemid]
+        for itemid in self.items.keys():
+            self.items[itemid].remove_relations(tgtid, explicit=False, implicit=True)
+        del self.items[tgtid]
 
     def purge(self, docname):
         '''
         Purge any item from the list which matches the given docname
+
+        Note: any implicit relations to the removed items are also removed.
 
         Args:
             docname (str): Name of the document to purge for
@@ -250,6 +256,24 @@ class TraceableItem(object):
             else:
                 database = self.implicit_relations
             self._add_relation(database, relation, target)
+
+    def remove_relations(self, targetid, explicit=False, implicit=True):
+        '''
+        Remove any relation to given target item
+
+        Args:
+            targetid (str): Identification of the target items to remove
+            explicit (bool): If true, explicitely expressed relations to given target are removed.
+            implicit (bool): If true, implicitely expressed relations to given target are removed.
+        '''
+        if explicit == True:
+            for relation in self.explicit_relations.keys():
+                if targetid in self.explicit_relations[relation]:
+                    self.explicit_relations[relation].remove(targetid)
+        if implicit == True:
+            for relation in self.implicit_relations.keys():
+                if targetid in self.implicit_relations[relation]:
+                    self.implicit_relations[relation].remove(targetid)
 
     def get_relations(self, relation, explicit=True, implicit=True):
         '''
