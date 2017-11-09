@@ -129,6 +129,11 @@ class TraceableItem(object):
         self.explicit_relations = {}
         self.implicit_relations = {}
         self.placeholder = placeholder
+        self.docname = None
+        self.lineno = None
+        self.node = None
+        self.caption = None
+        self.content = None
 
     def get_id(self):
         '''
@@ -139,9 +144,43 @@ class TraceableItem(object):
         '''
         return self.id
 
-    def set_details(self, docname, lineno):
+    def set_document(self, docname, lineno):
+        '''
+        Set location in document
+
+        Args:
+            docname (str): Path to docname
+            lineno (int): Line number in given document
+        '''
         self.docname = docname
         self.lineno = lineno
+
+    def bind_node(self, node):
+        '''
+        Bind to node
+
+        Args:
+            node (node): Docutils node object
+        '''
+        self.node = node
+
+    def set_caption(self, caption):
+        '''
+        Set short description of the item
+
+        Args:
+            caption (str): Short description of the item
+        '''
+        self.caption = caption
+
+    def set_content(self, content):
+        '''
+        Set content of the item
+
+        Args:
+            content (str): Content of the item
+        '''
+        self.content = content
 
     def _add_relation(self, database, relation, target):
         '''

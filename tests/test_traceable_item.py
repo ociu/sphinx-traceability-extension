@@ -12,11 +12,40 @@ class TestTraceableItem(TestCase):
         item = dut.TraceableItem(self.identification)
         self.assertEqual(self.identification, item.get_id())
         self.assertFalse(item.placeholder)
+        self.assertIsNone(item.docname)
+        self.assertIsNone(item.lineno)
+        self.assertIsNone(item.node)
+        self.assertIsNone(item.caption)
+        self.assertIsNone(item.content)
 
     def test_init_placeholder(self):
         item = dut.TraceableItem(self.identification, placeholder=True)
         self.assertEqual(self.identification, item.get_id())
         self.assertTrue(item.placeholder)
+
+    def test_set_document(self):
+        item = dut.TraceableItem(self.identification)
+        item.set_document('some-file.rst', 888)
+        self.assertEqual('some-file.rst', item.docname)
+        self.assertEqual(888, item.lineno)
+
+    def test_bind_node(self):
+        item = dut.TraceableItem(self.identification)
+        node = object()
+        item.bind_node(node)
+        self.assertEqual(node, item.node)
+
+    def test_set_caption(self):
+        txt = 'some short description'
+        item = dut.TraceableItem(self.identification)
+        item.set_caption(txt)
+        self.assertEqual(txt, item.caption)
+
+    def test_set_content(self):
+        txt = 'some description, with\n newlines and other stuff'
+        item = dut.TraceableItem(self.identification)
+        item.set_content(txt)
+        self.assertEqual(txt, item.content)
 
     def test_add_get_relation_explicit(self):
         item = dut.TraceableItem(self.identification)
