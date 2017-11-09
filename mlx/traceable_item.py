@@ -90,20 +90,31 @@ class TraceableCollection(object):
             raise ValueError('Item {name} not known'.format(name=sourceid))
         # Add forward relation
         self.items[sourceid].add_relation(relation, targetid)
-        # Add placeholder if target item is unknown
-        if targetid not in self.items:
-            tgt = TraceableItem(targetid, True)
-            self.add_item(tgt)
-        # When reverse relation exists, add it to target-item
+        # When reverse relation exists, continue to create/adapt target-item
         reverse_relation = self.get_reverse_relation(relation)
-        if not reverse_relation:
-            self.items[targetid].add_relation(reverse_relation, sourceid)
+        if reverse_relation:
+            # Add placeholder if target item is unknown
+            if targetid not in self.items:
+                tgt = TraceableItem(targetid, True)
+                self.add_item(tgt)
+            # Add reverse relation to target-item
+            self.items[targetid].add_relation(reverse_relation, sourceid, implicit=True)
 
+    def __str__(self):
+        '''
+        Convert object to string
+        '''
+        retval = ''
+        for __, item in self.items.iteritems():
+            retval += str(item)
+        return retval
 
 class TraceableItem(object):
     '''
     Storage for a traceable documentation item
     '''
+
+    STRING_TEMPLATE = 'Item {identification}\n'
 
     def __init__(self, itemid, placeholder=False):
         '''
@@ -116,6 +127,7 @@ class TraceableItem(object):
         self.id = itemid
         self.explicit_relations = {}
         self.implicit_relations = {}
+        self.placeholder = placeholder
 
     def get_id(self):
         '''
@@ -208,3 +220,18 @@ class TraceableItem(object):
                 relations.extend(self.implicit_relations[relation])
         relations.sort()
         return relations
+
+    def __str__(self):
+        '''
+        Convert object to string
+        '''
+        retval = self.STRING_TEMPLATE.format(identification=self.get_id())
+        for relation, tgt_ids in self.explicit_relations.iteritems():
+            retval += '\tExplicit {relation}\n'.format(relation=relation)
+            for tgtid in tgt_ids:
+                retval += '\t\t{target}\n'.format(target=tgtid)
+        for relation, tgt_ids in self.implicit_relations.iteritems():
+            retval += '\tImplicit {relation}\n'.format(relation=relation)
+            for tgtid in tgt_ids:
+                retval += '\t\t{target}\n'.format(target=tgtid)
+        return retval
