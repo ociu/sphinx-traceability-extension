@@ -53,7 +53,6 @@ class TestTraceableCollection(TestCase):
 
     def test_add_relation_unknown_source(self):
         # with unknown source item, exception is expected
-        # TODO: expect error to be logged
         coll = dut.TraceableCollection()
         item2 = dut.TraceableItem(self.identification_tgt)
         coll.add_item(item2)
@@ -71,10 +70,13 @@ class TestTraceableCollection(TestCase):
         item2 = dut.TraceableItem(self.identification_tgt)
         coll.add_item(item1)
         coll.add_item(item2)
-        with self.assertRaises(ValueError):
-            coll.add_relation(self.identification_src,
-                              self.fwd_relation,
-                              self.identification_tgt)
+        coll.add_relation(self.identification_src,
+                          self.fwd_relation,
+                          self.identification_tgt)
+        relations = item1.get_relations(self.fwd_relation, explicit=True, implicit=True)
+        self.assertEqual(0, len(relations))
+        relations = item2.get_relations(self.fwd_relation, explicit=True, implicit=True)
+        self.assertEqual(0, len(relations))
 
     def test_add_relation_unknown_target(self):
         # With unknown target item, the generation of a placeholder is expected

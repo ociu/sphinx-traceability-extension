@@ -82,12 +82,13 @@ class TraceableCollection(object):
             relation (str): Relation between source and target item
             targetid (str): ID of the target item
         '''
-        # Fail if relation is unknown
-        if relation not in self.relations:
-            raise ValueError('Relation {name} not known'.format(name=relation))
         # Fail if source item is unknown
         if sourceid not in self.items:
             raise ValueError('Item {name} not known'.format(name=sourceid))
+        # Error if relation is unknown
+        if relation not in self.relations:
+            print('Relation {name} not known'.format(name=relation))
+            return
         # Add forward relation
         self.items[sourceid].add_relation(relation, targetid)
         # When reverse relation exists, continue to create/adapt target-item
