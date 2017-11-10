@@ -41,7 +41,7 @@ class TestTraceableCollection(TestCase):
         # Add a uni-directional relation pair
         coll.add_relation_pair(self.unidir_relation)
         # Reverse for fwd should be nothing
-        self.assertEqual(coll.NO_REVERSE_RELATION_STR, coll.get_reverse_relation(self.unidir_relation))
+        self.assertEqual(coll.NO_RELATION_STR, coll.get_reverse_relation(self.unidir_relation))
         # Self test should pass
         self.assertTrue(coll.self_test())
 
@@ -246,8 +246,8 @@ class TestTraceableCollection(TestCase):
         relations = item1.iter_targets(self.fwd_relation)
         self.assertEqual(1, len(relations))
         self.assertEqual(relations[0], self.identification_tgt)
-        # Self test should pass
-        self.assertTrue(coll.self_test())
+        # Self test should fail, item1 still targets item2 (which is not there)
+        self.assertFalse(coll.self_test())
 
     def test_purge(self):
         coll = dut.TraceableCollection()
@@ -304,4 +304,27 @@ class TestTraceableCollection(TestCase):
         relations = item2.iter_targets(self.rev_relation)
         self.assertEqual(0, len(relations))
         # Self test should pass
+        self.assertTrue(coll.self_test())
+
+    def test_selftest(self):
+        coll = dut.TraceableCollection()
+        coll.add_relation_pair(self.fwd_relation, self.rev_relation)
+        # Self test should pass
+        self.assertTrue(coll.self_test())
+        # Create first item
+        item1 = dut.TraceableItem(self.identification_src)
+        # Improper use: add target on item level (no sanity check and no automatic reverse link)
+        item1.add_target(self.fwd_relation, self.identification_tgt)
+        # Improper use is not detected at level of item-level
+        self.assertTrue(item1.self_test())
+        # Add item to collection
+        coll.add_item(item1)
+        # Self test should fail as target item is not in collection
+        self.assertFalse(coll.self_test())
+        # Creating and adding second item, self test should still fail as no automatic reverse relation
+        item2 = dut.TraceableItem(self.identification_tgt)
+        coll.add_item(item2)
+        self.assertFalse(coll.self_test())
+        # Mimicing the automatic reverse relation, self test should pass
+        item2.add_target(self.rev_relation, self.identification_src)
         self.assertTrue(coll.self_test())

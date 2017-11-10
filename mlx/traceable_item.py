@@ -4,25 +4,25 @@ class TraceableCollection(object):
     Storage for a collection of TraceableItems
     '''
 
-    NO_REVERSE_RELATION_STR = ''
+    NO_RELATION_STR = ''
 
     def __init__(self):
         '''Initializer for container of traceable items'''
         self.relations = {}
         self.items = {}
 
-    def add_relation_pair(self, forward, reverse=NO_REVERSE_RELATION_STR):
+    def add_relation_pair(self, forward, reverse=NO_RELATION_STR):
         '''
         Add a relation pair to the collection
 
         Args:
             forward (str): Keyword for the forward relation
-            reverse (str): Keyword for the reverse relation, or NO_REVERSE_RELATION_STR for external relations
+            reverse (str): Keyword for the reverse relation, or NO_RELATION_STR for external relations
         '''
         # Link forward to reverse relation
         self.relations[forward] = reverse
         # Link reverse to forward relation
-        if reverse != self.NO_REVERSE_RELATION_STR:
+        if reverse != self.NO_RELATION_STR:
             self.relations[reverse] = forward
 
     def get_reverse_relation(self, forward):
@@ -163,9 +163,32 @@ class TraceableCollection(object):
             return False
         # Validate each item
         for itemid in self.iter_items():
+            # On item level
             item = self.get_item(itemid)
             if not item.self_test():
                 return False
+            # targetted items shall exist, with automatic reverse relation
+            for relation in self.iter_relations():
+                # Exception: no reverse relation (external links)
+                rev_relation = self.get_reverse_relation(relation)
+                if rev_relation == self.NO_RELATION_STR:
+                    continue
+                for tgt in item.iter_targets(relation):
+                    # Target item exists?
+                    if tgt not in self.iter_items():
+                        print('''Error: {source} {relation} {target},
+                                 but {target} is not known'''.format(source=itemid,
+                                                                     relation=relation,
+                                                                     target=tgt))
+                        return False
+                    # Reverse relation exists?
+                    target = self.get_item(tgt)
+                    if itemid not in target.iter_targets(rev_relation):
+                        print('''Error no automatic reverse relation:
+                                 {source} {relation} {target}'''.format(source=tgt,
+                                                                        relation=rev_relation,
+                                                                        target=itemid))
+                        return False
         return True
 
     def __str__(self):
