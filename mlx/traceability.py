@@ -537,6 +537,14 @@ def initialize_environment(app):
 \\makeatother'''
 
 
+def purge_items(app, env, docname):
+    """
+    Purge traceable items
+
+    This handler should be called upon env-purge-doc event: before each source file is read, the
+    extension needs to flush part of its database.
+    """
+    env.traceability_collection.purge(docname)
 
 # -----------------------------------------------------------------------------
 # Utility functions
@@ -743,6 +751,7 @@ def setup(app):
 
     app.connect('doctree-resolved', process_item_nodes)
     app.connect('builder-inited', initialize_environment)
+    app.connect('env-purge-doc', purge_items)
 
     app.add_role('item', XRefRole(nodeclass=PendingItemXref,
                                   innernodeclass=nodes.emphasis,
