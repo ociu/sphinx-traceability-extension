@@ -12,6 +12,8 @@ class TestTraceableCollection(TestCase):
 
     def test_init(self):
         coll = dut.TraceableCollection()
+        # Self test should fail as no relations configured
+        self.assertFalse(coll.self_test())
 
     def test_add_relation_pair_bidir(self):
         coll = dut.TraceableCollection()
@@ -29,6 +31,8 @@ class TestTraceableCollection(TestCase):
         relations_iterator = coll.iter_relations()
         self.assertIn(self.fwd_relation, relations_iterator)
         self.assertIn(self.rev_relation, relations_iterator)
+        # Self test should pass
+        self.assertTrue(coll.self_test())
 
     def test_add_relation_pair_unidir(self):
         coll = dut.TraceableCollection()
@@ -38,6 +42,8 @@ class TestTraceableCollection(TestCase):
         coll.add_relation_pair(self.unidir_relation)
         # Reverse for fwd should be nothing
         self.assertEqual(coll.NO_REVERSE_RELATION_STR, coll.get_reverse_relation(self.unidir_relation))
+        # Self test should pass
+        self.assertTrue(coll.self_test())
 
     def test_add_item(self):
         coll = dut.TraceableCollection()
@@ -69,6 +75,9 @@ class TestTraceableCollection(TestCase):
         item_iterator = coll.iter_items()
         self.assertIn(self.identification_src, item_iterator)
         self.assertIn(self.identification_tgt, item_iterator)
+        # Self test should pass
+        coll.add_relation_pair(self.fwd_relation, self.rev_relation)
+        self.assertTrue(coll.self_test())
 
     def test_add_relation_unknown_source(self):
         # with unknown source item, exception is expected
@@ -80,6 +89,8 @@ class TestTraceableCollection(TestCase):
             coll.add_relation(self.identification_src,
                               self.fwd_relation,
                               self.identification_tgt)
+        # Self test should pass
+        self.assertTrue(coll.self_test())
 
     def test_add_relation_unknown_relation(self):
         # with unknown relation, warning is expected
@@ -96,6 +107,9 @@ class TestTraceableCollection(TestCase):
         self.assertEqual(0, len(relations))
         relations = item2.iter_targets(self.fwd_relation, explicit=True, implicit=True)
         self.assertEqual(0, len(relations))
+        # Self test should pass
+        coll.add_relation_pair(self.fwd_relation, self.rev_relation)
+        self.assertTrue(coll.self_test())
 
     def test_add_relation_unknown_target(self):
         # With unknown target item, the generation of a placeholder is expected
@@ -123,6 +137,8 @@ class TestTraceableCollection(TestCase):
         self.assertEqual(relations[0], self.identification_src)
         relations = item2.iter_targets(self.fwd_relation, explicit=True, implicit=False)
         self.assertEqual(0, len(relations))
+        # Self test should fail, as we have a placeholder item
+        self.assertFalse(coll.self_test())
 
     def test_add_relation_happy(self):
         # Normal addition of relation, everything is there
@@ -151,6 +167,8 @@ class TestTraceableCollection(TestCase):
         self.assertEqual(relations[0], self.identification_src)
         relations = item2.iter_targets(self.fwd_relation, explicit=True, implicit=False)
         self.assertEqual(0, len(relations))
+        # Self test should pass
+        self.assertTrue(coll.self_test())
 
     def test_add_relation_unidirectional(self):
         # Normal addition of uni-directional relation
@@ -169,6 +187,8 @@ class TestTraceableCollection(TestCase):
         self.assertEqual(0, len(relations))
         # Assert item2 is not existent
         self.assertIsNone(coll.get_item(self.identification_tgt))
+        # Self test should pass
+        self.assertTrue(coll.self_test())
 
     def test_remove_item_with_implicit_relations(self):
         # Normal addition of relation, everything is there
@@ -196,6 +216,8 @@ class TestTraceableCollection(TestCase):
         # Assert implicit relations to this item are removed
         relations = item2.iter_targets(self.rev_relation)
         self.assertEqual(0, len(relations))
+        # Self test should pass
+        self.assertTrue(coll.self_test())
 
     def test_remove_item_with_explicit_relations(self):
         # Normal addition of relation, everything is there
@@ -224,6 +246,8 @@ class TestTraceableCollection(TestCase):
         relations = item1.iter_targets(self.fwd_relation)
         self.assertEqual(1, len(relations))
         self.assertEqual(relations[0], self.identification_tgt)
+        # Self test should pass
+        self.assertTrue(coll.self_test())
 
     def test_purge(self):
         coll = dut.TraceableCollection()
@@ -246,6 +270,9 @@ class TestTraceableCollection(TestCase):
         coll.purge('b.rst')
         # Assert second item is gone
         self.assertIsNone(coll.get_item(self.identification_tgt))
+        # Self test should pass
+        coll.add_relation_pair(self.fwd_relation, self.rev_relation)
+        self.assertTrue(coll.self_test())
 
     def test_purge_with_relations(self):
         coll = dut.TraceableCollection()
@@ -276,3 +303,5 @@ class TestTraceableCollection(TestCase):
         # Assert implicit relation to first item is removed
         relations = item2.iter_targets(self.rev_relation)
         self.assertEqual(0, len(relations))
+        # Self test should pass
+        self.assertTrue(coll.self_test())

@@ -10,6 +10,7 @@ class TestTraceableItem(TestCase):
 
     def test_init(self):
         item = dut.TraceableItem(self.identification)
+        self.assertTrue(item.self_test())
         self.assertEqual(self.identification, item.get_id())
         self.assertFalse(item.placeholder)
         self.assertIsNone(item.docname)
@@ -20,6 +21,7 @@ class TestTraceableItem(TestCase):
 
     def test_init_placeholder(self):
         item = dut.TraceableItem(self.identification, placeholder=True)
+        self.assertFalse(item.self_test())
         self.assertEqual(self.identification, item.get_id())
         self.assertTrue(item.placeholder)
 
@@ -93,6 +95,8 @@ class TestTraceableItem(TestCase):
         # Verify relations iterator
         relations = item.iter_relations()
         self.assertIn(self.fwd_relation, relations)
+        # Self test should pass
+        self.assertTrue(item.self_test())
 
     def test_add_get_target_implicit(self):
         item = dut.TraceableItem(self.identification)
@@ -138,6 +142,8 @@ class TestTraceableItem(TestCase):
         # Verify relations iterator
         relations = item.iter_relations()
         self.assertIn(self.fwd_relation, relations)
+        # Self test should pass
+        self.assertTrue(item.self_test())
 
     def test_remove_target_explicit(self):
         item = dut.TraceableItem(self.identification)
@@ -156,6 +162,8 @@ class TestTraceableItem(TestCase):
         item.remove_targets(self.identification_tgt, explicit=True, implicit=False)
         targets = item.iter_targets(self.fwd_relation)
         self.assertEqual(0, len(targets))
+        # Self test should pass
+        self.assertTrue(item.self_test())
 
     def test_remove_target_implicit(self):
         item = dut.TraceableItem(self.identification)
@@ -174,3 +182,5 @@ class TestTraceableItem(TestCase):
         item.remove_targets(self.identification_tgt, explicit=False, implicit=True)
         targets = item.iter_targets(self.fwd_relation)
         self.assertEqual(0, len(targets))
+        # Self test should pass
+        self.assertTrue(item.self_test())

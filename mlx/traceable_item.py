@@ -150,6 +150,24 @@ class TraceableCollection(object):
             # Add reverse relation to target-item
             self.items[targetid].add_target(reverse_relation, sourceid, implicit=True)
 
+    def self_test(self):
+        '''
+        Perform self test on collection content
+
+        Returns:
+            bool: True if self test passed, false otherwise
+        '''
+        # Having no valid relations, is invalid
+        if not self.iter_relations():
+            print('Error: no relations configured')
+            return False
+        # Validate each item
+        for itemid in self.iter_items():
+            item = self.get_item(itemid)
+            if not item.self_test():
+                return False
+        return True
+
     def __str__(self):
         '''
         Convert object to string
@@ -311,7 +329,7 @@ class TraceableItem(object):
 
     def iter_targets(self, relation, explicit=True, implicit=True):
         '''
-        Get a sorted list of relations to other traceable item(s)
+        Get a sorted list of targets to other traceable item(s)
 
         Args:
             relation (str): Name of the relation
@@ -351,3 +369,22 @@ class TraceableItem(object):
             for tgtid in tgt_ids:
                 retval += '\t\t{target}\n'.format(target=tgtid)
         return retval
+
+    def self_test(self):
+        '''
+        Perform self test on collection content
+
+        Returns:
+            bool: True if self test passed, false otherwise
+        '''
+        # Item should not be a placeholder
+        if self.placeholder:
+            print('Error: item {item} is not defined'.format(item=self.get_id()))
+            return False
+        # Targets should have no duplicates
+        for relation in self.iter_relations():
+            tgts = self.iter_targets(relation)
+            if len(tgts) is not len(set(tgts)):
+                print('Error: duplicate targets found for {item}'.format(item=self.get_id()))
+                return False
+        return True
