@@ -353,12 +353,12 @@ class TraceableItem(object):
                              (e.g. automatic reverse) relation is added here.
         '''
         # When relation is already explicit, we shouldn't add. When relation-to-add is explicit, it is an error.
-        if self.iter_targets(relation, explicit=True, implicit=False):
+        if target in self.iter_targets(relation, explicit=True, implicit=False):
             if implicit == False:
                 print('Error duplicating {src} {rel} {tgt}'.format(src=self.get_id(), rel=relation, tgt=target))
         # When relation is already implicit, we shouldn't add. When relation-to-add is explicit, it should move
         # from implicit to explicit.
-        elif self.iter_targets(relation, explicit=False, implicit=True):
+        elif target in self.iter_targets(relation, explicit=False, implicit=True):
             if implicit == False:
                 print('Warning duplicating {src} {rel} {tgt}, moving to explicit'.format(src=self.get_id(), rel=relation, tgt=target))
                 self._remove_target(self.implicit_relations, relation, target)
