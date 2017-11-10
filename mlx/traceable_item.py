@@ -93,7 +93,7 @@ class TraceableCollection(object):
             tgtid (str): Identification of item to remove
         '''
         for itemid in self.iter_items():
-            self.items[itemid].remove_relations(tgtid, explicit=False, implicit=True)
+            self.items[itemid].remove_targets(tgtid, explicit=False, implicit=True)
         del self.items[tgtid]
 
     def has_item(self, itemid):
@@ -139,7 +139,7 @@ class TraceableCollection(object):
             print('Relation {name} not known'.format(name=relation))
             return
         # Add forward relation
-        self.items[sourceid].add_relation(relation, targetid)
+        self.items[sourceid].add_target(relation, targetid)
         # When reverse relation exists, continue to create/adapt target-item
         reverse_relation = self.get_reverse_relation(relation)
         if reverse_relation:
@@ -148,7 +148,7 @@ class TraceableCollection(object):
                 tgt = TraceableItem(targetid, True)
                 self.add_item(tgt)
             # Add reverse relation to target-item
-            self.items[targetid].add_relation(reverse_relation, sourceid, implicit=True)
+            self.items[targetid].add_target(reverse_relation, sourceid, implicit=True)
 
     def __str__(self):
         '''
@@ -231,7 +231,7 @@ class TraceableItem(object):
         '''
         self.content = content
 
-    def _add_relation(self, database, relation, target):
+    def _add_target(self, database, relation, target):
         '''
         Add a relation to another traceable item
 
@@ -245,7 +245,7 @@ class TraceableItem(object):
         if target not in database[relation]:
             database[relation].append(target)
 
-    def _remove_relation(self, database, relation, target):
+    def _remove_target(self, database, relation, target):
         '''
         Delete a relation to another traceable item
 
@@ -258,7 +258,7 @@ class TraceableItem(object):
             if target in database[relation]:
                 database[relation].remove(target)
 
-    def add_relation(self, relation, target, implicit=False):
+    def add_target(self, relation, target, implicit=False):
         '''
         Add a relation to another traceable item
 
@@ -273,25 +273,25 @@ class TraceableItem(object):
                              (e.g. automatic reverse) relation is added here.
         '''
         # When relation is already explicit, we shouldn't add. When relation-to-add is explicit, it is an error.
-        if self.get_relations(relation, explicit=True, implicit=False):
+        if self.iter_targets(relation, explicit=True, implicit=False):
             if implicit == False:
                 print('Error duplicating {src} {rel} {tgt}'.format(src=self.get_id(), rel=relation, tgt=target))
         # When relation is already implicit, we shouldn't add. When relation-to-add is explicit, it should move
         # from implicit to explicit.
-        elif self.get_relations(relation, explicit=False, implicit=True):
+        elif self.iter_targets(relation, explicit=False, implicit=True):
             if implicit == False:
                 print('Warning duplicating {src} {rel} {tgt}, moving to explicit'.format(src=self.get_id(), rel=relation, tgt=target))
-                self._remove_relation(self.implicit_relations, relation, target)
-                self._add_relation(self.explicit_relations, relation, target)
+                self._remove_target(self.implicit_relations, relation, target)
+                self._add_target(self.explicit_relations, relation, target)
         # Otherwise it is a new relation, and we add to the selected database
         else:
             if implicit == False:
                 database = self.explicit_relations
             else:
                 database = self.implicit_relations
-            self._add_relation(database, relation, target)
+            self._add_target(database, relation, target)
 
-    def remove_relations(self, targetid, explicit=False, implicit=True):
+    def remove_targets(self, targetid, explicit=False, implicit=True):
         '''
         Remove any relation to given target item
 
@@ -309,7 +309,7 @@ class TraceableItem(object):
                 if targetid in self.implicit_relations[relation]:
                     self.implicit_relations[relation].remove(targetid)
 
-    def get_relations(self, relation, explicit=True, implicit=True):
+    def iter_targets(self, relation, explicit=True, implicit=True):
         '''
         Get a sorted list of relations to other traceable item(s)
 
@@ -328,7 +328,16 @@ class TraceableItem(object):
         relations.sort()
         return relations
 
-    def __str__(self):
+    def iter_relations(self):
+        '''
+        Iterate over available relations: sorted
+
+        Returns:
+            Sorted iterator over available relations in the item
+        '''
+        return sorted(self.explicit_relations.keys() + self.implicit_relations.keys())
+
+    def __str__(self, explicit=True, implicit=True):
         '''
         Convert object to string
         '''

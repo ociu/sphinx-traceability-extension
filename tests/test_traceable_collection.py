@@ -92,9 +92,9 @@ class TestTraceableCollection(TestCase):
         coll.add_relation(self.identification_src,
                           self.fwd_relation,
                           self.identification_tgt)
-        relations = item1.get_relations(self.fwd_relation, explicit=True, implicit=True)
+        relations = item1.iter_targets(self.fwd_relation, explicit=True, implicit=True)
         self.assertEqual(0, len(relations))
-        relations = item2.get_relations(self.fwd_relation, explicit=True, implicit=True)
+        relations = item2.iter_targets(self.fwd_relation, explicit=True, implicit=True)
         self.assertEqual(0, len(relations))
 
     def test_add_relation_unknown_target(self):
@@ -107,10 +107,10 @@ class TestTraceableCollection(TestCase):
                           self.fwd_relation,
                           self.identification_tgt)
         # Assert explicit forward relation is created
-        relations = item1.get_relations(self.fwd_relation, explicit=True, implicit=False)
+        relations = item1.iter_targets(self.fwd_relation, explicit=True, implicit=False)
         self.assertEqual(1, len(relations))
         self.assertEqual(relations[0], self.identification_tgt)
-        relations = item1.get_relations(self.fwd_relation, explicit=False, implicit=True)
+        relations = item1.iter_targets(self.fwd_relation, explicit=False, implicit=True)
         self.assertEqual(0, len(relations))
         # Assert placeholder item is created
         item2 = coll.get_item(self.identification_tgt)
@@ -118,10 +118,10 @@ class TestTraceableCollection(TestCase):
         self.assertEqual(self.identification_tgt, item2.get_id())
         self.assertTrue(item2.placeholder)
         # Assert implicit reverse relation is created
-        relations = item2.get_relations(self.rev_relation, explicit=False, implicit=True)
+        relations = item2.iter_targets(self.rev_relation, explicit=False, implicit=True)
         self.assertEqual(1, len(relations))
         self.assertEqual(relations[0], self.identification_src)
-        relations = item2.get_relations(self.fwd_relation, explicit=True, implicit=False)
+        relations = item2.iter_targets(self.fwd_relation, explicit=True, implicit=False)
         self.assertEqual(0, len(relations))
 
     def test_add_relation_happy(self):
@@ -136,20 +136,20 @@ class TestTraceableCollection(TestCase):
                           self.fwd_relation,
                           self.identification_tgt)
         # Assert explicit forward relation is created
-        relations = item1.get_relations(self.fwd_relation, explicit=True, implicit=False)
+        relations = item1.iter_targets(self.fwd_relation, explicit=True, implicit=False)
         self.assertEqual(1, len(relations))
         self.assertEqual(relations[0], self.identification_tgt)
-        relations = item1.get_relations(self.fwd_relation, explicit=False, implicit=True)
+        relations = item1.iter_targets(self.fwd_relation, explicit=False, implicit=True)
         self.assertEqual(0, len(relations))
         # Assert item2 is not a placeholder item
         item2_read = coll.get_item(self.identification_tgt)
         self.assertFalse(item2.placeholder)
         self.assertEqual(item2, item2_read)
         # Assert implicit reverse relation is created
-        relations = item2.get_relations(self.rev_relation, explicit=False, implicit=True)
+        relations = item2.iter_targets(self.rev_relation, explicit=False, implicit=True)
         self.assertEqual(1, len(relations))
         self.assertEqual(relations[0], self.identification_src)
-        relations = item2.get_relations(self.fwd_relation, explicit=True, implicit=False)
+        relations = item2.iter_targets(self.fwd_relation, explicit=True, implicit=False)
         self.assertEqual(0, len(relations))
 
     def test_add_relation_unidirectional(self):
@@ -162,10 +162,10 @@ class TestTraceableCollection(TestCase):
                           self.unidir_relation,
                           self.identification_tgt)
         # Assert explicit forward relation is created
-        relations = item1.get_relations(self.unidir_relation, explicit=True, implicit=False)
+        relations = item1.iter_targets(self.unidir_relation, explicit=True, implicit=False)
         self.assertEqual(1, len(relations))
         self.assertEqual(relations[0], self.identification_tgt)
-        relations = item1.get_relations(self.unidir_relation, explicit=False, implicit=True)
+        relations = item1.iter_targets(self.unidir_relation, explicit=False, implicit=True)
         self.assertEqual(0, len(relations))
         # Assert item2 is not existent
         self.assertIsNone(coll.get_item(self.identification_tgt))
@@ -182,11 +182,11 @@ class TestTraceableCollection(TestCase):
                           self.fwd_relation,
                           self.identification_tgt)
         # Assert forward relation is created
-        relations = item1.get_relations(self.fwd_relation)
+        relations = item1.iter_targets(self.fwd_relation)
         self.assertEqual(1, len(relations))
         self.assertEqual(relations[0], self.identification_tgt)
         # Assert reverse relation is created
-        relations = item2.get_relations(self.rev_relation)
+        relations = item2.iter_targets(self.rev_relation)
         self.assertEqual(1, len(relations))
         self.assertEqual(relations[0], self.identification_src)
         # Remove
@@ -194,7 +194,7 @@ class TestTraceableCollection(TestCase):
         # Assert item is gone
         self.assertIsNone(coll.get_item(self.identification_src))
         # Assert implicit relations to this item are removed
-        relations = item2.get_relations(self.rev_relation)
+        relations = item2.iter_targets(self.rev_relation)
         self.assertEqual(0, len(relations))
 
     def test_remove_item_with_explicit_relations(self):
@@ -209,11 +209,11 @@ class TestTraceableCollection(TestCase):
                           self.fwd_relation,
                           self.identification_tgt)
         # Assert forward relation is created
-        relations = item1.get_relations(self.fwd_relation)
+        relations = item1.iter_targets(self.fwd_relation)
         self.assertEqual(1, len(relations))
         self.assertEqual(relations[0], self.identification_tgt)
         # Assert reverse relation is created
-        relations = item2.get_relations(self.rev_relation)
+        relations = item2.iter_targets(self.rev_relation)
         self.assertEqual(1, len(relations))
         self.assertEqual(relations[0], self.identification_src)
         # Remove
@@ -221,7 +221,7 @@ class TestTraceableCollection(TestCase):
         # Assert item is gone
         self.assertIsNone(coll.get_item(self.identification_tgt))
         # Assert explicit relations to this item are not removed
-        relations = item1.get_relations(self.fwd_relation)
+        relations = item1.iter_targets(self.fwd_relation)
         self.assertEqual(1, len(relations))
         self.assertEqual(relations[0], self.identification_tgt)
 
@@ -262,10 +262,10 @@ class TestTraceableCollection(TestCase):
         coll.add_relation(self.identification_src,
                           self.fwd_relation,
                           self.identification_tgt)
-        relations = item1.get_relations(self.fwd_relation)
+        relations = item1.iter_targets(self.fwd_relation)
         self.assertEqual(1, len(relations))
         self.assertEqual(relations[0], self.identification_tgt)
-        relations = item2.get_relations(self.rev_relation)
+        relations = item2.iter_targets(self.rev_relation)
         self.assertEqual(1, len(relations))
         self.assertEqual(relations[0], self.identification_src)
         # Purge first document
@@ -274,5 +274,5 @@ class TestTraceableCollection(TestCase):
         self.assertIsNone(coll.get_item(self.identification_src))
         self.assertEqual(self.identification_tgt, coll.get_item(self.identification_tgt).get_id())
         # Assert implicit relation to first item is removed
-        relations = item2.get_relations(self.rev_relation)
+        relations = item2.iter_targets(self.rev_relation)
         self.assertEqual(0, len(relations))
