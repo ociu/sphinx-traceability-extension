@@ -38,6 +38,15 @@ class TraceableCollection(object):
             return self.relations[forward]
         return None
 
+    def iter_relations(self):
+        '''
+        Iterate over available relations: sorted
+
+        Returns:
+            Sorted iterator over available relations in the collection
+        '''
+        return sorted(self.relations.keys())
+
     def add_item(self, item):
         '''
         Add a TraceableItem to the list

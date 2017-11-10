@@ -17,11 +17,18 @@ class TestTraceableCollection(TestCase):
         coll = dut.TraceableCollection()
         # Initially no relations, so no reverse
         self.assertIsNone(coll.get_reverse_relation(self.fwd_relation))
+        relations_iterator = coll.iter_relations()
+        self.assertNotIn(self.fwd_relation, relations_iterator)
+        self.assertNotIn(self.rev_relation, relations_iterator)
         # Add a bi-directional relation pair
         coll.add_relation_pair(self.fwd_relation, self.rev_relation)
         # Reverse for fwd should be rev, and vice-versa
         self.assertEqual(self.rev_relation, coll.get_reverse_relation(self.fwd_relation))
         self.assertEqual(self.fwd_relation, coll.get_reverse_relation(self.rev_relation))
+        # Verify relations iterator
+        relations_iterator = coll.iter_relations()
+        self.assertIn(self.fwd_relation, relations_iterator)
+        self.assertIn(self.rev_relation, relations_iterator)
 
     def test_add_relation_pair_unidir(self):
         coll = dut.TraceableCollection()
