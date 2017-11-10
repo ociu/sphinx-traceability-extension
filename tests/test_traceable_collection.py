@@ -35,19 +35,24 @@ class TestTraceableCollection(TestCase):
     def test_add_item(self):
         coll = dut.TraceableCollection()
         # Initially no items
+        self.assertFalse(coll.has_item(self.identification_src))
         self.assertIsNone(coll.get_item(self.identification_src))
         # Add an item
         item1 = dut.TraceableItem(self.identification_src)
         coll.add_item(item1)
+        self.assertTrue(coll.has_item(self.identification_src))
         self.assertEqual(item1, coll.get_item(self.identification_src))
         # Add same item: should give warning
         # TODO: assert error to be logged
         coll.add_item(item1)
+        self.assertTrue(coll.has_item(self.identification_src))
         self.assertEqual(1, len(coll.items))
         self.assertEqual(item1, coll.get_item(self.identification_src))
         # Add a second item, make sure first one is still there
+        self.assertFalse(coll.has_item(self.identification_tgt))
         item2 = dut.TraceableItem(self.identification_tgt)
         coll.add_item(item2)
+        self.assertTrue(coll.has_item(self.identification_tgt))
         self.assertEqual(item2, coll.get_item(self.identification_tgt))
         self.assertEqual(item1, coll.get_item(self.identification_src))
 

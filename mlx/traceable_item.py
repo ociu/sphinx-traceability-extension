@@ -45,6 +45,11 @@ class TraceableCollection(object):
         Args:
             item (TraceableItem): Traceable item to add
         '''
+        itemid = item.get_id()
+        # If the item already exists, and it's not a placeholder, log an error
+        if itemid in self.items:
+            if not self.items[itemid].placeholder:
+                print('Error duplicating {itemid}'.format(itemid=itemid))
         self.items[item.get_id()] = item
 
     def get_item(self, itemid):
@@ -56,7 +61,7 @@ class TraceableCollection(object):
         Returns:
             TraceableItem: Object for traceable item
         '''
-        if itemid in self.items.keys():
+        if self.has_item(itemid):
             return self.items[itemid]
         return None
 
@@ -72,6 +77,17 @@ class TraceableCollection(object):
         for itemid in self.items.keys():
             self.items[itemid].remove_relations(tgtid, explicit=False, implicit=True)
         del self.items[tgtid]
+
+    def has_item(self, itemid):
+        '''
+        Verify if a item with given id is in the collection
+
+        Args:
+            itemid (str): Identification of item to look for
+        Returns:
+            bool: True if the given itemid is in the collection, false otherwise
+        '''
+        return itemid in self.items.keys()
 
     def purge(self, docname):
         '''
