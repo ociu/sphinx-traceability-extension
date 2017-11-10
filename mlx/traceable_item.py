@@ -415,7 +415,7 @@ class TraceableItem(object):
         Returns:
             Sorted iterator over available relations in the item
         '''
-        return sorted(self.explicit_relations.keys() + self.implicit_relations.keys())
+        return sorted(list(self.explicit_relations) + list(self.implicit_relations.keys()))
 
     def __str__(self, explicit=True, implicit=True):
         '''
