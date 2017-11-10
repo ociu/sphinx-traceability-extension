@@ -65,6 +65,15 @@ class TraceableCollection(object):
             return self.items[itemid]
         return None
 
+    def iter_items(self):
+        '''
+        Iterate over items: sorted identification
+
+        Returns:
+            Sorted iterator over identification of the items in the collection
+        '''
+        return sorted(self.items.keys())
+
     def remove_item(self, tgtid):
         '''
         Remove item from container
@@ -74,7 +83,7 @@ class TraceableCollection(object):
         Args:
             tgtid (str): Identification of item to remove
         '''
-        for itemid in self.items.keys():
+        for itemid in self.iter_items():
             self.items[itemid].remove_relations(tgtid, explicit=False, implicit=True)
         del self.items[tgtid]
 
@@ -87,7 +96,7 @@ class TraceableCollection(object):
         Returns:
             bool: True if the given itemid is in the collection, false otherwise
         '''
-        return itemid in self.items.keys()
+        return itemid in self.iter_items()
 
     def purge(self, docname):
         '''
@@ -98,7 +107,7 @@ class TraceableCollection(object):
         Args:
             docname (str): Name of the document to purge for
         '''
-        for itemid in self.items.keys():
+        for itemid in self.iter_items():
             if self.items[itemid].docname == docname:
                 self.remove_item(itemid)
 

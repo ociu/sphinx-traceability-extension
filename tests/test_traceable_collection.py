@@ -37,6 +37,9 @@ class TestTraceableCollection(TestCase):
         # Initially no items
         self.assertFalse(coll.has_item(self.identification_src))
         self.assertIsNone(coll.get_item(self.identification_src))
+        item_iterator = coll.iter_items()
+        self.assertNotIn(self.identification_src, item_iterator)
+        self.assertNotIn(self.identification_tgt, item_iterator)
         # Add an item
         item1 = dut.TraceableItem(self.identification_src)
         coll.add_item(item1)
@@ -55,6 +58,10 @@ class TestTraceableCollection(TestCase):
         self.assertTrue(coll.has_item(self.identification_tgt))
         self.assertEqual(item2, coll.get_item(self.identification_tgt))
         self.assertEqual(item1, coll.get_item(self.identification_src))
+        # Verify iterator
+        item_iterator = coll.iter_items()
+        self.assertIn(self.identification_src, item_iterator)
+        self.assertIn(self.identification_tgt, item_iterator)
 
     def test_add_relation_unknown_source(self):
         # with unknown source item, exception is expected
