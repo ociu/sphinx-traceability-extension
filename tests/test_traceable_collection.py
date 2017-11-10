@@ -79,6 +79,30 @@ class TestTraceableCollection(TestCase):
         coll.add_relation_pair(self.fwd_relation, self.rev_relation)
         self.assertTrue(coll.self_test())
 
+    def test_add_item_overwrite(self):
+        coll = dut.TraceableCollection()
+        item1 = dut.TraceableItem(self.identification_src)
+        coll.add_item(item1)
+        coll.add_relation_pair(self.fwd_relation, self.rev_relation)
+        coll.add_relation(self.identification_src,
+                          self.fwd_relation,
+                          self.identification_tgt)
+        # Add target item: should update existing one (keeping relations)
+        item2 = dut.TraceableItem(self.identification_tgt)
+        coll.add_item(item2)
+        # Assert old relations are still there
+        item1_out = coll.get_item(self.identification_src)
+        item2_out = coll.get_item(self.identification_tgt)
+        relations = item1_out.iter_targets(self.fwd_relation)
+        self.assertEqual(1, len(relations))
+        self.assertEqual(relations[0], self.identification_tgt)
+        relations = item2_out.iter_targets(self.rev_relation)
+        self.assertEqual(1, len(relations))
+        self.assertEqual(relations[0], self.identification_src)
+        # Assert item are not placeholders
+        self.assertFalse(item1_out.placeholder)
+        self.assertFalse(item2_out.placeholder)
+
     def test_add_relation_unknown_source(self):
         # with unknown source item, exception is expected
         coll = dut.TraceableCollection()

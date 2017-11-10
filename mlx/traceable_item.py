@@ -55,11 +55,19 @@ class TraceableCollection(object):
             item (TraceableItem): Traceable item to add
         '''
         itemid = item.get_id()
-        # If the item already exists, and it's not a placeholder, log an error
+        # If the item already exists ...
         if itemid in self.items:
-            if not self.items[itemid].placeholder:
+            olditem = self.items[itemid]
+            # ... and it's not a placeholder, log an error
+            if not olditem.placeholder:
                 print('Error duplicating {itemid}'.format(itemid=itemid))
-        self.items[item.get_id()] = item
+                return
+            # ... otherwise, update the item with new content
+            else:
+                olditem.update(item)
+        # If item doesn't exist, add it
+        else:
+            self.items[item.get_id()] = item
 
     def get_item(self, itemid):
         '''
@@ -166,6 +174,7 @@ class TraceableCollection(object):
             # On item level
             item = self.get_item(itemid)
             if not item.self_test():
+                print('Error: self test for {item} failed'.format(item=itemid))
                 return False
             # targetted items shall exist, with automatic reverse relation
             for relation in self.iter_relations():
@@ -224,6 +233,36 @@ class TraceableItem(object):
         self.node = None
         self.caption = None
         self.content = None
+
+    def update(self, item):
+        '''
+        Update item with new object
+
+        Store the sum of both objects
+        '''
+        if self.id != item.id:
+            raise ValueError('Update error {old} vs {new}'.format(old=self.id, new=item.id))
+        for relation in item.explicit_relations.keys():
+            if relation not in self.explicit_relations:
+                self.explicit_relations[relation] = []
+            self.explicit_relations[relation].extend(item.explicit_relations[relation])
+        for relation in item.implicit_relations.keys():
+            if relation not in self.implicit_relations:
+                self.implicit_relations[relation] = []
+            self.implicit_relations[relation].extend(item.implicit_relations[relation])
+        # Remainder of fields: update if they improve quality of the item
+        if not item.placeholder:
+            self.placeholder = False
+        if item.docname is not None:
+            self.docname = item.docname
+        if item.lineno is not None:
+            self.lineno = item.lineno
+        if item.node is not None:
+            self.node = item.node
+        if item.caption is not None:
+            self.caption = item.caption
+        if item.content is not None:
+            self.content = item.content
 
     def get_id(self):
         '''
