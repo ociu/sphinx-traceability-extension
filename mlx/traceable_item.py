@@ -182,7 +182,7 @@ class TraceableCollection(object):
         for itemid in self.iter_items():
             item = self.get_item(itemid)
             # Only for relevant items, filtered on document name
-            if docname != None or item.get_document() != docname:
+            if docname != None and item.get_document() != docname and item.get_document() != None:
                 continue
             # On item level
             item.self_test()
@@ -289,7 +289,7 @@ class TraceableItem(object):
         '''
         return self.placeholder
 
-    def set_document(self, docname, lineno):
+    def set_document(self, docname, lineno=0):
         '''
         Set location in document
 
@@ -499,6 +499,9 @@ class TraceableItem(object):
         # Item should not be a placeholder
         if self.is_placeholder():
             raise TraceabilityException('Error: item {item} is not defined'.format(item=self.get_id()))
+        # Item should hold a reference to a document
+        if self.get_document() == None:
+            raise TraceabilityException('Error: item {item} has no reference to source document'.format(item=self.get_id()))
         # Targets should have no duplicates
         for relation in self.iter_relations():
             tgts = self.iter_targets(relation)
