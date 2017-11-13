@@ -284,6 +284,24 @@ class TraceableItem(object):
         self.docname = docname
         self.lineno = lineno
 
+    def get_document(self):
+        '''
+        Get location in document
+
+        Returns:
+            str: Path to docname
+        '''
+        return self.docname
+
+    def get_line_number(self):
+        '''
+        Get line number in document
+
+        Returns:
+            int: Line number in given document
+        '''
+        return self.lineno
+
     def bind_node(self, node):
         '''
         Bind to node
@@ -292,6 +310,15 @@ class TraceableItem(object):
             node (node): Docutils node object
         '''
         self.node = node
+
+    def get_node(self):
+        '''
+        Get the node to which the object is bound
+
+        Returns:
+            node: Docutils node object
+        '''
+        return self.node
 
     def set_caption(self, caption):
         '''
@@ -302,6 +329,15 @@ class TraceableItem(object):
         '''
         self.caption = caption
 
+    def get_caption(self):
+        '''
+        Get short description of the item
+
+        Returns:
+            str: Short description of the item
+        '''
+        return self.caption
+
     def set_content(self, content):
         '''
         Set content of the item
@@ -310,6 +346,15 @@ class TraceableItem(object):
             content (str): Content of the item
         '''
         self.content = content
+
+    def get_content(self):
+        '''
+        Get content of the item
+
+        Returns:
+            str: Content of the item
+        '''
+        return self.content
 
     def _add_target(self, database, relation, target):
         '''

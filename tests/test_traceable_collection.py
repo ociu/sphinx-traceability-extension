@@ -279,12 +279,12 @@ class TestTraceableCollection(TestCase):
         item1 = dut.TraceableItem(self.identification_src)
         item1.set_document('a.rst', 111)
         coll.add_item(item1)
-        self.assertEqual('a.rst', coll.get_item(self.identification_src).docname)
+        self.assertEqual('a.rst', coll.get_item(self.identification_src).get_document())
         # Add item in second document
         item2 = dut.TraceableItem(self.identification_tgt)
         item2.set_document('b.rst', 222)
         coll.add_item(item2)
-        self.assertEqual('b.rst', coll.get_item(self.identification_tgt).docname)
+        self.assertEqual('b.rst', coll.get_item(self.identification_tgt).get_document())
         # Purge first document
         coll.purge('a.rst')
         # Assert first item is gone, second one is still there

@@ -13,11 +13,11 @@ class TestTraceableItem(TestCase):
         self.assertTrue(item.self_test())
         self.assertEqual(self.identification, item.get_id())
         self.assertFalse(item.placeholder)
-        self.assertIsNone(item.docname)
-        self.assertIsNone(item.lineno)
-        self.assertIsNone(item.node)
-        self.assertIsNone(item.caption)
-        self.assertIsNone(item.content)
+        self.assertIsNone(item.get_document())
+        self.assertIsNone(item.get_line_number())
+        self.assertIsNone(item.get_node())
+        self.assertIsNone(item.get_caption())
+        self.assertIsNone(item.get_content())
 
     def test_init_placeholder(self):
         item = dut.TraceableItem(self.identification, placeholder=True)
@@ -28,26 +28,26 @@ class TestTraceableItem(TestCase):
     def test_set_document(self):
         item = dut.TraceableItem(self.identification)
         item.set_document('some-file.rst', 888)
-        self.assertEqual('some-file.rst', item.docname)
-        self.assertEqual(888, item.lineno)
+        self.assertEqual('some-file.rst', item.get_document())
+        self.assertEqual(888, item.get_line_number())
 
     def test_bind_node(self):
         item = dut.TraceableItem(self.identification)
         node = object()
         item.bind_node(node)
-        self.assertEqual(node, item.node)
+        self.assertEqual(node, item.get_node())
 
     def test_set_caption(self):
         txt = 'some short description'
         item = dut.TraceableItem(self.identification)
         item.set_caption(txt)
-        self.assertEqual(txt, item.caption)
+        self.assertEqual(txt, item.get_caption())
 
     def test_set_content(self):
         txt = 'some description, with\n newlines and other stuff'
         item = dut.TraceableItem(self.identification)
         item.set_content(txt)
-        self.assertEqual(txt, item.content)
+        self.assertEqual(txt, item.get_content())
 
     def test_add_get_target_explicit(self):
         item = dut.TraceableItem(self.identification)
