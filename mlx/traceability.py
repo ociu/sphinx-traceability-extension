@@ -340,7 +340,7 @@ def process_item_nodes(app, doctree, fromdocname):
     env = app.builder.env
 
     try:
-        env.traceability_collection.self_test()
+        env.traceability_collection.self_test(fromdocname)
     except TraceabilityException as ex:
         report_warning(env, ex.message, fromdocname)
 

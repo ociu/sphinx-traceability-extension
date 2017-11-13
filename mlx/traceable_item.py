@@ -168,17 +168,23 @@ class TraceableCollection(object):
             # Add reverse relation to target-item
             self.items[targetid].add_target(reverse_relation, sourceid, implicit=True)
 
-    def self_test(self):
+    def self_test(self, docname=None):
         '''
         Perform self test on collection content
+
+        Args:
+            docname (str): Document on which to run the self test, None for all.
         '''
         # Having no valid relations, is invalid
         if not self.iter_relations():
             raise TraceabilityException('Error: no relations configured')
         # Validate each item
         for itemid in self.iter_items():
-            # On item level
             item = self.get_item(itemid)
+            # Only for relevant items, filtered on document name
+            if docname != None or item.get_document() != docname:
+                continue
+            # On item level
             item.self_test()
             # targetted items shall exist, with automatic reverse relation
             for relation in self.iter_relations():
