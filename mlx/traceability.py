@@ -12,14 +12,14 @@ import re
 from sphinx.util.compat import Directive
 from sphinx.roles import XRefRole
 from sphinx.util.nodes import make_refnode
-from sphinx import __version__ as sphinx_version
-if sphinx_version >= '1.6.0':
-    from sphinx.util.logging import getLogger
 from sphinx.environment import NoUri
 from docutils import nodes
 from docutils.parsers.rst import directives
 from docutils.utils import get_source_line
 from mlx.traceable_item import TraceableCollection, TraceableItem, TraceabilityException
+from sphinx import __version__ as sphinx_version
+if sphinx_version >= '1.6.0':
+    from sphinx.util.logging import getLogger
 
 # External relationship: starts with ext_
 # An external relationship is a relationship where the item to link to is not in the
@@ -27,6 +27,7 @@ from mlx.traceable_item import TraceableCollection, TraceableItem, TraceabilityE
 # hyperlink is done through the config traceability_external_relationship_to_url.
 REGEXP_EXTERNAL_RELATIONSHIP = re.compile('^ext_.*')
 EXTERNAL_LINK_FIELDNAME = 'field'
+
 
 def report_warning(env, msg, docname, lineno=None):
     '''Convenience function for logging a warning
@@ -62,6 +63,7 @@ class ItemList(nodes.General, nodes.Element):
 class ItemMatrix(nodes.General, nodes.Element):
     '''Matrix for cross referencing documentation items'''
     pass
+
 
 class ItemTree(nodes.General, nodes.Element):
     '''Tree-view on documentation items'''
@@ -250,9 +252,11 @@ class ItemMatrixDirective(Directive):
         # Check if given relationships are in configuration
         for rel in item_matrix_node['type']:
             if rel not in env.traceability_collection.iter_relations():
-                report_warning(env, 'Traceability: unknown relation for item-matrix: %s' % rel, env.docname, self.lineno)
+                report_warning(env, 'Traceability: unknown relation for item-matrix: %s' % rel,
+                               env.docname, self.lineno)
 
         return [item_matrix_node]
+
 
 class ItemTreeDirective(Directive):
     """
@@ -320,7 +324,8 @@ class ItemTreeDirective(Directive):
                 report_warning(env, 'Traceability: unknown relation for item-tree: %s' % rel, env.docname, self.lineno)
                 continue
             if env.traceability_collection.get_reverse_relation(rel) in item_tree_node['type']:
-                report_warning(env, 'Traceability: combination of forward+reverse relations for item-tree: %s' % rel, env.docname, self.lineno)
+                report_warning(env, 'Traceability: combination of forward+reverse relations for item-tree: %s' % rel,
+                               env.docname, self.lineno)
                 raise ValueError('Traceability: combination of forward+reverse relations for item-tree: %s' % rel)
 
         return [item_tree_node]
@@ -438,7 +443,8 @@ def process_item_nodes(app, doctree, fromdocname):
         item_info = env.traceability_collection.get_item(node['reftarget'])
         if item_info:
             if item_info.is_placeholder() is True:
-                report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_info.get_id(), fromdocname, get_source_line(node))
+                report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_info.get_id(),
+                               fromdocname, get_source_line(node))
             else:
                 try:
                     new_node = make_refnode(app.builder,
@@ -452,7 +458,8 @@ def process_item_nodes(app, doctree, fromdocname):
                     pass
 
         else:
-            report_warning(env, 'Traceability: item %s not found' % node['reftarget'], fromdocname, get_source_line(node))
+            report_warning(env, 'Traceability: item %s not found' % node['reftarget'],
+                           fromdocname, get_source_line(node))
 
         node.replace_self(new_node)
 
@@ -497,7 +504,7 @@ def process_item_nodes(app, doctree, fromdocname):
                     dl_node.append(li_node)
             par_node.append(dl_node)
             cont.append(par_node)
-        ## Note: content should be displayed during read of RST file, as it contains other RST objects
+        # Note: content should be displayed during read of RST file, as it contains other RST objects
         node.replace_self(cont)
 
 
@@ -520,6 +527,7 @@ def init_available_relationships(app):
         ItemDirective.option_spec[rel] = directives.unchanged
         if revrel:
             ItemDirective.option_spec[revrel] = directives.unchanged
+
 
 def initialize_environment(app):
     """
@@ -557,6 +565,7 @@ def purge_items(app, env, docname):
 # -----------------------------------------------------------------------------
 # Utility functions
 
+
 def is_item_top_level(env, itemid, topregex, relations):
     '''
     Check if item with given itemid is a top level item
@@ -574,6 +583,7 @@ def is_item_top_level(env, itemid, topregex, relations):
                 return False
     return True
 
+
 def generate_bullet_list_tree(app, env, node, fromdocname, itemid):
     '''
     Generate a bullet list tree for the given item id
@@ -581,10 +591,9 @@ def generate_bullet_list_tree(app, env, node, fromdocname, itemid):
     This function returns the given itemid as a bullet item node, makes a child bulleted list, and adds all
     of the matching child items to it.
     '''
-    #First add current itemid
+    # First add current itemid
     bullet_list_item = nodes.list_item()
     bullet_list_item['id'] = nodes.make_id(itemid)
-    #bullet_list_item.set_attribute('id', nodes.make_id(itemid))
     p_node = nodes.paragraph()
     p_node.set_class('thumb')
     bullet_list_item.append(p_node)
@@ -593,14 +602,15 @@ def generate_bullet_list_tree(app, env, node, fromdocname, itemid):
     bullet_list_item.set_class('collapsed')
     childcontent = nodes.bullet_list()
     childcontent.set_class('bonsai')
-    #Then recurse one level, and add dependencies
+    # Then recurse one level, and add dependencies
     for relation in node['type']:
         tgts = env.traceability_collection.get_item(itemid).iter_targets(relation)
         for target in tgts:
-            #print('%s has child %s for relation %s' % (itemid, target, relation))
+            # print('%s has child %s for relation %s' % (itemid, target, relation))
             childcontent.append(generate_bullet_list_tree(app, env, node, fromdocname, target))
     bullet_list_item.append(childcontent)
     return bullet_list_item
+
 
 def make_external_item_ref(app, targettext, relationship):
     '''Generate a reference to an external item'''
@@ -609,7 +619,7 @@ def make_external_item_ref(app, targettext, relationship):
     p_node = nodes.paragraph()
     link = nodes.reference()
     txt = nodes.Text(targettext)
-    tgt_strs = targettext.split(':') #syntax = field1:field2:field3:...
+    tgt_strs = targettext.split(':')  # syntax = field1:field2:field3:...
     url = app.config.traceability_external_relationship_to_url[relationship]
     cnt = 0
     for tgt_str in tgt_strs:
@@ -622,6 +632,7 @@ def make_external_item_ref(app, targettext, relationship):
     p_node += target
     p_node += link
     return p_node
+
 
 def make_internal_item_ref(app, node, fromdocname, item_id, caption=True):
     """
@@ -636,7 +647,8 @@ def make_internal_item_ref(app, node, fromdocname, item_id, caption=True):
 
     # Only create link when target item exists, warn otherwise (in html and terminal)
     if item_info.is_placeholder() is True:
-        report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_id, fromdocname, get_source_line(node))
+        report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_id,
+                       fromdocname, get_source_line(node))
         txt = nodes.Text('%s not defined, broken link' % item_id)
         p_node.append(txt)
     else:
@@ -764,4 +776,3 @@ def setup(app):
     app.add_role('item', XRefRole(nodeclass=PendingItemXref,
                                   innernodeclass=nodes.emphasis,
                                   warn_dangling=True))
-
