@@ -10,9 +10,9 @@ class TestTraceableItem(TestCase):
 
     def test_init(self):
         item = dut.TraceableItem(self.identification)
-        self.assertTrue(item.self_test())
+        item.self_test()
         self.assertEqual(self.identification, item.get_id())
-        self.assertFalse(item.placeholder)
+        self.assertFalse(item.is_placeholder())
         self.assertIsNone(item.get_document())
         self.assertIsNone(item.get_line_number())
         self.assertIsNone(item.get_node())
@@ -21,9 +21,10 @@ class TestTraceableItem(TestCase):
 
     def test_init_placeholder(self):
         item = dut.TraceableItem(self.identification, placeholder=True)
-        self.assertFalse(item.self_test())
+        with self.assertRaises(dut.TraceabilityException):
+            item.self_test()
         self.assertEqual(self.identification, item.get_id())
-        self.assertTrue(item.placeholder)
+        self.assertTrue(item.is_placeholder())
 
     def test_set_document(self):
         item = dut.TraceableItem(self.identification)
@@ -71,8 +72,8 @@ class TestTraceableItem(TestCase):
         self.assertEqual(1, len(targets))
         self.assertEqual(targets[0], self.identification_tgt)
         # Add the same explicit target, should not change (no duplicates)
-        # TODO: assert error to be logged
-        item.add_target(self.fwd_relation, self.identification_tgt)
+        with self.assertRaises(dut.TraceabilityException):
+            item.add_target(self.fwd_relation, self.identification_tgt)
         targets = item.iter_targets(self.fwd_relation)
         self.assertEqual(1, len(targets))
         self.assertEqual(targets[0], self.identification_tgt)
@@ -82,8 +83,8 @@ class TestTraceableItem(TestCase):
         self.assertEqual(1, len(targets))
         self.assertEqual(targets[0], self.identification_tgt)
         # Add the same implicit target, should not change (is already explicit)
-        # TODO: assert warning to be logged
-        item.add_target(self.fwd_relation, self.identification_tgt, implicit=True)
+        with self.assertRaises(dut.TraceabilityException):
+            item.add_target(self.fwd_relation, self.identification_tgt, implicit=True)
         targets = item.iter_targets(self.fwd_relation)
         self.assertEqual(1, len(targets))
         self.assertEqual(targets[0], self.identification_tgt)
@@ -96,7 +97,7 @@ class TestTraceableItem(TestCase):
         relations = item.iter_relations()
         self.assertIn(self.fwd_relation, relations)
         # Self test should pass
-        self.assertTrue(item.self_test())
+        item.self_test()
 
     def test_add_get_target_implicit(self):
         item = dut.TraceableItem(self.identification)
@@ -143,7 +144,7 @@ class TestTraceableItem(TestCase):
         relations = item.iter_relations()
         self.assertIn(self.fwd_relation, relations)
         # Self test should pass
-        self.assertTrue(item.self_test())
+        item.self_test()
 
     def test_remove_target_explicit(self):
         item = dut.TraceableItem(self.identification)
@@ -163,7 +164,7 @@ class TestTraceableItem(TestCase):
         targets = item.iter_targets(self.fwd_relation)
         self.assertEqual(0, len(targets))
         # Self test should pass
-        self.assertTrue(item.self_test())
+        item.self_test()
 
     def test_remove_target_implicit(self):
         item = dut.TraceableItem(self.identification)
@@ -183,4 +184,4 @@ class TestTraceableItem(TestCase):
         targets = item.iter_targets(self.fwd_relation)
         self.assertEqual(0, len(targets))
         # Self test should pass
-        self.assertTrue(item.self_test())
+        item.self_test()

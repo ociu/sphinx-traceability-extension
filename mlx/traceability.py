@@ -19,7 +19,7 @@ from sphinx.environment import NoUri
 from docutils import nodes
 from docutils.parsers.rst import directives
 from docutils.utils import get_source_line
-from mlx.traceable_item import TraceableCollection, TraceableItem
+from mlx.traceable_item import TraceableCollection, TraceableItem, TraceabilityException
 
 # External relationship: starts with ext_
 # An external relationship is a relationship where the item to link to is not in the
@@ -133,25 +133,28 @@ class ItemDirective(Directive):
         if len(self.arguments) > 1:
             caption = self.arguments[1].replace('\n', ' ')
 
-        # Store item info
-        item = TraceableItem(targetid)
-        item.set_document(env.docname, self.lineno)
-        item.bind_node(targetnode)
-        item.set_caption(caption)
-        item.set_content('\n'.join(self.content))
-        env.traceability_collection.add_item(item)
+        try:
+            # Store item info
+            item = TraceableItem(targetid)
+            item.set_document(env.docname, self.lineno)
+            item.bind_node(targetnode)
+            item.set_caption(caption)
+            item.set_content('\n'.join(self.content))
+            env.traceability_collection.add_item(item)
 
-        # Add found relationships to item. All relationship data is a string of
-        # item ids separated by space. It is splitted in a list of item ids
-        for rel in env.traceability_collection.iter_relations():
-            if rel in self.options:
-                related_ids = self.options[rel].split()
-                for related_id in related_ids:
-                    env.traceability_collection.add_relation(item.get_id(), rel, related_id)
+            # Add found relationships to item. All relationship data is a string of
+            # item ids separated by space. It is splitted in a list of item ids
+            for rel in env.traceability_collection.iter_relations():
+                if rel in self.options:
+                    related_ids = self.options[rel].split()
+                    for related_id in related_ids:
+                        env.traceability_collection.add_relation(item.get_id(), rel, related_id)
 
-        # Custom callback for modifying items
-        if app.config.traceability_callback_per_item:
-            app.config.traceability_callback_per_item(targetid, env.traceability_collection)
+            # Custom callback for modifying items
+            if app.config.traceability_callback_per_item:
+                app.config.traceability_callback_per_item(targetid, env.traceability_collection)
+        except TraceabilityException as ex:
+            report_warning(env, ex.message, env.docname, self.lineno)
 
         # Output content of item to document
         template = []
@@ -336,6 +339,11 @@ def process_item_nodes(app, doctree, fromdocname):
     """
     env = app.builder.env
 
+    try:
+        env.traceability_collection.self_test()
+    except TraceabilityException as ex:
+        report_warning(env, ex.message, fromdocname)
+
     all_item_ids = env.traceability_collection.iter_items()
 
     # Item matrix:
@@ -358,7 +366,7 @@ def process_item_nodes(app, doctree, fromdocname):
         for source_id in all_item_ids:
             source_item = env.traceability_collection.get_item(source_id)
             # placeholders don't end up in any item-matrix (less duplicate warnings for missing items)
-            if source_item.placeholder is True:
+            if source_item.is_placeholder() is True:
                 continue
             if re.match(node['source'], source_id):
                 row = nodes.row()
@@ -372,7 +380,7 @@ def process_item_nodes(app, doctree, fromdocname):
                 for target_id in all_item_ids:
                     target_item = env.traceability_collection.get_item(target_id)
                     # placeholders don't end up in any item-matrix (less duplicate warnings for missing items)
-                    if target_item.placeholder is True:
+                    if target_item.is_placeholder() is True:
                         continue
                     if (re.match(node['target'], target_id) and
                             are_related(
@@ -391,7 +399,7 @@ def process_item_nodes(app, doctree, fromdocname):
         ul_node = nodes.bullet_list()
         for i in all_item_ids:
             # placeholders don't end up in any item-list (less duplicate warnings for missing items)
-            if env.traceability_collection.get_item(i).placeholder is True:
+            if env.traceability_collection.get_item(i).is_placeholder() is True:
                 continue
             if re.match(node['filter'], i):
                 bullet_list_item = nodes.list_item()
@@ -410,7 +418,7 @@ def process_item_nodes(app, doctree, fromdocname):
         ul_node.set_class('bonsai')
         for i in all_item_ids:
             # placeholders don't end up in any item-tree (less duplicate warnings for missing items)
-            if env.traceability_collection.get_item(i).placeholder is True:
+            if env.traceability_collection.get_item(i).is_placeholder() is True:
                 continue
             if re.match(node['top'], i):
                 if is_item_top_level(env, i, node['top'], node['top_relation_filter']):
@@ -429,7 +437,7 @@ def process_item_nodes(app, doctree, fromdocname):
         # If target exists, try to create the reference
         item_info = env.traceability_collection.get_item(node['reftarget'])
         if item_info:
-            if item_info.placeholder is True:
+            if item_info.is_placeholder() is True:
                 report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_info.get_id(), fromdocname, get_source_line(node))
             else:
                 try:
@@ -627,7 +635,7 @@ def make_internal_item_ref(app, node, fromdocname, item_id, caption=True):
     p_node = nodes.paragraph()
 
     # Only create link when target item exists, warn otherwise (in html and terminal)
-    if item_info.placeholder is True:
+    if item_info.is_placeholder() is True:
         report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_id, fromdocname, get_source_line(node))
         txt = nodes.Text('%s not defined, broken link' % item_id)
         p_node.append(txt)
