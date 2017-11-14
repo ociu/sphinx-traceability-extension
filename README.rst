@@ -246,6 +246,29 @@ per documentation object:
 Usage
 -----
 
+.. _required_sphinx_options:
+
+Required sphinx options
+=======================
+
+By default sphinx (*sphinx-build*) performs an incremental build: it only parses the changed files, and generates
+new output for changed files. As this plugin generates automatic reverse relations, the incremental build option
+of sphinx needs to be disabled. This can be done using the *-E* option:
+
+.. code-block::
+
+    sphinx-build -E <other_options>
+
+:Rationale: The plugin allows linking documentation items through relations. If a forward relation from *item-A*
+            (in *document-a.rst*) to *item-B* (in *document-b.rst*) is created, the reverse relations from
+            *item-B* to *item-A* is automatically created. With incremental builds, documents only get re-generated
+            when they are changed. This means the automatic reverse relation cannot be created if that *document-B*
+            was not touched.
+            By disabling incremental builds, it is made sure every document is updated (with automatic reverse
+            relations) on every re-build.
+
+The plugin assumes incremental builds are disabled, as this makes the implementation of the plugin much easier.
+
 .. _traceability_usage_item:
 
 Defining documentation items
@@ -365,6 +388,4 @@ Process
 
 The Melexis.SWCC process has a Guideline for documenting in Restructured Text (RST). It holds guidelines for using
 the traceability plugin with naming conventions, templates, etc.
-
-.. _traceability_license:
 
