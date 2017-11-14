@@ -150,7 +150,7 @@ class ItemDirective(Directive):
                 if rel in self.options:
                     related_ids = self.options[rel].split()
                     for related_id in related_ids:
-                        env.traceability_collection.add_relation(item.get_id(), rel, related_id)
+                        env.traceability_collection.add_relation(targetid, rel, related_id)
 
             # Custom callback for modifying items
             if app.config.traceability_callback_per_item:
