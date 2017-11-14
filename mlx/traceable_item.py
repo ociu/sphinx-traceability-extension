@@ -119,7 +119,8 @@ class TraceableCollection(object):
         Args:
             tgtid (str): Identification of item to remove
         '''
-        for itemid in self.iter_items():
+        # Remove all implicit relations to this item
+        for itemid in self.items:
             self.items[itemid].remove_targets(tgtid, explicit=False, implicit=True)
         del self.items[tgtid]
 
@@ -132,7 +133,7 @@ class TraceableCollection(object):
         Returns:
             bool: True if the given itemid is in the collection, false otherwise
         '''
-        return itemid in self.iter_items()
+        return itemid in self.items
 
     def purge(self, docname):
         '''
@@ -143,7 +144,7 @@ class TraceableCollection(object):
         Args:
             docname (str): Name of the document to purge for
         '''
-        for itemid in self.iter_items():
+        for itemid in self.items.keys():
             if self.items[itemid].docname == docname:
                 self.remove_item(itemid)
 
@@ -184,10 +185,10 @@ class TraceableCollection(object):
             docname (str): Document on which to run the self test, None for all.
         '''
         # Having no valid relations, is invalid
-        if not self.iter_relations():
+        if not self.relations:
             raise TraceabilityException('No relations configured')
         # Validate each item
-        for itemid in self.iter_items():
+        for itemid in self.items:
             item = self.get_item(itemid)
             # Only for relevant items, filtered on document name
             if docname is not None and item.get_document() != docname and item.get_document() is not None:
@@ -195,14 +196,14 @@ class TraceableCollection(object):
             # On item level
             item.self_test()
             # targetted items shall exist, with automatic reverse relation
-            for relation in self.iter_relations():
+            for relation in self.relations:
                 # Exception: no reverse relation (external links)
                 rev_relation = self.get_reverse_relation(relation)
                 if rev_relation == self.NO_RELATION_STR:
                     continue
                 for tgt in item.iter_targets(relation):
                     # Target item exists?
-                    if tgt not in self.iter_items():
+                    if tgt not in self.items:
                         raise TraceabilityException('''{source} {relation} {target},
                                  but {target} is not known'''.format(source=itemid,
                                                                      relation=relation,
@@ -250,35 +251,35 @@ class TraceableItem(object):
         self.caption = None
         self.content = None
 
-    def update(self, item):
+    def update(self, other):
         '''
         Update item with new object
 
         Store the sum of both objects
         '''
-        if self.id != item.id:
-            raise ValueError('Update error {old} vs {new}'.format(old=self.id, new=item.id))
-        for relation in item.explicit_relations.keys():
+        if self.id != other.id:
+            raise ValueError('Update error {old} vs {new}'.format(old=self.id, new=other.id))
+        for relation in other.explicit_relations.keys():
             if relation not in self.explicit_relations:
                 self.explicit_relations[relation] = []
-            self.explicit_relations[relation].extend(item.explicit_relations[relation])
-        for relation in item.implicit_relations.keys():
+            self.explicit_relations[relation].extend(other.explicit_relations[relation])
+        for relation in other.implicit_relations.keys():
             if relation not in self.implicit_relations:
                 self.implicit_relations[relation] = []
-            self.implicit_relations[relation].extend(item.implicit_relations[relation])
+            self.implicit_relations[relation].extend(other.implicit_relations[relation])
         # Remainder of fields: update if they improve quality of the item
-        if not item.placeholder:
+        if not other.placeholder:
             self.placeholder = False
-        if item.docname is not None:
-            self.docname = item.docname
-        if item.lineno is not None:
-            self.lineno = item.lineno
-        if item.node is not None:
-            self.node = item.node
-        if item.caption is not None:
-            self.caption = item.caption
-        if item.content is not None:
-            self.content = item.content
+        if other.docname is not None:
+            self.docname = other.docname
+        if other.lineno is not None:
+            self.lineno = other.lineno
+        if other.node is not None:
+            self.node = other.node
+        if other.caption is not None:
+            self.caption = other.caption
+        if other.content is not None:
+            self.content = other.content
 
     def get_id(self):
         '''
@@ -423,13 +424,13 @@ class TraceableItem(object):
                              (e.g. automatic reverse) relation is added here.
         '''
         # When relation is already explicit, we shouldn't add. It is an error.
-        if target in self.iter_targets(relation, explicit=True, implicit=False):
+        if relation in self.explicit_relations and target in self.explicit_relations[relation]:
             raise TraceabilityException('Error: duplicating {src} {rel} {tgt}'.format(src=self.get_id(),
                                                                                       rel=relation,
                                                                                       tgt=target))
         # When relation is already implicit, we shouldn't add. When relation-to-add is explicit, it should move
         # from implicit to explicit.
-        elif target in self.iter_targets(relation, explicit=False, implicit=True):
+        elif relation in self.implicit_relations and target in self.implicit_relations[relation]:
             if implicit is False:
                 self._remove_target(self.implicit_relations, relation, target)
                 self._add_target(self.explicit_relations, relation, target)
