@@ -155,8 +155,8 @@ class ItemDirective(Directive):
             # Custom callback for modifying items
             if app.config.traceability_callback_per_item:
                 app.config.traceability_callback_per_item(targetid, env.traceability_collection)
-        except TraceabilityException as ex:
-            report_warning(env, ex.message, env.docname, self.lineno)
+        except TraceabilityException as err:
+            report_warning(env, err, env.docname, self.lineno)
 
         # Output content of item to document
         template = []
@@ -346,8 +346,8 @@ def process_item_nodes(app, doctree, fromdocname):
 
     try:
         env.traceability_collection.self_test(fromdocname)
-    except TraceabilityException as ex:
-        report_warning(env, ex.message, fromdocname)
+    except TraceabilityException as err:
+        report_warning(env, err, fromdocname)
 
     all_item_ids = env.traceability_collection.iter_items()
 
