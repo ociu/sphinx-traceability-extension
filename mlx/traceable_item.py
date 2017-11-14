@@ -2,6 +2,9 @@
 Storage classes for traceability plugin
 '''
 
+import json
+import collections
+
 
 class TraceabilityException(Exception):
     '''
@@ -189,6 +192,21 @@ class TraceableCollection(object):
                 self.add_item(tgt)
             # Add reverse relation to target-item
             self.items[targetid].add_target(reverse_relation, sourceid, implicit=True)
+
+    def export(self, docname, fname):
+        '''
+        Export collection content
+
+        Args:
+            docname (str): Document to export
+            fname (str): Path to the json file to export
+        '''
+        with open(fname, 'w') as outfile:
+            for itemid in self.items:
+                item = self.get_item(itemid)
+                if item.get_document() != docname:
+                    continue
+                item.export(outfile)
 
     def self_test(self, docname=None):
         '''
@@ -526,6 +544,25 @@ class TraceableItem(object):
             for tgtid in tgt_ids:
                 retval += '\t\t{target}\n'.format(target=tgtid)
         return retval
+
+    def export(self, fhandle):
+        '''
+        Export to json file
+
+        Args:
+            fhandle (FILE): File handle to which to export
+        '''
+        duplicates = {}
+        for relation in self.iter_relations():
+            tgts = self.iter_targets(relation)
+            duplicates[relation] = [tgt for tgt, count in collections.Counter(tgts).items() if count > 1]
+        data = {'a) id': self.get_id(),
+                'b) placeholder': self.is_placeholder(),
+                'c) caption': self.get_caption(),
+                'd) explicit tgts': self.explicit_relations,
+                'e) implicit tgts': self.implicit_relations,
+                'f) duplicate tgts': duplicates}
+        json.dump(data, fhandle, indent=4, sort_keys=True)
 
     def self_test(self):
         '''

@@ -9,6 +9,7 @@ See readme for more details.
 
 from __future__ import print_function
 import re
+import os
 from sphinx.util.compat import Directive
 from sphinx.roles import XRefRole
 from sphinx.util.nodes import make_refnode
@@ -345,6 +346,9 @@ def process_item_nodes(app, doctree, fromdocname):
     env = app.builder.env
 
     try:
+        if app.config.traceability_json_export_path:
+            fname = os.path.join(app.config.traceability_json_export_path, fromdocname)
+            env.traceability_collection.export(fromdocname, fname + '.json')
         env.traceability_collection.self_test(fromdocname)
     except TraceabilityException as ex:
         report_warning(env, ex.message, fromdocname)
@@ -717,6 +721,10 @@ def setup(app):
     app.add_javascript('http://simonwade.me/assets/bower_components/jquery-bonsai/jquery.bonsai.js')
     app.add_stylesheet('http://simonwade.me/assets/bower_components/jquery-bonsai/jquery.bonsai.css')
     app.add_javascript('traceability.js')
+
+    # Configuration for exporting collection to json
+    app.add_config_value('traceability_json_export_path',
+                         '/tmp/traceability', 'env')
 
     # Configuration for adapting items through a callback
     app.add_config_value('traceability_callback_per_item',
