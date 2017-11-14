@@ -30,6 +30,7 @@ class TraceableCollection(object):
         '''Initializer for container of traceable items'''
         self.relations = {}
         self.items = {}
+        self.purged = {}
 
     def add_relation_pair(self, forward, reverse=NO_RELATION_STR):
         '''
@@ -84,7 +85,14 @@ class TraceableCollection(object):
             # ... otherwise, update the item with new content
             else:
                 olditem.update(item)
-        # If item doesn't exist, add it
+        # Otherwise, if the item is in the purged list ...
+        elif itemid in self.purged:
+            olditem = self.purged[itemid]
+            # .. re-initialize the old item (from purged list), based on the new item
+            olditem.update(item)
+            self.items[itemid] = olditem
+            del self.purged[itemid]
+        # Otherwise (item doesn't exist), add it
         else:
             self.items[item.get_id()] = item
 
@@ -122,6 +130,11 @@ class TraceableCollection(object):
         # Remove all implicit relations to this item
         for itemid in self.items:
             self.items[itemid].remove_targets(tgtid, explicit=False, implicit=True)
+        # Purge the item
+        self.items[tgtid].purge()
+        # Move the item to the purged list (for later re-use)
+        self.purged[tgtid] = self.items[tgtid]
+        # Delete from main list
         del self.items[tgtid]
 
     def has_item(self, itemid):
@@ -242,9 +255,19 @@ class TraceableItem(object):
             placeholder (bool): Internal use only
         '''
         self.id = itemid
-        self.explicit_relations = {}
+        self.purge()
         self.implicit_relations = {}
         self.placeholder = placeholder
+
+    def purge(self):
+        '''
+        Purge the traceable item
+
+        When an item is purged from the collection, most of the properties need to be reset...
+        apart from the implicit relations, which we need to retain.
+        '''
+        self.placeholder = True
+        self.explicit_relations = {}
         self.docname = None
         self.lineno = None
         self.node = None

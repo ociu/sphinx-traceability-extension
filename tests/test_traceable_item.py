@@ -201,3 +201,36 @@ class TestTraceableItem(TestCase):
         self.assertEqual(0, len(targets))
         # Self test should pass
         item.self_test()
+
+    def test_purge_with_explicit(self):
+        item = dut.TraceableItem(self.identification)
+        item.set_document(self.docname)
+        # Add an explicit target
+        item.add_target(self.fwd_relation, self.identification_tgt)
+        targets = item.iter_targets(self.fwd_relation)
+        self.assertEqual(1, len(targets))
+        self.assertEqual(targets[0], self.identification_tgt)
+        # Purge: explicit target to tgt, should not be removed
+        item.purge()
+        targets = item.iter_targets(self.fwd_relation)
+        self.assertEqual(0, len(targets))
+        # Self test should fail, as the item is purged
+        with self.assertRaises(dut.TraceabilityException):
+            item.self_test()
+
+    def test_purge_with_implicit(self):
+        item = dut.TraceableItem(self.identification)
+        item.set_document(self.docname)
+        # Add an implicit target
+        item.add_target(self.fwd_relation, self.identification_tgt, implicit=True)
+        targets = item.iter_targets(self.fwd_relation)
+        self.assertEqual(1, len(targets))
+        self.assertEqual(targets[0], self.identification_tgt)
+        # Purge: implicit target to tgt, should not be removed
+        item.purge()
+        targets = item.iter_targets(self.fwd_relation)
+        self.assertEqual(1, len(targets))
+        self.assertEqual(targets[0], self.identification_tgt)
+        # Self test should fail, as the item is purged
+        with self.assertRaises(dut.TraceabilityException):
+            item.self_test()

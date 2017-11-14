@@ -109,6 +109,39 @@ class TestTraceableCollection(TestCase):
         self.assertFalse(item1_out.is_placeholder())
         self.assertFalse(item2_out.is_placeholder())
 
+    def test_add_item_after_purge(self):
+        coll = dut.TraceableCollection()
+        item1 = dut.TraceableItem(self.identification_src)
+        item1.set_document(self.docname)
+        coll.add_item(item1)
+        item2 = dut.TraceableItem(self.identification_tgt)
+        item2.set_document(self.docname)
+        coll.add_item(item2)
+        coll.add_relation_pair(self.fwd_relation, self.rev_relation)
+        coll.add_relation(self.identification_src,
+                          self.fwd_relation,
+                          self.identification_tgt)
+        # Purge
+        coll.purge(self.docname)
+        # Adding same item again, should not maintain explicit relation
+        item1_new = dut.TraceableItem(self.identification_src)
+        item1_new.set_document(self.docname)
+        coll.add_item(item1_new)
+        item1_out = coll.get_item(self.identification_src)
+        relations = item1_out.iter_targets(self.fwd_relation)
+        self.assertEqual(0, len(relations))
+        # Adding same item again, should maintain implicit relation
+        item2_new = dut.TraceableItem(self.identification_tgt)
+        item2_new.set_document(self.docname)
+        coll.add_item(item2_new)
+        item2_out = coll.get_item(self.identification_tgt)
+        relations = item2_out.iter_targets(self.rev_relation)
+        self.assertEqual(1, len(relations))
+        self.assertEqual(relations[0], self.identification_src)
+        # Assert item are not placeholders
+        self.assertFalse(item1_out.is_placeholder())
+        self.assertFalse(item2_out.is_placeholder())
+
     def test_add_relation_unknown_source(self):
         # with unknown source item, exception is expected
         coll = dut.TraceableCollection()
