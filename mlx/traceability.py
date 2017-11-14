@@ -539,8 +539,7 @@ def initialize_environment(app):
     # It needs to be empty on every (re-)build. As the script automatically
     # generates placeholders when parsing the reverse relationships, the
     # database of items needs to be empty on every re-build.
-    if not hasattr(env, 'traceability_collection'):
-        env.traceability_collection = TraceableCollection()
+    env.traceability_collection = TraceableCollection()
 
     init_available_relationships(app)
 
@@ -551,16 +550,6 @@ def initialize_environment(app):
 \\makeatletter
 \\let\@noitemerr\\relax
 \\makeatother'''
-
-
-def purge_items(app, env, docname):
-    """
-    Purge traceable items
-
-    This handler should be called upon env-purge-doc event: before each source file is read, the
-    extension needs to flush part of its database.
-    """
-    env.traceability_collection.purge(docname)
 
 # -----------------------------------------------------------------------------
 # Utility functions
@@ -771,7 +760,6 @@ def setup(app):
 
     app.connect('doctree-resolved', process_item_nodes)
     app.connect('builder-inited', initialize_environment)
-    app.connect('env-purge-doc', purge_items)
 
     app.add_role('item', XRefRole(nodeclass=PendingItemXref,
                                   innernodeclass=nodes.emphasis,
