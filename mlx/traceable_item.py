@@ -517,5 +517,7 @@ class TraceableItem(object):
         # Targets should have no duplicates
         for relation in self.iter_relations():
             tgts = self.iter_targets(relation)
-            if len(tgts) is not len(set(tgts)):
-                raise TraceabilityException('duplicate targets found for {item}'.format(item=self.get_id()))
+            cnt_duplicate = len(tgts) - len(set(tgts))
+            if cnt_duplicate != 0:
+                raise TraceabilityException('{cnt} duplicate target(s) found for {item} {relation})'
+                                            .format(cnt=cnt_duplicate, item=self.get_id(), relation=relation))
