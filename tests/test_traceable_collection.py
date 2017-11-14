@@ -261,7 +261,7 @@ class TestTraceableCollection(TestCase):
         # Self test should pass
         coll.self_test()
 
-    def test_remove_item_with_implicit_relations(self):
+    def test_purge_item_with_implicit_relations(self):
         # Normal addition of relation, everything is there
         coll = dut.TraceableCollection()
         item1 = dut.TraceableItem(self.identification_src)
@@ -283,7 +283,7 @@ class TestTraceableCollection(TestCase):
         self.assertEqual(1, len(relations))
         self.assertEqual(relations[0], self.identification_src)
         # Remove
-        coll.remove_item(self.identification_src)
+        coll.purge_item(self.identification_src)
         # Assert item is gone
         self.assertIsNone(coll.get_item(self.identification_src))
         # Assert implicit relations to this item are removed
@@ -292,7 +292,7 @@ class TestTraceableCollection(TestCase):
         # Self test should pass
         coll.self_test()
 
-    def test_remove_item_with_explicit_relations(self):
+    def test_purge_item_with_explicit_relations(self):
         # Normal addition of relation, everything is there
         coll = dut.TraceableCollection()
         item1 = dut.TraceableItem(self.identification_src)
@@ -314,7 +314,7 @@ class TestTraceableCollection(TestCase):
         self.assertEqual(1, len(relations))
         self.assertEqual(relations[0], self.identification_src)
         # Remove
-        coll.remove_item(self.identification_tgt)
+        coll.purge_item(self.identification_tgt)
         # Assert item is gone
         self.assertIsNone(coll.get_item(self.identification_tgt))
         # Assert explicit relations to this item are not removed

@@ -2,6 +2,8 @@
 Storage classes for traceability plugin
 '''
 
+from copy import deepcopy
+
 
 class TraceabilityException(Exception):
     '''
@@ -118,7 +120,7 @@ class TraceableCollection(object):
         '''
         return sorted(self.items.keys())
 
-    def remove_item(self, tgtid):
+    def purge_item(self, tgtid):
         '''
         Remove item from container
 
@@ -133,7 +135,7 @@ class TraceableCollection(object):
         # Purge the item
         self.items[tgtid].purge()
         # Move the item to the purged list (for later re-use)
-        self.purged[tgtid] = self.items[tgtid]
+        self.purged[tgtid] = deepcopy(self.items[tgtid])
         # Delete from main list
         del self.items[tgtid]
 
@@ -159,7 +161,7 @@ class TraceableCollection(object):
         '''
         for itemid in self.items.keys():
             if self.items[itemid].docname == docname:
-                self.remove_item(itemid)
+                self.purge_item(itemid)
 
     def add_relation(self, sourceid, relation, targetid):
         '''
