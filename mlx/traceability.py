@@ -40,7 +40,7 @@ def report_warning(env, msg, docname, lineno=None):
     '''
     if sphinx_version >= '1.6.0':
         logger = getLogger(__name__)
-        if lineno:
+        if lineno is not None:
             logger.warning(msg, location=(docname, lineno))
         else:
             logger.warning(msg, location=docname)
@@ -156,8 +156,8 @@ class ItemDirective(Directive):
             # Custom callback for modifying items
             if app.config.traceability_callback_per_item:
                 app.config.traceability_callback_per_item(targetid, env.traceability_collection)
-        except TraceabilityException as ex:
-            report_warning(env, ex.message, env.docname, self.lineno)
+        except TraceabilityException as err:
+            report_warning(env, err, env.docname, self.lineno)
 
         # Output content of item to document
         template = []
@@ -350,8 +350,8 @@ def process_item_nodes(app, doctree, fromdocname):
             fname = os.path.join(app.config.traceability_json_export_path, fromdocname)
             env.traceability_collection.export(fromdocname, fname + '.json')
         env.traceability_collection.self_test(fromdocname)
-    except TraceabilityException as ex:
-        report_warning(env, ex.message, fromdocname)
+    except TraceabilityException as err:
+        report_warning(env, err, fromdocname)
 
     all_item_ids = env.traceability_collection.iter_items()
 
@@ -447,8 +447,9 @@ def process_item_nodes(app, doctree, fromdocname):
         item_info = env.traceability_collection.get_item(node['reftarget'])
         if item_info:
             if item_info.is_placeholder() is True:
+                docname, lineno = get_source_line(node)
                 report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_info.get_id(),
-                               fromdocname, get_source_line(node))
+                               docname, lineno)
             else:
                 try:
                     new_node = make_refnode(app.builder,
@@ -462,8 +463,9 @@ def process_item_nodes(app, doctree, fromdocname):
                     pass
 
         else:
+            docname, lineno = get_source_line(node)
             report_warning(env, 'Traceability: item %s not found' % node['reftarget'],
-                           fromdocname, get_source_line(node))
+                           docname, lineno)
 
         node.replace_self(new_node)
 
@@ -543,8 +545,7 @@ def initialize_environment(app):
     # It needs to be empty on every (re-)build. As the script automatically
     # generates placeholders when parsing the reverse relationships, the
     # database of items needs to be empty on every re-build.
-    if not hasattr(env, 'traceability_collection'):
-        env.traceability_collection = TraceableCollection()
+    env.traceability_collection = TraceableCollection()
 
     init_available_relationships(app)
 
@@ -555,16 +556,6 @@ def initialize_environment(app):
 \\makeatletter
 \\let\@noitemerr\\relax
 \\makeatother'''
-
-
-def purge_items(app, env, docname):
-    """
-    Purge traceable items
-
-    This handler should be called upon env-purge-doc event: before each source file is read, the
-    extension needs to flush part of its database.
-    """
-    env.traceability_collection.purge(docname)
 
 # -----------------------------------------------------------------------------
 # Utility functions
@@ -651,8 +642,9 @@ def make_internal_item_ref(app, node, fromdocname, item_id, caption=True):
 
     # Only create link when target item exists, warn otherwise (in html and terminal)
     if item_info.is_placeholder() is True:
+        docname, lineno = get_source_line(node)
         report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_id,
-                       fromdocname, get_source_line(node))
+                       docname, lineno)
         txt = nodes.Text('%s not defined, broken link' % item_id)
         p_node.append(txt)
     else:
@@ -779,7 +771,6 @@ def setup(app):
 
     app.connect('doctree-resolved', process_item_nodes)
     app.connect('builder-inited', initialize_environment)
-    app.connect('env-purge-doc', purge_items)
 
     app.add_role('item', XRefRole(nodeclass=PendingItemXref,
                                   innernodeclass=nodes.emphasis,
