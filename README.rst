@@ -1,3 +1,15 @@
+.. image:: https://img.shields.io/badge/License-GPL%20v3-blue.svg
+    :target: https://www.gnu.org/licenses/gpl-3.0
+    :alt: GPL3 License
+
+.. image:: https://travis-ci.org/melexis/sphinx-traceability-extension.svg?branch=master
+    :target: https://travis-ci.org/melexis/sphinx-traceability-extension
+    :alt: Build status
+
+.. image:: https://codecov.io/gh/melexis/sphinx-traceability-extension/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/melexis/sphinx-traceability-extension
+    :alt: Code Coverage
+
 ==========================
 Sphinx Traceability plugin
 ==========================
