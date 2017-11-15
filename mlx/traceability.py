@@ -39,7 +39,7 @@ def report_warning(env, msg, docname, lineno=None):
     '''
     if sphinx_version >= '1.6.0':
         logger = getLogger(__name__)
-        if lineno:
+        if lineno is not None:
             logger.warning(msg, location=(docname, lineno))
         else:
             logger.warning(msg, location=docname)
@@ -443,8 +443,9 @@ def process_item_nodes(app, doctree, fromdocname):
         item_info = env.traceability_collection.get_item(node['reftarget'])
         if item_info:
             if item_info.is_placeholder() is True:
+                docname, lineno = get_source_line(node)
                 report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_info.get_id(),
-                               fromdocname, get_source_line(node))
+                               docname, lineno)
             else:
                 try:
                     new_node = make_refnode(app.builder,
@@ -458,8 +459,9 @@ def process_item_nodes(app, doctree, fromdocname):
                     pass
 
         else:
+            docname, lineno = get_source_line(node)
             report_warning(env, 'Traceability: item %s not found' % node['reftarget'],
-                           fromdocname, get_source_line(node))
+                           docname, lineno)
 
         node.replace_self(new_node)
 
@@ -636,8 +638,9 @@ def make_internal_item_ref(app, node, fromdocname, item_id, caption=True):
 
     # Only create link when target item exists, warn otherwise (in html and terminal)
     if item_info.is_placeholder() is True:
+        docname, lineno = get_source_line(node)
         report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_id,
-                       fromdocname, get_source_line(node))
+                       docname, lineno)
         txt = nodes.Text('%s not defined, broken link' % item_id)
         p_node.append(txt)
     else:
