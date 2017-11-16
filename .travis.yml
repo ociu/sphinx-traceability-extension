@@ -6,21 +6,24 @@ env:
     - LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
     - SEGFAULT_SIGNALS=all
   matrix:
-    - TOXENV=
+    - TOXENV=check
 matrix:
   include:
     - python: '2.7'
       env:
-        - TOXENV=py27,sphinx1.3,sphinx1.4,sphinx1.5,sphinx1.6,sphinx-latest
+        - TOXENV=py27,sphinx1.3,sphinx1.4,sphinx1.5,sphinx1.6,sphinx-latest,codecov
+    - python: '3.3'
+      env:
+        - TOXENV=py33,sphinx1.3,sphinx1.4,sphinx1.5,sphinx1.6,sphinx-latest,codecov
     - python: '3.4'
       env:
-        - TOXENV=py34,sphinx1.3,sphinx1.4,sphinx1.5,sphinx1.6,sphinx-latest
+        - TOXENV=py34,sphinx1.3,sphinx1.4,sphinx1.5,sphinx1.6,sphinx-latest,codecov
     - python: '3.5'
       env:
-        - TOXENV=py35,sphinx1.3,sphinx1.4,sphinx1.5,sphinx1.6,sphinx-latest
+        - TOXENV=py35,sphinx1.3,sphinx1.4,sphinx1.5,sphinx1.6,sphinx-latest,codecov
     - python: '3.6'
       env:
-        - TOXENV=py36,sphinx1.3,sphinx1.4,sphinx1.5,sphinx1.6,sphinx-latest
+        - TOXENV=py36,sphinx1.3,sphinx1.4,sphinx1.5,sphinx1.6,sphinx-latest,codecov
 
 before_install:
   - python --version
@@ -29,6 +32,7 @@ before_install:
 
 install:
   - pip install tox
+  - pip install coverage
   - virtualenv --version
   - easy_install --version
   - pip --version
