@@ -2,6 +2,9 @@
     :target: https://www.gnu.org/licenses/gpl-3.0
     :alt: GPL3 License
 
+.. image:: https://badge.fury.io/py/mlx.traceability.svg
+    :target: https://badge.fury.io/py/mlx.traceability
+
 .. image:: https://travis-ci.org/melexis/sphinx-traceability-extension.svg?branch=master
     :target: https://travis-ci.org/melexis/sphinx-traceability-extension
     :alt: Build status
@@ -9,6 +12,22 @@
 .. image:: https://codecov.io/gh/melexis/sphinx-traceability-extension/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/melexis/sphinx-traceability-extension
     :alt: Code Coverage
+
+.. image:: https://codeclimate.com/github/melexis/sphinx-traceability-extension/badges/gpa.svg
+    :target: https://codeclimate.com/github/melexis/sphinx-traceability-extension
+    :alt: Code Climate Status
+
+.. image:: https://codeclimate.com/github/melexis/sphinx-traceability-extension/badges/issue_count.svg
+    :target: https://codeclimate.com/github/melexis/sphinx-traceability-extension
+    :alt: Issue Count
+
+.. image:: https://requires.io/github/melexis/sphinx-traceability-extension/requirements.svg?branch=master
+    :target: https://requires.io/github/melexis/sphinx-traceability-extension/requirements/?branch=master
+    :alt: Requirements Status
+
+.. image:: https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat
+    :target: https://github.com/melexis/sphinx-traceability-extension/issues
+    :alt: Contributions welcome
 
 ==========================
 Sphinx Traceability plugin
