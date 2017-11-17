@@ -13,6 +13,22 @@
     :target: https://codecov.io/gh/melexis/sphinx-traceability-extension
     :alt: Code Coverage
 
+.. image:: https://codeclimate.com/github/melexis/sphinx-traceability-extension/badges/gpa.svg
+    :target: https://codeclimate.com/github/melexis/sphinx-traceability-extension
+    :alt: Code Climate Status
+
+.. image:: https://codeclimate.com/github/melexis/sphinx-traceability-extension/badges/issue_count.svg
+    :target: https://codeclimate.com/github/melexis/sphinx-traceability-extension
+    :alt: Issue Count
+
+.. image:: https://requires.io/github/melexis/sphinx-traceability-extension/requirements.svg?branch=master
+    :target: https://requires.io/github/melexis/sphinx-traceability-extension/requirements/?branch=master
+    :alt: Requirements Status
+
+.. image:: https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat
+    :target: https://github.com/melexis/sphinx-traceability-extension/issues
+    :alt: Contributions welcome
+
 ==========================
 Sphinx Traceability plugin
 ==========================
