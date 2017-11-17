@@ -2,6 +2,9 @@
     :target: https://www.gnu.org/licenses/gpl-3.0
     :alt: GPL3 License
 
+.. image:: https://badge.fury.io/py/mlx.traceability.svg
+    :target: https://badge.fury.io/py/mlx.traceability
+
 .. image:: https://travis-ci.org/melexis/sphinx-traceability-extension.svg?branch=master
     :target: https://travis-ci.org/melexis/sphinx-traceability-extension
     :alt: Build status
