@@ -193,9 +193,12 @@ class TraceableCollection(object):
         '''
         Convert object to string
         '''
-        retval = ''
-        for __, item in self.items.iteritems():
-            retval += str(item)
+        retval = 'Available relations:'
+        for relation in self.relations:
+            reverse = self.get_reverse_relation(relation)
+            retval += '\t{forward}: {reverse}\n'.format(forward=relation, reverse=reverse)
+        for itemid in self.items:
+            retval += str(self.items[itemid])
         return retval
 
 
@@ -467,13 +470,13 @@ class TraceableItem(object):
         '''
         retval = self.STRING_TEMPLATE.format(identification=self.get_id())
         retval += '\tPlaceholder: {placeholder}\n'.format(placeholder=self.is_placeholder())
-        for relation, tgt_ids in self.explicit_relations.iteritems():
+        for relation in self.explicit_relations:
             retval += '\tExplicit {relation}\n'.format(relation=relation)
-            for tgtid in tgt_ids:
+            for tgtid in self.explicit_relations[relation]:
                 retval += '\t\t{target}\n'.format(target=tgtid)
-        for relation, tgt_ids in self.implicit_relations.iteritems():
+        for relation in self.implicit_relations:
             retval += '\tImplicit {relation}\n'.format(relation=relation)
-            for tgtid in tgt_ids:
+            for tgtid in self.implicit_relations[relation]:
                 retval += '\t\t{target}\n'.format(target=tgtid)
         return retval
 

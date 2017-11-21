@@ -228,6 +228,24 @@ class TestTraceableCollection(TestCase):
         # Self test should pass
         coll.self_test()
 
+    def test_stringify(self):
+        coll = dut.TraceableCollection()
+        # Assert relation pairs are printed
+        coll.add_relation_pair(self.fwd_relation, self.rev_relation)
+        collstr = str(coll)
+        self.assertIn(self.fwd_relation, collstr)
+        self.assertIn(self.rev_relation, collstr)
+        # Add some items and relations, assert they are in the string
+        item1 = dut.TraceableItem(self.identification_src)
+        item1.set_document(self.docname)
+        coll.add_item(item1)
+        coll.add_relation(self.identification_src,
+                          self.fwd_relation,
+                          self.identification_tgt)
+        collstr = str(coll)
+        self.assertIn(self.identification_src, collstr)
+        self.assertIn(self.identification_tgt, collstr)
+
     def test_selftest(self):
         coll = dut.TraceableCollection()
         coll.add_relation_pair(self.fwd_relation, self.rev_relation)
