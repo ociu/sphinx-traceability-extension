@@ -4,6 +4,7 @@
 
 .. image:: https://badge.fury.io/py/mlx.traceability.svg
     :target: https://badge.fury.io/py/mlx.traceability
+    :alt: Pypi packaged release
 
 .. image:: https://travis-ci.org/melexis/sphinx-traceability-extension.svg?branch=master
     :target: https://travis-ci.org/melexis/sphinx-traceability-extension
