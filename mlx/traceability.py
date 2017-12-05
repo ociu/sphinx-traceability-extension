@@ -9,7 +9,7 @@ See readme for more details.
 
 from __future__ import print_function
 import re
-from sphinx.util.compat import Directive
+from docutils.parsers.rst import Directive
 from sphinx.roles import XRefRole
 from sphinx.util.nodes import make_refnode
 from sphinx.environment import NoUri
