@@ -16,7 +16,7 @@ from sphinx.environment import NoUri
 from docutils import nodes
 from docutils.parsers.rst import directives
 from docutils.utils import get_source_line
-from mlx.traceable_item import TraceableCollection, TraceableItem, TraceabilityException
+from mlx.traceable_item import TraceableCollection, TraceableItem, TraceabilityException, MultipleTraceabilityExceptions
 from sphinx import __version__ as sphinx_version
 if sphinx_version >= '1.6.0':
     from sphinx.util.logging import getLogger
@@ -334,6 +334,24 @@ class ItemTreeDirective(Directive):
 # -----------------------------------------------------------------------------
 # Event handlers
 
+def perform_consistency_check(app, doctree):
+
+    '''
+    New in sphinx 1.6: consistency checker callback
+
+    Used to perform the self-test on the collection of items
+    '''
+    env = app.builder.env
+
+    try:
+        env.traceability_collection.self_test()
+    except TraceabilityException as err:
+        report_warning(env, err, err.get_document())
+    except MultipleTraceabilityExceptions as errs:
+        for err in errs.iter():
+            report_warning(env, err, err.get_document())
+
+
 def process_item_nodes(app, doctree, fromdocname):
     """
     This function should be triggered upon ``doctree-resolved event``
@@ -344,10 +362,14 @@ def process_item_nodes(app, doctree, fromdocname):
     """
     env = app.builder.env
 
-    try:
-        env.traceability_collection.self_test(fromdocname)
-    except TraceabilityException as err:
-        report_warning(env, err, fromdocname)
+    if sphinx_version < '1.6.0':
+        try:
+            env.traceability_collection.self_test(fromdocname)
+        except TraceabilityException as err:
+            report_warning(env, err, fromdocname)
+        except MultipleTraceabilityExceptions as errs:
+            for err in errs.iter():
+                report_warning(env, err, err.get_document())
 
     all_item_ids = env.traceability_collection.iter_items()
 
@@ -762,6 +784,8 @@ def setup(app):
     app.add_directive('item-tree', ItemTreeDirective)
 
     app.connect('doctree-resolved', process_item_nodes)
+    if sphinx_version >= '1.6.0':
+        app.connect('env-check-consistency', perform_consistency_check)
     app.connect('builder-inited', initialize_environment)
 
     app.add_role('item', XRefRole(nodeclass=PendingItemXref,

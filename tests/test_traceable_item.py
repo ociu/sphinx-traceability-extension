@@ -25,8 +25,9 @@ class TestTraceableItem(TestCase):
     def test_init_placeholder(self):
         item = dut.TraceableItem(self.identification, placeholder=True)
         item.set_document(self.docname)
-        with self.assertRaises(dut.TraceabilityException):
+        with self.assertRaises(dut.TraceabilityException) as err:
             item.self_test()
+        self.assertEqual(err.exception.get_document(), self.docname)
         self.assertEqual(self.identification, item.get_id())
         self.assertTrue(item.is_placeholder())
 
