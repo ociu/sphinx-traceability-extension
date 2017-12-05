@@ -16,7 +16,7 @@ from sphinx.environment import NoUri
 from docutils import nodes
 from docutils.parsers.rst import directives
 from docutils.utils import get_source_line
-from mlx.traceable_item import TraceableCollection, TraceableItem, TraceabilityException
+from mlx.traceable_item import TraceableCollection, TraceableItem, TraceabilityException, MultipleTraceabilityExceptions
 from sphinx import __version__ as sphinx_version
 if sphinx_version >= '1.6.0':
     from sphinx.util.logging import getLogger
@@ -347,6 +347,10 @@ def perform_consistency_check(app, doctree):
         env.traceability_collection.self_test()
     except TraceabilityException as err:
         report_warning(env, err, err.get_document())
+    except MultipleTraceabilityExceptions as errs:
+        for err in errs.iter():
+            report_warning(env, err, err.get_document())
+
 
 def process_item_nodes(app, doctree, fromdocname):
     """
@@ -363,6 +367,9 @@ def process_item_nodes(app, doctree, fromdocname):
             env.traceability_collection.self_test(fromdocname)
         except TraceabilityException as err:
             report_warning(env, err, fromdocname)
+        except MultipleTraceabilityExceptions as errs:
+            for err in errs.iter():
+                report_warning(env, err, err.get_document())
 
     all_item_ids = env.traceability_collection.iter_items()
 

@@ -3,6 +3,21 @@ Storage classes for traceability plugin
 '''
 
 
+class MultipleTraceabilityExceptions(Exception):
+    '''
+    Multiple exceptions for traceability plugin
+    '''
+    def __init__(self, errors):
+        '''
+        Constructor for multiple traceability exceptions
+        '''
+        self.errors = errors
+
+    def iter(self):
+        '''Iterator for multiple exceptions'''
+        return self.errors
+
+
 class TraceabilityException(Exception):
     '''
     Exception for traceability plugin
@@ -167,6 +182,7 @@ class TraceableCollection(object):
         Args:
             docname (str): Document on which to run the self test, None for all.
         '''
+        errors = []
         # Having no valid relations, is invalid
         if not self.relations:
             raise TraceabilityException('No relations configured', 'configuration')
@@ -177,7 +193,10 @@ class TraceableCollection(object):
             if docname is not None and item.get_document() != docname and item.get_document() is not None:
                 continue
             # On item level
-            item.self_test()
+            try:
+                item.self_test()
+            except TraceabilityException as e:
+                errors.append(e)
             # targetted items shall exist, with automatic reverse relation
             for relation in self.relations:
                 # Exception: no reverse relation (external links)
@@ -187,19 +206,22 @@ class TraceableCollection(object):
                 for tgt in item.iter_targets(relation):
                     # Target item exists?
                     if tgt not in self.items:
-                        raise TraceabilityException('''{source} {relation} {target},
-                                 but {target} is not known'''.format(source=itemid,
-                                                                     relation=relation,
-                                                                     target=tgt),
-                                 item.get_document())
+                        errors.append(TraceabilityException('''{source} {relation} {target},
+                                      but {target} is not known'''.format(source=itemid,
+                                                                          relation=relation,
+                                                                          target=tgt),
+                                      item.get_document()))
+                        continue
                     # Reverse relation exists?
                     target = self.get_item(tgt)
                     if itemid not in target.iter_targets(rev_relation):
-                        raise TraceabilityException('''No automatic reverse relation:
-                                 {source} {relation} {target}'''.format(source=tgt,
-                                                                        relation=rev_relation,
-                                                                        target=itemid),
-                                 item.get_document())
+                        errors.append(TraceabilityException('''No automatic reverse relation:
+                                      {source} {relation} {target}'''.format(source=tgt,
+                                                                             relation=rev_relation,
+                                                                             target=itemid),
+                                      item.get_document()))
+        if errors:
+            raise MultipleTraceabilityExceptions(errors)
 
     def __str__(self):
         '''
