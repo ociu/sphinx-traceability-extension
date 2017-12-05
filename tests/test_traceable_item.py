@@ -7,6 +7,7 @@ class TestTraceableItem(TestCase):
     docname = 'folder/doc.rst'
     identification = 'some-random$name\'with<\"weird@symbols'
     fwd_relation = 'some-random-forward-relation'
+    rev_relation = 'some-random-reverse-relation'
     identification_tgt = 'another-item-to-target'
 
     def test_init(self):
@@ -24,8 +25,9 @@ class TestTraceableItem(TestCase):
     def test_init_placeholder(self):
         item = dut.TraceableItem(self.identification, placeholder=True)
         item.set_document(self.docname)
-        with self.assertRaises(dut.TraceabilityException):
+        with self.assertRaises(dut.TraceabilityException) as err:
             item.self_test()
+        self.assertEqual(err.exception.get_document(), self.docname)
         self.assertEqual(self.identification, item.get_id())
         self.assertTrue(item.is_placeholder())
 
@@ -201,3 +203,31 @@ class TestTraceableItem(TestCase):
         self.assertEqual(0, len(targets))
         # Self test should pass
         item.self_test()
+
+    def test_stringify(self):
+        item = dut.TraceableItem(self.identification)
+        item.set_document(self.docname)
+        item.add_target(self.fwd_relation, self.identification_tgt, implicit=False)
+        item.add_target(self.rev_relation, 'one more item', implicit=True)
+        itemstr = str(item)
+        self.assertIn(self.identification, itemstr)
+        self.assertIn(self.fwd_relation, itemstr)
+        self.assertIn(self.identification_tgt, itemstr)
+        self.assertIn(self.rev_relation, itemstr)
+        self.assertIn('one more item', itemstr)
+
+    def test_self_test(self):
+        item = dut.TraceableItem(self.identification)
+        item.set_document(self.docname)
+        # Add a target
+        item.add_target(self.fwd_relation, self.identification_tgt)
+        # Self test should pass
+        item.self_test()
+        # Add same target (fails as it is not allowed)
+        with self.assertRaises(dut.TraceabilityException):
+            item.add_target(self.fwd_relation, self.identification_tgt)
+        # Hack into class and add same relation anyway
+        item.explicit_relations[self.fwd_relation].append(self.identification_tgt)
+        # Self test should fail
+        with self.assertRaises(dut.TraceabilityException):
+            item.self_test()

@@ -172,7 +172,7 @@ class TestTraceableCollection(TestCase):
         relations = item2.iter_targets(self.fwd_relation, explicit=True, implicit=False)
         self.assertEqual(0, len(relations))
         # Self test should fail, as we have a placeholder item
-        with self.assertRaises(dut.TraceabilityException):
+        with self.assertRaises(dut.MultipleTraceabilityExceptions):
             coll.self_test()
 
     def test_add_relation_happy(self):
@@ -228,6 +228,24 @@ class TestTraceableCollection(TestCase):
         # Self test should pass
         coll.self_test()
 
+    def test_stringify(self):
+        coll = dut.TraceableCollection()
+        # Assert relation pairs are printed
+        coll.add_relation_pair(self.fwd_relation, self.rev_relation)
+        collstr = str(coll)
+        self.assertIn(self.fwd_relation, collstr)
+        self.assertIn(self.rev_relation, collstr)
+        # Add some items and relations, assert they are in the string
+        item1 = dut.TraceableItem(self.identification_src)
+        item1.set_document(self.docname)
+        coll.add_item(item1)
+        coll.add_relation(self.identification_src,
+                          self.fwd_relation,
+                          self.identification_tgt)
+        collstr = str(coll)
+        self.assertIn(self.identification_src, collstr)
+        self.assertIn(self.identification_tgt, collstr)
+
     def test_selftest(self):
         coll = dut.TraceableCollection()
         coll.add_relation_pair(self.fwd_relation, self.rev_relation)
@@ -243,7 +261,7 @@ class TestTraceableCollection(TestCase):
         # Add item to collection
         coll.add_item(item1)
         # Self test should fail as target item is not in collection
-        with self.assertRaises(dut.TraceabilityException):
+        with self.assertRaises(dut.MultipleTraceabilityExceptions):
             coll.self_test()
         # Self test one limited scope (no matching document), should pass
         coll.self_test('document-does-not-exist.rst')
@@ -251,7 +269,7 @@ class TestTraceableCollection(TestCase):
         item2 = dut.TraceableItem(self.identification_tgt)
         item2.set_document(self.docname)
         coll.add_item(item2)
-        with self.assertRaises(dut.TraceabilityException):
+        with self.assertRaises(dut.MultipleTraceabilityExceptions):
             coll.self_test()
         # Mimicing the automatic reverse relation, self test should pass
         item2.add_target(self.rev_relation, self.identification_src)

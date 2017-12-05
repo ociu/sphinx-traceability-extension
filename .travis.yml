@@ -6,21 +6,21 @@ env:
     - LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
     - SEGFAULT_SIGNALS=all
   matrix:
-    - TOXENV=
+    - TOXENV=check
 matrix:
   include:
     - python: '2.7'
       env:
-        - TOXENV=py27,sphinx1.3,sphinx1.4,sphinx1.5,sphinx1.6,sphinx-latest
+        - TOXENV=py27,sphinx1.3,sphinx1.4,sphinx1.5,sphinx1.6,sphinx-latest,codecov
     - python: '3.4'
       env:
-        - TOXENV=py34,sphinx1.3,sphinx1.4,sphinx1.5,sphinx1.6,sphinx-latest
+        - TOXENV=py34,sphinx1.3,sphinx1.4,sphinx1.5,sphinx1.6,sphinx-latest,codecov
     - python: '3.5'
       env:
-        - TOXENV=py35,sphinx1.3,sphinx1.4,sphinx1.5,sphinx1.6,sphinx-latest
+        - TOXENV=py35,sphinx1.3,sphinx1.4,sphinx1.5,sphinx1.6,sphinx-latest,codecov
     - python: '3.6'
       env:
-        - TOXENV=py36,sphinx1.3,sphinx1.4,sphinx1.5,sphinx1.6,sphinx-latest
+        - TOXENV=py36,sphinx1.3,sphinx1.4,sphinx1.5,sphinx1.6,sphinx-latest,codecov
 
 before_install:
   - python --version
@@ -29,6 +29,7 @@ before_install:
 
 install:
   - pip install tox
+  - pip install coverage
   - virtualenv --version
   - easy_install --version
   - pip --version
@@ -49,7 +50,7 @@ notifications:
 deploy:
   # test pypi
   - provider: pypi
-    distributions: sdist
+    distributions: sdist bdist_wheel
     server: https://testpypi.python.org/pypi
     user: SteinHeselmans
     password:
@@ -59,7 +60,7 @@ deploy:
       tags: false
   # production pypi
   - provider: pypi
-    distributions: sdist
+    distributions: sdist bdist_wheel
     user: SteinHeselmans
     password:
         secure: mGz3ih+7sFLiijlXvzRaN1pvCLHQxpx0TCS74vbytBjDNn+w0xNl/FR+ahffXOnETf2LutzJE+c74XsGSuw2QcQhtqI9+R+zc76UazArbE34bvVsxd5jp5DYFcw3k+FKnm/dHFNSGbx2oJB5rNN3S6D0X/s5+u4vo8HYsl7LW2Nbr3BzIDB8TLrJW42zxomDHT90RqaOdOjN7nDWB1PLW7UFmuAHmAwFA4CQLKaYY9acBd1xiBb16o4EbroLcbd3kZE+n3XjxafUqkTbPU7PFxNDuP3ddQrrgDYQQ0uts4JLKZtaVaRVhZvRJi9632N031523u8XBTF1+KK8LfSCeY0h1TsvdKuM48UPSaV1ev08cX4gYD4OMXgSUvk3MuUIZ+FKIkshbqENGlTfQcIxMgLLDtgrjJQ8qXVrCk28Bk22+hdMIHX+Ox2bkfaDzJx6fU0S85gYSC+veEYDeKy8Z1+8jja2ticvQcfqByGe6hWasin6qhtjZ27LNBmEJx4jdaXlxDsjmlYyAmjU1Dflyx9JlFA4w36nZJpQvtBN9LvjipO7cJ1Uzuy57DynmdtreZAorTQaCX4NkbvLkS6K4bsK1m48eiAxVPhquagtdI9S9dmvJFTCtULAdA7eLZI3zxmVKGwxbG7VStW70n+vb/UEjdUDAQVW84iOgRMrIp8=

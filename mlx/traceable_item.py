@@ -6,20 +6,44 @@ import json
 import collections
 
 
+class MultipleTraceabilityExceptions(Exception):
+    '''
+    Multiple exceptions for traceability plugin
+    '''
+    def __init__(self, errors):
+        '''
+        Constructor for multiple traceability exceptions
+        '''
+        self.errors = errors
+
+    def iter(self):
+        '''Iterator for multiple exceptions'''
+        return self.errors
+
+
 class TraceabilityException(Exception):
     '''
     Exception for traceability plugin
     '''
-    def __init__(self, message):
+    def __init__(self, message, docname=''):
         '''
         Constructor for traceability exception
 
         Args:
             message (str): Message for the exception
             docname (str): Name of the document triggering the exception
-            lineno (str): Line number in the document triggering the exception
         '''
         super(TraceabilityException, self).__init__(message)
+        self.docname = docname
+
+    def get_document(self):
+        '''
+        Get document in which error occured
+
+        Returns:
+            str: The name of the document in which the error occured
+        '''
+        return self.docname
 
 
 class TraceableCollection(object):
@@ -83,7 +107,7 @@ class TraceableCollection(object):
             olditem = self.items[itemid]
             # ... and it's not a placeholder, log an error
             if not olditem.placeholder:
-                raise TraceabilityException('duplicating {itemid}'.format(itemid=itemid))
+                raise TraceabilityException('duplicating {itemid}'.format(itemid=itemid), item.get_document())
             # ... otherwise, update the item with new content
             else:
                 olditem.update(item)
@@ -138,11 +162,12 @@ class TraceableCollection(object):
         # Fail if source item is unknown
         if sourceid not in self.items:
             raise ValueError('Source item {name} not known'.format(name=sourceid))
+        source = self.items[sourceid]
         # Error if relation is unknown
         if relation not in self.relations:
-            raise TraceabilityException('Relation {name} not known'.format(name=relation))
+            raise TraceabilityException('Relation {name} not known'.format(name=relation), source.get_document())
         # Add forward relation
-        self.items[sourceid].add_target(relation, targetid)
+        source.add_target(relation, targetid)
         # When reverse relation exists, continue to create/adapt target-item
         reverse_relation = self.get_reverse_relation(relation)
         if reverse_relation:
@@ -175,9 +200,10 @@ class TraceableCollection(object):
         Args:
             docname (str): Document on which to run the self test, None for all.
         '''
+        errors = []
         # Having no valid relations, is invalid
         if not self.relations:
-            raise TraceabilityException('No relations configured')
+            raise TraceabilityException('No relations configured', 'configuration')
         # Validate each item
         for itemid in self.items:
             item = self.get_item(itemid)
@@ -185,7 +211,10 @@ class TraceableCollection(object):
             if docname is not None and item.get_document() != docname and item.get_document() is not None:
                 continue
             # On item level
-            item.self_test()
+            try:
+                item.self_test()
+            except TraceabilityException as e:
+                errors.append(e)
             # targetted items shall exist, with automatic reverse relation
             for relation in self.relations:
                 # Exception: no reverse relation (external links)
@@ -195,25 +224,33 @@ class TraceableCollection(object):
                 for tgt in item.iter_targets(relation):
                     # Target item exists?
                     if tgt not in self.items:
-                        raise TraceabilityException('''{source} {relation} {target},
-                                 but {target} is not known'''.format(source=itemid,
-                                                                     relation=relation,
-                                                                     target=tgt))
+                        errors.append(TraceabilityException('''{source} {relation} {target},
+                                      but {target} is not known'''.format(source=itemid,
+                                                                          relation=relation,
+                                                                          target=tgt),
+                                      item.get_document()))
+                        continue
                     # Reverse relation exists?
                     target = self.get_item(tgt)
                     if itemid not in target.iter_targets(rev_relation):
-                        raise TraceabilityException('''No automatic reverse relation:
-                                 {source} {relation} {target}'''.format(source=tgt,
-                                                                        relation=rev_relation,
-                                                                        target=itemid))
+                        errors.append(TraceabilityException('''No automatic reverse relation:
+                                      {source} {relation} {target}'''.format(source=tgt,
+                                                                             relation=rev_relation,
+                                                                             target=itemid),
+                                      item.get_document()))
+        if errors:
+            raise MultipleTraceabilityExceptions(errors)
 
     def __str__(self):
         '''
         Convert object to string
         '''
-        retval = ''
-        for __, item in self.items.iteritems():
-            retval += str(item)
+        retval = 'Available relations:'
+        for relation in self.relations:
+            reverse = self.get_reverse_relation(relation)
+            retval += '\t{forward}: {reverse}\n'.format(forward=relation, reverse=reverse)
+        for itemid in self.items:
+            retval += str(self.items[itemid])
         return retval
 
 
@@ -418,7 +455,8 @@ class TraceableItem(object):
         if relation in self.explicit_relations and target in self.explicit_relations[relation]:
             raise TraceabilityException('Error: duplicating {src} {rel} {tgt}'.format(src=self.get_id(),
                                                                                       rel=relation,
-                                                                                      tgt=target))
+                                                                                      tgt=target),
+                                        self.get_document())
         # When relation is already implicit, we shouldn't add. When relation-to-add is explicit, it should move
         # from implicit to explicit.
         elif relation in self.implicit_relations and target in self.implicit_relations[relation]:
@@ -485,13 +523,13 @@ class TraceableItem(object):
         '''
         retval = self.STRING_TEMPLATE.format(identification=self.get_id())
         retval += '\tPlaceholder: {placeholder}\n'.format(placeholder=self.is_placeholder())
-        for relation, tgt_ids in self.explicit_relations.iteritems():
+        for relation in self.explicit_relations:
             retval += '\tExplicit {relation}\n'.format(relation=relation)
-            for tgtid in tgt_ids:
+            for tgtid in self.explicit_relations[relation]:
                 retval += '\t\t{target}\n'.format(target=tgtid)
-        for relation, tgt_ids in self.implicit_relations.iteritems():
+        for relation in self.implicit_relations:
             retval += '\tImplicit {relation}\n'.format(relation=relation)
-            for tgtid in tgt_ids:
+            for tgtid in self.implicit_relations[relation]:
                 retval += '\t\t{target}\n'.format(target=tgtid)
         return retval
 
@@ -520,7 +558,7 @@ class TraceableItem(object):
         '''
         # Item should not be a placeholder
         if self.is_placeholder():
-            raise TraceabilityException('item {item} is not defined'.format(item=self.get_id()))
+            raise TraceabilityException('item {item} is not defined'.format(item=self.get_id()), self.get_document())
         # Item should hold a reference to a document
         if self.get_document() is None:
             raise TraceabilityException('item {item} has no reference to source document'.format(item=self.get_id()))
@@ -530,4 +568,5 @@ class TraceableItem(object):
             cnt_duplicate = len(tgts) - len(set(tgts))
             if cnt_duplicate != 0:
                 raise TraceabilityException('{cnt} duplicate target(s) found for {item} {relation})'
-                                            .format(cnt=cnt_duplicate, item=self.get_id(), relation=relation))
+                                            .format(cnt=cnt_duplicate, item=self.get_id(), relation=relation),
+                                            self.get_document())

@@ -9,4 +9,4 @@ tests/docs/autodoc/docs/_build
 .tox/
 .cache
 .coverage
-
+coverage.xml
