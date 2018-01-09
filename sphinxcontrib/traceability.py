@@ -2,8 +2,7 @@
 
 from __future__ import print_function
 from docutils import nodes
-from sphinx.util.compat import Directive
-from docutils.parsers.rst import directives
+from docutils.parsers.rst import Directive, directives
 from sphinx.roles import XRefRole
 from sphinx.util.nodes import make_refnode
 from sphinx.environment import NoUri
