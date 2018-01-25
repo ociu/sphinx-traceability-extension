@@ -409,28 +409,31 @@ def process_item_nodes(app, doctree, fromdocname):
         tgroup += tbody
         table += tgroup
 
+        relationships = node['type']
+        if not relationships:
+            relationships = env.traceability_collection.iter_relations()
+
         for source_id in all_item_ids:
             source_item = env.traceability_collection.get_item(source_id)
             # placeholders don't end up in any item-matrix (less duplicate warnings for missing items)
-            if source_item.is_placeholder() is True:
+            if source_item.is_placeholder():
                 continue
             if re.match(node['source'], source_id):
                 row = nodes.row()
                 left = nodes.entry()
                 left += make_internal_item_ref(app, node, fromdocname, source_id)
                 right = nodes.entry()
-                for relationship in node['type']:
+                for relationship in relationships:
                     if REGEXP_EXTERNAL_RELATIONSHIP.search(relationship):
                         for target_id in source_item.iter_targets(relationship):
                             right += make_external_item_ref(app, target_id, relationship)
                 for target_id in all_item_ids:
                     target_item = env.traceability_collection.get_item(target_id)
                     # placeholders don't end up in any item-matrix (less duplicate warnings for missing items)
-                    if target_item.is_placeholder() is True:
+                    if not target_item or target_item.is_placeholder():
                         continue
                     if (re.match(node['target'], target_id) and
-                            are_related(
-                                env, source_id, target_id, node['type'])):
+                            are_related(env, source_id, target_id, relationships)):
                         right += make_internal_item_ref(app, node, fromdocname, target_id)
                 row += left
                 row += right
@@ -446,7 +449,7 @@ def process_item_nodes(app, doctree, fromdocname):
         ul_node = nodes.bullet_list()
         for i in all_item_ids:
             # placeholders don't end up in any item-list (less duplicate warnings for missing items)
-            if env.traceability_collection.get_item(i).is_placeholder() is True:
+            if env.traceability_collection.get_item(i).is_placeholder():
                 continue
             if re.match(node['filter'], i):
                 bullet_list_item = nodes.list_item()
@@ -465,7 +468,7 @@ def process_item_nodes(app, doctree, fromdocname):
         ul_node.set_class('bonsai')
         for i in all_item_ids:
             # placeholders don't end up in any item-tree (less duplicate warnings for missing items)
-            if env.traceability_collection.get_item(i).is_placeholder() is True:
+            if env.traceability_collection.get_item(i).is_placeholder():
                 continue
             if re.match(node['top'], i):
                 if is_item_top_level(env, i, node['top'], node['top_relation_filter']):
@@ -484,7 +487,7 @@ def process_item_nodes(app, doctree, fromdocname):
         # If target exists, try to create the reference
         item_info = env.traceability_collection.get_item(node['reftarget'])
         if item_info:
-            if item_info.is_placeholder() is True:
+            if item_info.is_placeholder():
                 docname, lineno = get_source_line(node)
                 report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_info.get_id(),
                                docname, lineno)
@@ -679,7 +682,7 @@ def make_internal_item_ref(app, node, fromdocname, item_id, caption=True):
     p_node = nodes.paragraph()
 
     # Only create link when target item exists, warn otherwise (in html and terminal)
-    if item_info.is_placeholder() is True:
+    if item_info.is_placeholder():
         docname, lineno = get_source_line(node)
         report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_id,
                        docname, lineno)
