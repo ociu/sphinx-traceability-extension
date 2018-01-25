@@ -22,5 +22,8 @@ Saying goodbye
 
    The systems will say goodbye
 
+.. item:: SYS_0003 Say nothing
+
+   The systems will say nothing
 
 Reference to item :item:`r001`
