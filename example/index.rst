@@ -117,6 +117,7 @@ Traceability from SRS to SSS
    :target: SYS
    :source: SRS
    :type:   fulfills
+   :stats:
 
 Traceability from SSS to SRS
 
@@ -124,6 +125,7 @@ Traceability from SSS to SRS
    :target: SRS
    :source: SYS
    :type:   fulfilled_by
+   :stats:
 
 Another matrix that should spawn a warning as the relation in *type* does not exist
 

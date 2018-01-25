@@ -213,6 +213,7 @@ class ItemMatrixDirective(Directive):
          :target: regexp
          :source: regexp
          :type: <<relationship>> ...
+         :stats:
 
     """
     # Optional argument: title (whitespace allowed)
@@ -222,7 +223,8 @@ class ItemMatrixDirective(Directive):
     option_spec = {'class': directives.class_option,
                    'target': directives.unchanged,
                    'source': directives.unchanged,
-                   'type': directives.unchanged}
+                   'type': directives.unchanged,
+                   'stats': directives.flag}
     # Content disallowed
     has_content = False
 
@@ -254,6 +256,12 @@ class ItemMatrixDirective(Directive):
             if rel not in env.traceability_collection.iter_relations():
                 report_warning(env, 'Traceability: unknown relation for item-matrix: %s' % rel,
                                env.docname, self.lineno)
+
+        # Check source title
+        if 'stats' in self.options:
+            item_matrix_node['stats'] = True
+        else:
+            item_matrix_node['stats'] = False
 
         return [item_matrix_node]
 
@@ -377,6 +385,7 @@ def process_item_nodes(app, doctree, fromdocname):
     # Create table with related items, printing their target references.
     # Only source and target items matching respective regexp shall be included
     for node in doctree.traverse(ItemMatrix):
+        p_node = nodes.paragraph()
         table = nodes.table()
         tgroup = nodes.tgroup()
         left_colspec = nodes.colspec(colwidth=5)
@@ -390,12 +399,16 @@ def process_item_nodes(app, doctree, fromdocname):
         tgroup += tbody
         table += tgroup
 
+        count_total = 0
+        count_covered = 0
         for source_id in all_item_ids:
             source_item = env.traceability_collection.get_item(source_id)
             # placeholders don't end up in any item-matrix (less duplicate warnings for missing items)
             if source_item.is_placeholder() is True:
                 continue
             if re.match(node['source'], source_id):
+                count_total += 1
+                covered = False
                 row = nodes.row()
                 left = nodes.entry()
                 left += make_internal_item_ref(app, node, fromdocname, source_id)
@@ -404,6 +417,7 @@ def process_item_nodes(app, doctree, fromdocname):
                     if REGEXP_EXTERNAL_RELATIONSHIP.search(relationship):
                         for target_id in source_item.iter_targets(relationship):
                             right += make_external_item_ref(app, target_id, relationship)
+                            covered = True
                 for target_id in all_item_ids:
                     target_item = env.traceability_collection.get_item(target_id)
                     # placeholders don't end up in any item-matrix (less duplicate warnings for missing items)
@@ -413,11 +427,23 @@ def process_item_nodes(app, doctree, fromdocname):
                             are_related(
                                 env, source_id, target_id, node['type'])):
                         right += make_internal_item_ref(app, node, fromdocname, target_id)
+                        covered = True
+                if covered:
+                    count_covered += 1
                 row += left
                 row += right
                 tbody += row
 
-        node.replace_self(table)
+        disp = 'Statistics: {cover} out of {total} covered: {pct}%'.format(cover=count_covered,
+                                                                           total=count_total,
+                                                                           pct=100*count_covered/count_total)
+        print(disp)
+        if node['stats']:
+            txt = nodes.Text(disp)
+            p_node += txt
+
+        p_node += table
+        node.replace_self(p_node)
 
     # Item list:
     # Create list with target references. Only items matching list regexp
