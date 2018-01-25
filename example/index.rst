@@ -87,25 +87,25 @@ Item list
 List all items:
 ---------------
 
-.. item-list::
+.. item-list:: All available items
 
 
 List all items beginning with ``r00``
 -------------------------------------
 
 .. item-list::
-   :filter: r00
+   :filter: ^r00
 
 List system requirements (beginning with SYS)
 ---------------------------------------------
 
-.. item-list::
+.. item-list:: System requirements
    :filter: ^SYS
 
 List all well-formed SYS and SRS requirements
 ---------------------------------------------
 
-.. item-list::
+.. item-list:: System and software requirements
    :filter: ^S[YR]S_\d
 
 Item matrix
@@ -115,6 +115,7 @@ All relationships
 -----------------
 
 .. item-matrix:: All
+   :stats:
 
 Traceability from SRS to SSS
 ----------------------------
@@ -124,7 +125,8 @@ Traceability from SRS to SSS
    :source: SRS
    :targettitle: system requirement
    :sourcetitle: software requirement
-   :type:   fulfills
+   :type: fulfills
+   :stats:
 
 Traceability from SSS to SRS
 ----------------------------
@@ -134,7 +136,8 @@ Traceability from SSS to SRS
    :source: SYS
    :targettitle: software requirement
    :sourcetitle: system requirement
-   :type:   fulfilled_by
+   :type: fulfilled_by
+   :stats:
 
 Another matrix that should spawn a warning as the relation in *type* does not exist
 -----------------------------------------------------------------------------------
@@ -142,7 +145,7 @@ Another matrix that should spawn a warning as the relation in *type* does not ex
 .. item-matrix:: System requirements traced to software requirements, using a non-existing relationship (=warning)
    :target: SRS
    :source: SYS
-   :type:   non_existing_relation
+   :type: non_existing_relation
    :targettitle: system requirement
    :sourcetitle: software requirement
 

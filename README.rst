@@ -374,6 +374,7 @@ A traceability matrix of documentation items can be generated using:
         :sourcetitle: Software requirements
         :targettitle: Integration and unit test cases
         :type: validated_by
+        :stats:
 
 where the *source* and *target* arguments can be replaced by any python regular expression. The *type* argument
 is a space-separated list of relationships that should be matched in the matrix. The *sourcetitle* and *targettitle*
@@ -382,6 +383,12 @@ arguments are the titles of the columns in the generated matrix.
 Documentation items matching their ID to the given *source* regular expression end up in the left column of the
 generated table. Documentation items matching their ID to the given *target* regular expression with a matching
 relationship (see *type* argument) will end up in the right column of the generated table.
+
+By providing the *stats* flag, some statistics (coverage percentage) are calculated and displayed above the
+matrix. The plugin counts the number of items having a target item in the target-column (=covered or allocated),
+and the number of items having no target in the target-column (=not covered or allocated). And calculates a
+coverage/allocation percentage from these counts. If the *stats* flag is not given, this percentage is not
+displayed.
 
 .. _traceability_usage_item_tree:
 
