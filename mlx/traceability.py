@@ -192,6 +192,8 @@ class ItemListDirective(Directive):
         # Process title (optional argument)
         if len(self.arguments) > 0:
             item_list_node['title'] = self.arguments[0]
+        else:
+            item_list_node['title'] = 'List of items'
 
         # Process ``filter`` option
         if 'filter' in self.options:
@@ -240,6 +242,8 @@ class ItemMatrixDirective(Directive):
         # Process title (optional argument)
         if len(self.arguments) > 0:
             item_matrix_node['title'] = self.arguments[0]
+        else:
+            item_matrix_node['title'] = 'Traceability matrix of items'
 
         # Process ``target`` & ``source`` options
         for option in ('target', 'source'):
@@ -314,6 +318,8 @@ class ItemTreeDirective(Directive):
         # Process title (optional argument)
         if len(self.arguments) > 0:
             item_tree_node['title'] = self.arguments[0]
+        else:
+            item_tree_node['title'] = 'Tree of items'
 
         # Process ``top`` option
         if 'top' in self.options:
@@ -476,6 +482,12 @@ def process_item_nodes(app, doctree, fromdocname):
     # Create list with target references. Only items matching list regexp
     # shall be included
     for node in doctree.traverse(ItemList):
+        top_node = nodes.container()
+        admon_node = nodes.admonition()
+        title_node = nodes.title()
+        title_node += nodes.Text(node['title'])
+        admon_node += title_node
+        top_node += admon_node
         ul_node = nodes.bullet_list()
         for i in all_item_ids:
             # placeholders don't end up in any item-list (less duplicate warnings for missing items)
@@ -488,12 +500,19 @@ def process_item_nodes(app, doctree, fromdocname):
                 bullet_list_item.append(p_node)
                 ul_node.append(bullet_list_item)
 
-        node.replace_self(ul_node)
+        top_node += ul_node
+        node.replace_self(top_node)
 
     # Item tree:
     # Create list with target references. Only items matching list regexp
     # shall be included
     for node in doctree.traverse(ItemTree):
+        top_node = nodes.container()
+        admon_node = nodes.admonition()
+        title_node = nodes.title()
+        title_node += nodes.Text(node['title'])
+        admon_node += title_node
+        top_node += admon_node
         ul_node = nodes.bullet_list()
         ul_node.set_class('bonsai')
         for i in all_item_ids:
@@ -503,7 +522,8 @@ def process_item_nodes(app, doctree, fromdocname):
             if re.match(node['top'], i):
                 if is_item_top_level(env, i, node['top'], node['top_relation_filter']):
                     ul_node.append(generate_bullet_list_tree(app, env, node, fromdocname, i))
-        node.replace_self(ul_node)
+        top_node += ul_node
+        node.replace_self(top_node)
 
     # Resolve item cross references (from ``item`` role)
     for node in doctree.traverse(PendingItemXref):
