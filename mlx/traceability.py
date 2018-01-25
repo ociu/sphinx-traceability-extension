@@ -212,6 +212,8 @@ class ItemMatrixDirective(Directive):
       .. item-matrix:: title
          :target: regexp
          :source: regexp
+         :targettitle: Target column header
+         :sourcetitle: Source column header
          :type: <<relationship>> ...
          :stats:
 
@@ -223,6 +225,8 @@ class ItemMatrixDirective(Directive):
     option_spec = {'class': directives.class_option,
                    'target': directives.unchanged,
                    'source': directives.unchanged,
+                   'targettitle': directives.unchanged,
+                   'sourcetitle': directives.unchanged,
                    'type': directives.unchanged,
                    'stats': directives.flag}
     # Content disallowed
@@ -257,11 +261,23 @@ class ItemMatrixDirective(Directive):
                 report_warning(env, 'Traceability: unknown relation for item-matrix: %s' % rel,
                                env.docname, self.lineno)
 
-        # Check source title
+        # Check statistics flag
         if 'stats' in self.options:
             item_matrix_node['stats'] = True
         else:
             item_matrix_node['stats'] = False
+
+        # Check source title
+        if 'sourcetitle' in self.options:
+            item_matrix_node['sourcetitle'] = self.options['sourcetitle']
+        else:
+            item_matrix_node['sourcetitle'] = 'Source'
+
+        # Check target title
+        if 'targettitle' in self.options:
+            item_matrix_node['targettitle'] = self.options['targettitle']
+        else:
+            item_matrix_node['targettitle'] = 'Target'
 
         return [item_matrix_node]
 
@@ -386,6 +402,8 @@ def process_item_nodes(app, doctree, fromdocname):
     # Only source and target items matching respective regexp shall be included
     for node in doctree.traverse(ItemMatrix):
         p_node = nodes.paragraph()
+        title_node = nodes.Text(node['title'])
+        p_node += title_node
         table = nodes.table()
         tgroup = nodes.tgroup()
         left_colspec = nodes.colspec(colwidth=5)
@@ -393,8 +411,8 @@ def process_item_nodes(app, doctree, fromdocname):
         tgroup += [left_colspec, right_colspec]
         tgroup += nodes.thead('', nodes.row(
             '',
-            nodes.entry('', nodes.paragraph('', 'Source')),
-            nodes.entry('', nodes.paragraph('', 'Target'))))
+            nodes.entry('', nodes.paragraph('', node['sourcetitle'])),
+            nodes.entry('', nodes.paragraph('', node['targettitle']))))
         tbody = nodes.tbody()
         tgroup += tbody
         table += tgroup
@@ -728,7 +746,7 @@ def are_related(env, source, target, relationships):
     If the list of relationship types is empty, all available
     relationship types are to be considered.
 
-    There is not need to check the reverse relationship, as these are
+    There is no need to check the reverse relationship, as these are
     added to the dict during the parsing of the documents.
     """
     if not relationships:
