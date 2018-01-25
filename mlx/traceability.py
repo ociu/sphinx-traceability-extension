@@ -465,7 +465,10 @@ def process_item_nodes(app, doctree, fromdocname):
                 row += right
                 tbody += row
 
-        percentage = int(100 * count_covered / count_total)
+        try:
+            percentage = int(100 * count_covered / count_total)
+        except ZeroDivisionError:
+            percentage = 0
         disp = 'Statistics: {cover} out of {total} covered: {pct}%'.format(cover=count_covered,
                                                                            total=count_total,
                                                                            pct=percentage)
