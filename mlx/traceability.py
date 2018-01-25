@@ -401,9 +401,12 @@ def process_item_nodes(app, doctree, fromdocname):
     # Create table with related items, printing their target references.
     # Only source and target items matching respective regexp shall be included
     for node in doctree.traverse(ItemMatrix):
-        top_node = nodes.paragraph()
-        title_node = nodes.Text(node['title'])
-        top_node += title_node
+        top_node = nodes.container()
+        admon_node = nodes.admonition()
+        title_node = nodes.title()
+        title_node += nodes.Text(node['title'])
+        admon_node += title_node
+        top_node += admon_node
         table = nodes.table()
         tgroup = nodes.tgroup()
         left_colspec = nodes.colspec(colwidth=5)
