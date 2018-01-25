@@ -401,9 +401,9 @@ def process_item_nodes(app, doctree, fromdocname):
     # Create table with related items, printing their target references.
     # Only source and target items matching respective regexp shall be included
     for node in doctree.traverse(ItemMatrix):
-        p_node = nodes.paragraph()
+        top_node = nodes.paragraph()
         title_node = nodes.Text(node['title'])
-        p_node += title_node
+        top_node += title_node
         table = nodes.table()
         tgroup = nodes.tgroup()
         left_colspec = nodes.colspec(colwidth=5)
@@ -452,16 +452,18 @@ def process_item_nodes(app, doctree, fromdocname):
                 row += right
                 tbody += row
 
+        percentage = int(100 * count_covered / count_total)
         disp = 'Statistics: {cover} out of {total} covered: {pct}%'.format(cover=count_covered,
                                                                            total=count_total,
-                                                                           pct=100*count_covered/count_total)
-        print(disp)
+                                                                           pct=percentage)
         if node['stats']:
+            p_node = nodes.paragraph()
             txt = nodes.Text(disp)
             p_node += txt
+            top_node += p_node
 
-        p_node += table
-        node.replace_self(p_node)
+        top_node += table
+        node.replace_self(top_node)
 
     # Item list:
     # Create list with target references. Only items matching list regexp
