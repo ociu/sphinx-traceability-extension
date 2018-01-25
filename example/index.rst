@@ -85,33 +85,46 @@ Item list
 =========
 
 List all items:
+---------------
 
 .. item-list::
 
 
 List all items beginning with ``r00``
+-------------------------------------
 
 .. item-list::
    :filter: r00
 
 List system requirements (beginning with SYS)
+---------------------------------------------
 
 .. item-list::
    :filter: ^SYS
 
 List all well-formed SYS and SRS requirements
+---------------------------------------------
 
 .. item-list::
    :filter: ^S[YR]S_\d
 
-Item matrix
-===========
+Item pie-chart and matrix
+=========================
 
 All relationships
+-----------------
+
+.. item-piechart:: All
 
 .. item-matrix:: All
 
 Traceability from SRS to SSS
+----------------------------
+
+.. item-piechart:: SRS to SSS
+   :target: SYS
+   :source: SRS
+   :type:   fulfills
 
 .. item-matrix:: SRS to SSS
    :target: SYS
@@ -119,6 +132,12 @@ Traceability from SRS to SSS
    :type:   fulfills
 
 Traceability from SSS to SRS
+----------------------------
+
+.. item-piechart:: SSS to SRS
+   :target: SRS
+   :source: SYS
+   :type:   fulfilled_by
 
 .. item-matrix:: SSS to SRS
    :target: SRS
@@ -126,6 +145,12 @@ Traceability from SSS to SRS
    :type:   fulfilled_by
 
 Another matrix that should spawn a warning as the relation in *type* does not exist
+-----------------------------------------------------------------------------------
+
+.. item-piechart:: SSS to SRS
+   :target: SRS
+   :source: SYS
+   :type:   non_existing_relation
 
 .. item-matrix:: SSS to SRS
    :target: SRS
@@ -136,6 +161,7 @@ Item tree
 =========
 
 Succesfull SYS tree
+-------------------
 
 .. item-tree:: SYS
     :top: SYS
@@ -143,6 +169,7 @@ Succesfull SYS tree
     :type: fulfilled_by
 
 Another tree that should spawn a warning as the relation in *top_relation_filter* does not exist.
+-------------------------------------------------------------------------------------------------
 
 .. item-tree:: warning for unknown relation
     :top: SYS
@@ -150,6 +177,7 @@ Another tree that should spawn a warning as the relation in *top_relation_filter
     :type: fulfilled_by
 
 Another tree that should spawn a warning as the relation in *type* does not exist
+---------------------------------------------------------------------------------
 
 .. item-tree:: warning for unknown relation
     :top: SYS

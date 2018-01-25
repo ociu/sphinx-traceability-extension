@@ -47,7 +47,7 @@ def report_warning(env, msg, docname, lineno=None):
         env.warn(docname, msg, lineno=lineno)
 
 # -----------------------------------------------------------------------------
-# Declare new node types (based on others): Item, ItemList, ItemMatrix, ItemTree
+# Declare new node types (based on others)
 
 
 class Item(nodes.General, nodes.Element):
@@ -62,6 +62,11 @@ class ItemList(nodes.General, nodes.Element):
 
 class ItemMatrix(nodes.General, nodes.Element):
     '''Matrix for cross referencing documentation items'''
+    pass
+
+
+class ItemPieChart(nodes.General, nodes.Element):
+    '''Pie-chart on documentation items'''
     pass
 
 
@@ -258,6 +263,62 @@ class ItemMatrixDirective(Directive):
         return [item_matrix_node]
 
 
+class ItemPieChartDirective(Directive):
+    """
+    Directive to generate a piechart for coverage of item cross-references, based on
+    a given set of relationship types.
+
+    Syntax::
+
+      .. item-piechart:: title
+         :target: regexp
+         :source: regexp
+         :type: <<relationship>> ...
+
+    """
+    # Optional argument: title (whitespace allowed)
+    optional_arguments = 1
+    final_argument_whitespace = True
+    # Options
+    option_spec = {'class': directives.class_option,
+                   'target': directives.unchanged,
+                   'source': directives.unchanged,
+                   'type': directives.unchanged}
+    # Content disallowed
+    has_content = False
+
+    def run(self):
+        env = self.state.document.settings.env
+
+        item_piechart_node = ItemPieChart('')
+
+        # Process title (optional argument)
+        if len(self.arguments) > 0:
+            item_piechart_node['title'] = self.arguments[0]
+
+        # Process ``target`` & ``source`` options
+        for option in ('target', 'source'):
+            if option in self.options:
+                item_piechart_node[option] = self.options[option]
+            else:
+                item_piechart_node[option] = ''
+
+        # Process ``type`` option, given as a string with relationship types
+        # separated by space. It is converted to a list.
+        if 'type' in self.options:
+            item_piechart_node['type'] = self.options['type'].split()
+        else:
+            item_piechart_node['type'] = []
+
+        # Check if given relationships are in configuration
+        for rel in item_piechart_node['type']:
+            if rel not in env.traceability_collection.iter_relations():
+                report_warning(env, 'Traceability: unknown relation for item-piechart: %s' % rel,
+                               env.docname, self.lineno)
+
+        return [item_piechart_node]
+
+
 class ItemTreeDirective(Directive):
     """
     Directive to generate a treeview of items, based on
@@ -390,6 +451,10 @@ def process_item_nodes(app, doctree, fromdocname):
         tgroup += tbody
         table += tgroup
 
+        relationships = node['type']
+        if not relationships:
+            relationships = env.traceability_collection.iter_relations()
+
         for source_id in all_item_ids:
             source_item = env.traceability_collection.get_item(source_id)
             # placeholders don't end up in any item-matrix (less duplicate warnings for missing items)
@@ -400,24 +465,60 @@ def process_item_nodes(app, doctree, fromdocname):
                 left = nodes.entry()
                 left += make_internal_item_ref(app, node, fromdocname, source_id)
                 right = nodes.entry()
-                for relationship in node['type']:
+                for relationship in relationships:
                     if REGEXP_EXTERNAL_RELATIONSHIP.search(relationship):
                         for target_id in source_item.iter_targets(relationship):
                             right += make_external_item_ref(app, target_id, relationship)
                 for target_id in all_item_ids:
                     target_item = env.traceability_collection.get_item(target_id)
                     # placeholders don't end up in any item-matrix (less duplicate warnings for missing items)
-                    if target_item.is_placeholder() is True:
+                    if not target_item or target_item.is_placeholder() is True:
                         continue
                     if (re.match(node['target'], target_id) and
-                            are_related(
-                                env, source_id, target_id, node['type'])):
+                            are_related(env, source_id, target_id, node['type'])):
                         right += make_internal_item_ref(app, node, fromdocname, target_id)
                 row += left
                 row += right
                 tbody += row
 
         node.replace_self(table)
+
+    # Item piechart:
+    # Very similar to item-matrix: but in stead of creating a table, count the empty cells in the right column,
+    # and generate piechart with coverage percentages.
+    # Only source and target items matching respective regexp shall be included
+    for node in doctree.traverse(ItemPieChart):
+        count_has_relation = 0
+        count_has_none = 0
+        relationships = node['type']
+        if not relationships:
+            relationships = env.traceability_collection.iter_relations()
+        for source_id in all_item_ids:
+            source_item = env.traceability_collection.get_item(source_id)
+            # placeholders don't end up in any item-piechart (less duplicate warnings for missing items)
+            if source_item.is_placeholder() is True:
+                continue
+            if re.match(node['source'], source_id):
+                covered = False
+                for relationship in relationships:
+                    tgts = source_item.iter_targets(relationship, True, True)
+                    for target_id in tgts:
+                        target_item = env.traceability_collection.get_item(target_id)
+                        # placeholders don't end up in any item-matrix (less duplicate warnings for missing items)
+                        if not target_item or target_item.is_placeholder() is True:
+                            continue
+                        if re.match(node['target'], target_id):
+                            covered = True
+                if covered:
+                    count_has_relation += 1
+                else:
+                    count_has_none += 1
+        disp = 'Piechart: {cover} covered, {empty} not-covered: '.format(cover=count_has_relation, empty=count_has_none)
+        disp += '{cover}% covered'.format(cover=count_has_relation*100.0/(count_has_relation+count_has_none))
+        p_node = nodes.paragraph()
+        txt = nodes.Text(disp)
+        p_node += txt
+        node.replace_self(p_node)
 
     # Item list:
     # Create list with target references. Only items matching list regexp
@@ -702,7 +803,7 @@ def are_related(env, source, target, relationships):
     If the list of relationship types is empty, all available
     relationship types are to be considered.
 
-    There is not need to check the reverse relationship, as these are
+    There is no need to check the reverse relationship, as these are
     added to the dict during the parsing of the documents.
     """
     if not relationships:
@@ -775,12 +876,14 @@ def setup(app):
 
     app.add_node(ItemTree)
     app.add_node(ItemMatrix)
+    app.add_node(ItemPieChart)
     app.add_node(ItemList)
     app.add_node(Item)
 
     app.add_directive('item', ItemDirective)
     app.add_directive('item-list', ItemListDirective)
     app.add_directive('item-matrix', ItemMatrixDirective)
+    app.add_directive('item-piechart', ItemPieChartDirective)
     app.add_directive('item-tree', ItemTreeDirective)
 
     app.connect('doctree-resolved', process_item_nodes)
