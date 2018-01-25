@@ -544,8 +544,14 @@ def process_item_nodes(app, doctree, fromdocname):
     # and generate piechart with coverage percentages.
     # Only source and target items matching respective regexp shall be included
     for node in doctree.traverse(ItemPieChart):
-        count_has_relation = 0
-        count_has_none = 0
+        top_node = nodes.container()
+        admon_node = nodes.admonition()
+        title_node = nodes.title()
+        title_node += nodes.Text(node['title'])
+        admon_node += title_node
+        top_node += admon_node
+        count_covered = 0
+        count_total = 0
         relationships = node['type']
         if not relationships:
             relationships = env.traceability_collection.iter_relations()
@@ -566,15 +572,18 @@ def process_item_nodes(app, doctree, fromdocname):
                         if re.match(node['target'], target_id):
                             covered = True
                 if covered:
-                    count_has_relation += 1
-                else:
-                    count_has_none += 1
-        disp = 'Piechart: {cover} covered, {empty} not-covered: '.format(cover=count_has_relation, empty=count_has_none)
-        disp += '{cover}% covered'.format(cover=count_has_relation*100.0/(count_has_relation+count_has_none))
+                    count_covered += 1
+                count_total += 1
+
+        percentage = int(100 * count_covered / count_total)
+        disp = 'Statistics: {cover} out of {total} covered: {pct}%'.format(cover=count_covered,
+                                                                           total=count_total,
+                                                                           pct=percentage)
+        # TODO: generate and include a pie-chart
         p_node = nodes.paragraph()
-        txt = nodes.Text(disp)
-        p_node += txt
-        node.replace_self(p_node)
+        p_node += nodes.Text(disp)
+        top_node += p_node
+        node.replace_self(top_node)
 
     # Item list:
     # Create list with target references. Only items matching list regexp
