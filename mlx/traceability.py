@@ -390,6 +390,10 @@ def process_item_nodes(app, doctree, fromdocname):
         tgroup += tbody
         table += tgroup
 
+        relationships = node['type']
+        if not relationships:
+            relationships = env.traceability_collection.iter_relations()
+
         for source_id in all_item_ids:
             source_item = env.traceability_collection.get_item(source_id)
             # placeholders don't end up in any item-matrix (less duplicate warnings for missing items)
@@ -400,18 +404,17 @@ def process_item_nodes(app, doctree, fromdocname):
                 left = nodes.entry()
                 left += make_internal_item_ref(app, node, fromdocname, source_id)
                 right = nodes.entry()
-                for relationship in node['type']:
+                for relationship in relationships:
                     if REGEXP_EXTERNAL_RELATIONSHIP.search(relationship):
                         for target_id in source_item.iter_targets(relationship):
                             right += make_external_item_ref(app, target_id, relationship)
                 for target_id in all_item_ids:
                     target_item = env.traceability_collection.get_item(target_id)
                     # placeholders don't end up in any item-matrix (less duplicate warnings for missing items)
-                    if target_item.is_placeholder() is True:
+                    if not target_item or target_item.is_placeholder() is True:
                         continue
                     if (re.match(node['target'], target_id) and
-                            are_related(
-                                env, source_id, target_id, node['type'])):
+                            are_related(env, source_id, target_id, relationships)):
                         right += make_internal_item_ref(app, node, fromdocname, target_id)
                 row += left
                 row += right
