@@ -197,6 +197,8 @@ class ItemListDirective(Directive):
         # Process title (optional argument)
         if len(self.arguments) > 0:
             item_list_node['title'] = self.arguments[0]
+        else:
+            item_list_node['title'] = 'List of items'
 
         # Process ``filter`` option
         if 'filter' in self.options:
@@ -217,7 +219,10 @@ class ItemMatrixDirective(Directive):
       .. item-matrix:: title
          :target: regexp
          :source: regexp
+         :targettitle: Target column header
+         :sourcetitle: Source column header
          :type: <<relationship>> ...
+         :stats:
 
     """
     # Optional argument: title (whitespace allowed)
@@ -227,7 +232,10 @@ class ItemMatrixDirective(Directive):
     option_spec = {'class': directives.class_option,
                    'target': directives.unchanged,
                    'source': directives.unchanged,
-                   'type': directives.unchanged}
+                   'targettitle': directives.unchanged,
+                   'sourcetitle': directives.unchanged,
+                   'type': directives.unchanged,
+                   'stats': directives.flag}
     # Content disallowed
     has_content = False
 
@@ -239,6 +247,8 @@ class ItemMatrixDirective(Directive):
         # Process title (optional argument)
         if len(self.arguments) > 0:
             item_matrix_node['title'] = self.arguments[0]
+        else:
+            item_matrix_node['title'] = 'Traceability matrix of items'
 
         # Process ``target`` & ``source`` options
         for option in ('target', 'source'):
@@ -259,6 +269,24 @@ class ItemMatrixDirective(Directive):
             if rel not in env.traceability_collection.iter_relations():
                 report_warning(env, 'Traceability: unknown relation for item-matrix: %s' % rel,
                                env.docname, self.lineno)
+
+        # Check statistics flag
+        if 'stats' in self.options:
+            item_matrix_node['stats'] = True
+        else:
+            item_matrix_node['stats'] = False
+
+        # Check source title
+        if 'sourcetitle' in self.options:
+            item_matrix_node['sourcetitle'] = self.options['sourcetitle']
+        else:
+            item_matrix_node['sourcetitle'] = 'Source'
+
+        # Check target title
+        if 'targettitle' in self.options:
+            item_matrix_node['targettitle'] = self.options['targettitle']
+        else:
+            item_matrix_node['targettitle'] = 'Target'
 
         return [item_matrix_node]
 
@@ -351,6 +379,8 @@ class ItemTreeDirective(Directive):
         # Process title (optional argument)
         if len(self.arguments) > 0:
             item_tree_node['title'] = self.arguments[0]
+        else:
+            item_tree_node['title'] = 'Tree of items'
 
         # Process ``top`` option
         if 'top' in self.options:
@@ -438,6 +468,12 @@ def process_item_nodes(app, doctree, fromdocname):
     # Create table with related items, printing their target references.
     # Only source and target items matching respective regexp shall be included
     for node in doctree.traverse(ItemMatrix):
+        top_node = nodes.container()
+        admon_node = nodes.admonition()
+        title_node = nodes.title()
+        title_node += nodes.Text(node['title'])
+        admon_node += title_node
+        top_node += admon_node
         table = nodes.table()
         tgroup = nodes.tgroup()
         left_colspec = nodes.colspec(colwidth=5)
@@ -445,8 +481,8 @@ def process_item_nodes(app, doctree, fromdocname):
         tgroup += [left_colspec, right_colspec]
         tgroup += nodes.thead('', nodes.row(
             '',
-            nodes.entry('', nodes.paragraph('', 'Source')),
-            nodes.entry('', nodes.paragraph('', 'Target'))))
+            nodes.entry('', nodes.paragraph('', node['sourcetitle'])),
+            nodes.entry('', nodes.paragraph('', node['targettitle']))))
         tbody = nodes.tbody()
         tgroup += tbody
         table += tgroup
@@ -455,12 +491,17 @@ def process_item_nodes(app, doctree, fromdocname):
         if not relationships:
             relationships = env.traceability_collection.iter_relations()
 
+        count_total = 0
+        count_covered = 0
+
         for source_id in all_item_ids:
             source_item = env.traceability_collection.get_item(source_id)
             # placeholders don't end up in any item-matrix (less duplicate warnings for missing items)
-            if source_item.is_placeholder() is True:
+            if source_item.is_placeholder():
                 continue
             if re.match(node['source'], source_id):
+                count_total += 1
+                covered = False
                 row = nodes.row()
                 left = nodes.entry()
                 left += make_internal_item_ref(app, node, fromdocname, source_id)
@@ -469,19 +510,34 @@ def process_item_nodes(app, doctree, fromdocname):
                     if REGEXP_EXTERNAL_RELATIONSHIP.search(relationship):
                         for target_id in source_item.iter_targets(relationship):
                             right += make_external_item_ref(app, target_id, relationship)
+                            covered = True
                 for target_id in all_item_ids:
                     target_item = env.traceability_collection.get_item(target_id)
                     # placeholders don't end up in any item-matrix (less duplicate warnings for missing items)
-                    if not target_item or target_item.is_placeholder() is True:
+                    if not target_item or target_item.is_placeholder():
                         continue
                     if (re.match(node['target'], target_id) and
-                            are_related(env, source_id, target_id, node['type'])):
+                            are_related(env, source_id, target_id, relationships)):
                         right += make_internal_item_ref(app, node, fromdocname, target_id)
+                        covered = True
+                if covered:
+                    count_covered += 1
                 row += left
                 row += right
                 tbody += row
 
-        node.replace_self(table)
+        percentage = int(100 * count_covered / count_total)
+        disp = 'Statistics: {cover} out of {total} covered: {pct}%'.format(cover=count_covered,
+                                                                           total=count_total,
+                                                                           pct=percentage)
+        if node['stats']:
+            p_node = nodes.paragraph()
+            txt = nodes.Text(disp)
+            p_node += txt
+            top_node += p_node
+
+        top_node += table
+        node.replace_self(top_node)
 
     # Item piechart:
     # Very similar to item-matrix: but in stead of creating a table, count the empty cells in the right column,
@@ -524,10 +580,16 @@ def process_item_nodes(app, doctree, fromdocname):
     # Create list with target references. Only items matching list regexp
     # shall be included
     for node in doctree.traverse(ItemList):
+        top_node = nodes.container()
+        admon_node = nodes.admonition()
+        title_node = nodes.title()
+        title_node += nodes.Text(node['title'])
+        admon_node += title_node
+        top_node += admon_node
         ul_node = nodes.bullet_list()
         for i in all_item_ids:
             # placeholders don't end up in any item-list (less duplicate warnings for missing items)
-            if env.traceability_collection.get_item(i).is_placeholder() is True:
+            if env.traceability_collection.get_item(i).is_placeholder():
                 continue
             if re.match(node['filter'], i):
                 bullet_list_item = nodes.list_item()
@@ -536,22 +598,30 @@ def process_item_nodes(app, doctree, fromdocname):
                 bullet_list_item.append(p_node)
                 ul_node.append(bullet_list_item)
 
-        node.replace_self(ul_node)
+        top_node += ul_node
+        node.replace_self(top_node)
 
     # Item tree:
     # Create list with target references. Only items matching list regexp
     # shall be included
     for node in doctree.traverse(ItemTree):
+        top_node = nodes.container()
+        admon_node = nodes.admonition()
+        title_node = nodes.title()
+        title_node += nodes.Text(node['title'])
+        admon_node += title_node
+        top_node += admon_node
         ul_node = nodes.bullet_list()
         ul_node.set_class('bonsai')
         for i in all_item_ids:
             # placeholders don't end up in any item-tree (less duplicate warnings for missing items)
-            if env.traceability_collection.get_item(i).is_placeholder() is True:
+            if env.traceability_collection.get_item(i).is_placeholder():
                 continue
             if re.match(node['top'], i):
                 if is_item_top_level(env, i, node['top'], node['top_relation_filter']):
                     ul_node.append(generate_bullet_list_tree(app, env, node, fromdocname, i))
-        node.replace_self(ul_node)
+        top_node += ul_node
+        node.replace_self(top_node)
 
     # Resolve item cross references (from ``item`` role)
     for node in doctree.traverse(PendingItemXref):
@@ -565,7 +635,7 @@ def process_item_nodes(app, doctree, fromdocname):
         # If target exists, try to create the reference
         item_info = env.traceability_collection.get_item(node['reftarget'])
         if item_info:
-            if item_info.is_placeholder() is True:
+            if item_info.is_placeholder():
                 docname, lineno = get_source_line(node)
                 report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_info.get_id(),
                                docname, lineno)
@@ -760,7 +830,7 @@ def make_internal_item_ref(app, node, fromdocname, item_id, caption=True):
     p_node = nodes.paragraph()
 
     # Only create link when target item exists, warn otherwise (in html and terminal)
-    if item_info.is_placeholder() is True:
+    if item_info.is_placeholder():
         docname, lineno = get_source_line(node)
         report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_id,
                        docname, lineno)

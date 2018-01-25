@@ -87,25 +87,25 @@ Item list
 List all items:
 ---------------
 
-.. item-list::
+.. item-list:: All available items
 
 
 List all items beginning with ``r00``
 -------------------------------------
 
 .. item-list::
-   :filter: r00
+   :filter: ^r00
 
 List system requirements (beginning with SYS)
 ---------------------------------------------
 
-.. item-list::
+.. item-list:: System requirements
    :filter: ^SYS
 
 List all well-formed SYS and SRS requirements
 ---------------------------------------------
 
-.. item-list::
+.. item-list:: System and software requirements
    :filter: ^S[YR]S_\d
 
 Item pie-chart and matrix
@@ -117,45 +117,54 @@ All relationships
 .. item-piechart:: All
 
 .. item-matrix:: All
+   :stats:
 
 Traceability from SRS to SSS
 ----------------------------
 
-.. item-piechart:: SRS to SSS
+.. item-piechart:: Software requirements fulfilling system requirements
    :target: SYS
    :source: SRS
    :type:   fulfills
 
-.. item-matrix:: SRS to SSS
+.. item-matrix:: Software requirements fulfilling system requirements
    :target: SYS
    :source: SRS
-   :type:   fulfills
+   :targettitle: system requirement
+   :sourcetitle: software requirement
+   :type: fulfills
+   :stats:
 
 Traceability from SSS to SRS
 ----------------------------
 
-.. item-piechart:: SSS to SRS
+.. item-piechart:: System requirements fulfilled by software requirements
    :target: SRS
    :source: SYS
    :type:   fulfilled_by
 
-.. item-matrix:: SSS to SRS
+.. item-matrix:: System requirements fulfilled by software requirements
    :target: SRS
    :source: SYS
-   :type:   fulfilled_by
+   :targettitle: software requirement
+   :sourcetitle: system requirement
+   :type: fulfilled_by
+   :stats:
 
 Another matrix that should spawn a warning as the relation in *type* does not exist
 -----------------------------------------------------------------------------------
 
-.. item-piechart:: SSS to SRS
+.. item-piechart:: System requirements traced to software requirements, using a non-existing relationship (=warning)
    :target: SRS
    :source: SYS
    :type:   non_existing_relation
 
-.. item-matrix:: SSS to SRS
+.. item-matrix:: System requirements traced to software requirements, using a non-existing relationship (=warning)
    :target: SRS
    :source: SYS
-   :type:   non_existing_relation
+   :type: non_existing_relation
+   :targettitle: system requirement
+   :sourcetitle: software requirement
 
 Item tree
 =========

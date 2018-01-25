@@ -433,6 +433,12 @@ class TraceableItem(object):
             implicit (bool): If true, an explicitely expressed relation is added here. If false, an implicite
                              (e.g. automatic reverse) relation is added here.
         '''
+        # When target is the item itself, it is an error: no circular relationships
+        if self.get_id() == target:
+            raise TraceabilityException('Error: circular relationship {src} {rel} {tgt}'.format(src=self.get_id(),
+                                                                                                rel=relation,
+                                                                                                tgt=target),
+                                        self.get_document())
         # When relation is already explicit, we shouldn't add. It is an error.
         if relation in self.explicit_relations and target in self.explicit_relations[relation]:
             raise TraceabilityException('Error: duplicating {src} {rel} {tgt}'.format(src=self.get_id(),
