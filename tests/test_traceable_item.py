@@ -64,6 +64,18 @@ class TestTraceableItem(TestCase):
         self.assertEqual(txt, item.get_content())
         item.self_test()
 
+    def test_add_target_explicit_self(self):
+        item = dut.TraceableItem(self.identification)
+        item.set_document(self.docname)
+        with self.assertRaises(dut.TraceabilityException):
+            item.add_target(self.fwd_relation, self.identification, implicit=False)
+
+    def test_add_target_implicit_self(self):
+        item = dut.TraceableItem(self.identification)
+        item.set_document(self.docname)
+        with self.assertRaises(dut.TraceabilityException):
+            item.add_target(self.fwd_relation, self.identification, implicit=True)
+
     def test_add_get_target_explicit(self):
         item = dut.TraceableItem(self.identification)
         item.set_document(self.docname)
