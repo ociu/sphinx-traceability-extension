@@ -371,10 +371,13 @@ A traceability matrix of documentation items can be generated using:
     .. item-matrix:: Requirements to test case description traceability
         :source: SWRQT
         :target: [IU]TEST
+        :sourcetitle: Software requirements
+        :targettitle: Integration and unit test cases
         :type: validated_by
 
 where the *source* and *target* arguments can be replaced by any python regular expression. The *type* argument
-is a space-separated list of relationships that should be matched in the matrix.
+is a space-separated list of relationships that should be matched in the matrix. The *sourcetitle* and *targettitle*
+arguments are the titles of the columns in the generated matrix.
 
 Documentation items matching their ID to the given *source* regular expression end up in the left column of the
 generated table. Documentation items matching their ID to the given *target* regular expression with a matching

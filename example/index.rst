@@ -85,21 +85,25 @@ Item list
 =========
 
 List all items:
+---------------
 
 .. item-list::
 
 
 List all items beginning with ``r00``
+-------------------------------------
 
 .. item-list::
    :filter: r00
 
 List system requirements (beginning with SYS)
+---------------------------------------------
 
 .. item-list::
    :filter: ^SYS
 
 List all well-formed SYS and SRS requirements
+---------------------------------------------
 
 .. item-list::
    :filter: ^S[YR]S_\d
@@ -108,34 +112,45 @@ Item matrix
 ===========
 
 All relationships
+-----------------
 
 .. item-matrix:: All
 
 Traceability from SRS to SSS
+----------------------------
 
-.. item-matrix:: SRS to SSS
+.. item-matrix:: Software requirements fulfilling system requirements
    :target: SYS
    :source: SRS
+   :targettitle: system requirement
+   :sourcetitle: software requirement
    :type:   fulfills
 
 Traceability from SSS to SRS
+----------------------------
 
-.. item-matrix:: SSS to SRS
+.. item-matrix:: System requirements fulfilled by software requirements
    :target: SRS
    :source: SYS
+   :targettitle: software requirement
+   :sourcetitle: system requirement
    :type:   fulfilled_by
 
 Another matrix that should spawn a warning as the relation in *type* does not exist
+-----------------------------------------------------------------------------------
 
-.. item-matrix:: SSS to SRS
+.. item-matrix:: System requirements traced to software requirements, using a non-existing relationship (=warning)
    :target: SRS
    :source: SYS
    :type:   non_existing_relation
+   :targettitle: system requirement
+   :sourcetitle: software requirement
 
 Item tree
 =========
 
 Succesfull SYS tree
+-------------------
 
 .. item-tree:: SYS
     :top: SYS
@@ -143,6 +158,7 @@ Succesfull SYS tree
     :type: fulfilled_by
 
 Another tree that should spawn a warning as the relation in *top_relation_filter* does not exist.
+-------------------------------------------------------------------------------------------------
 
 .. item-tree:: warning for unknown relation
     :top: SYS
@@ -150,6 +166,7 @@ Another tree that should spawn a warning as the relation in *top_relation_filter
     :type: fulfilled_by
 
 Another tree that should spawn a warning as the relation in *type* does not exist
+---------------------------------------------------------------------------------
 
 .. item-tree:: warning for unknown relation
     :top: SYS
