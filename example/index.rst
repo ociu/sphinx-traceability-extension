@@ -9,67 +9,69 @@ Welcome to Example's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 1
+    :maxdepth: 1
 
-   SRS
-   SSS
+    SRS
+    SSS
 
 .. item:: r001 First requirement
-   :class: functional requirement
+    :class: functional requirement
 
-   This is one item
+    This is one item
 
-   - More content
-   - More again
+    - More content
+    - More again
 
-     - And nested content
-     - *other* with **emphasis** and
-     - .. note:: a note
+        - And nested content
+        - *other* with **emphasis** and
 
-          Yes, a note
+    .. note:: a note
+
+        Yes, a note
 
 .. item:: r002
-   :class: critical
+    :class: critical
 
-   We have to extend this section
+    We have to extend this section
 
 This text is not part of any item
 
 .. item:: r003 The great
-   :class: secondary
-   :trace: r002
-   :ext_toolname: namespace:group:document
+    :class: secondary
+    :trace: r002
+    :ext_toolname: namespace:group:document
 
-   Clean up all this.
+    Clean up all this.
 
 .. item:: r005 Another
-   :class: terciary
-   :trace: r002 r003
+    :class: terciary
+    :trace: r002 r003
 
-   Clean up all this again
+    Clean up all this again
 
 .. item:: r006 Depends on all
-   :class: terciary
-   :trace: r001
-           r002
-           r003 r005
+    :class: terciary
+    :trace: r001
+        r002
+        r003
+        r005
 
-   To demonstrate that bug #2 is solved
+    To demonstrate that bug #2 is solved
 
 .. item:: r007 Depends on all with stereotypes
-   :class: terciary
-   :trace: r001
-   :validates: r002
-   :fulfills:  r003
-           r005
+    :class: terciary
+    :trace: r001
+    :validates: r002
+    :fulfills:  r003
+        r005
 
-   To demonstrate stereotype usage in relationships
+    To demonstrate stereotype usage in relationships
 
 
 .. requirement:: r100 A requirement using the ``requirement`` type
 
-   This item has been defined using other directive. It easily extends
-   rst semantics
+    This item has been defined using other directive. It easily extends
+    rst semantics
 
 .. item:: r008 Requirement with invalid reference to other one
     :trace: non_existing_requirement
@@ -84,8 +86,14 @@ This text is not part of any item
 Item list
 =========
 
-List all items:
----------------
+No items
+--------
+
+.. item-list:: No items
+    :filter: this_regex_doesnt_match_any_item
+
+List all items
+--------------
 
 .. item-list:: All available items
 
@@ -94,22 +102,31 @@ List all items beginning with ``r00``
 -------------------------------------
 
 .. item-list::
-   :filter: ^r00
+    :filter: ^r00
 
 List system requirements (beginning with SYS)
 ---------------------------------------------
 
 .. item-list:: System requirements
-   :filter: ^SYS
+    :filter: ^SYS
 
 List all well-formed SYS and SRS requirements
 ---------------------------------------------
 
 .. item-list:: System and software requirements
-   :filter: ^S[YR]S_\d
+    :filter: ^S[YR]S_\d
 
 Item matrix
 ===========
+
+No relationships
+----------------
+
+.. item-matrix:: None
+    :source: source_regex_doesnt_match_anything
+    :targettitle: nothing
+    :sourcetitle: more of nothing
+    :stats:
 
 All relationships
 -----------------
@@ -121,36 +138,42 @@ Traceability from SRS to SSS
 ----------------------------
 
 .. item-matrix:: Software requirements fulfilling system requirements
-   :target: SYS
-   :source: SRS
-   :targettitle: system requirement
-   :sourcetitle: software requirement
-   :type: fulfills
-   :stats:
+    :target: SYS
+    :source: SRS
+    :targettitle: system requirement
+    :sourcetitle: software requirement
+    :type: fulfills
+    :stats:
 
 Traceability from SSS to SRS
 ----------------------------
 
 .. item-matrix:: System requirements fulfilled by software requirements
-   :target: SRS
-   :source: SYS
-   :targettitle: software requirement
-   :sourcetitle: system requirement
-   :type: fulfilled_by
-   :stats:
+    :target: SRS
+    :source: SYS
+    :targettitle: software requirement
+    :sourcetitle: system requirement
+    :type: fulfilled_by
+    :stats:
 
 Another matrix that should spawn a warning as the relation in *type* does not exist
 -----------------------------------------------------------------------------------
 
 .. item-matrix:: System requirements traced to software requirements, using a non-existing relationship (=warning)
-   :target: SRS
-   :source: SYS
-   :type: non_existing_relation
-   :targettitle: system requirement
-   :sourcetitle: software requirement
+    :target: SRS
+    :source: SYS
+    :type: non_existing_relation
+    :targettitle: system requirement
+    :sourcetitle: software requirement
 
 Item tree
 =========
+
+Empty tree
+----------
+
+.. item-tree:: Empty
+    :top: this_regex_doesnt_match_anything
 
 Succesfull SYS tree
 -------------------
