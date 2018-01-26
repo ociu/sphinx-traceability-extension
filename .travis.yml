@@ -67,3 +67,11 @@ deploy:
     on:
       branch: master
       tags: true
+  # publish example: build by tox, published to pages
+  - provider: pages
+    skip_cleanup: true
+    local_dir: $TRAVIS_BUILD_DIR/example/_build/html/
+    github_token: $GITHUB_TOKEN
+    on:
+        branch: master
+
