@@ -140,9 +140,9 @@ Traceability from SRS to SSS
 ----------------------------
 
 .. item-piechart:: Software requirements fulfilling system requirements
-   :target: SYS
-   :source: SRS
-   :type:   fulfills
+    :target: SYS
+    :source: SRS
+    :type:   fulfills
 
 .. item-matrix:: Software requirements fulfilling system requirements
     :target: SYS
@@ -156,9 +156,9 @@ Traceability from SSS to SRS
 ----------------------------
 
 .. item-piechart:: System requirements fulfilled by software requirements
-   :target: SRS
-   :source: SYS
-   :type:   fulfilled_by
+    :target: SRS
+    :source: SYS
+    :type:   fulfilled_by
 
 .. item-matrix:: System requirements fulfilled by software requirements
     :target: SRS
@@ -172,9 +172,9 @@ Another matrix that should spawn a warning as the relation in *type* does not ex
 -----------------------------------------------------------------------------------
 
 .. item-piechart:: System requirements traced to software requirements, using a non-existing relationship (=warning)
-   :target: SRS
-   :source: SYS
-   :type:   non_existing_relation
+    :target: SRS
+    :source: SYS
+    :type:   non_existing_relation
 
 .. item-matrix:: System requirements traced to software requirements, using a non-existing relationship (=warning)
     :target: SRS
