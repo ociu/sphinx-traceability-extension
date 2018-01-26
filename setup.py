@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 project_url = 'https://github.com/melexis/sphinx-traceability-extension'
-version = '2.1.0'
+version = '2.2.0'
 
 requires = ['Sphinx>=0.6', 'docutils']
 
