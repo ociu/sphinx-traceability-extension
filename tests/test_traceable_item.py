@@ -228,6 +228,23 @@ class TestTraceableItem(TestCase):
         self.assertIn(self.rev_relation, itemstr)
         self.assertIn('one more item', itemstr)
 
+    def test_match(self):
+        item = dut.TraceableItem(self.identification)
+        self.assertEqual(self.identification, item.get_id())
+        self.assertFalse(item.is_match('some-name-that(will-definitely)not-match'))
+        self.assertTrue(item.is_match('some'))
+        self.assertTrue(item.is_match('some-random'))
+        self.assertTrue(item.is_match('\w+'))
+        self.assertTrue(item.is_match('[\w-]+andom'))
+
+    def test_related(self):
+        item = dut.TraceableItem(self.identification)
+        self.assertEqual(self.identification, item.get_id())
+        self.assertFalse(item.is_related([self.fwd_relation], self.identification_tgt))
+        item.add_target(self.fwd_relation, self.identification_tgt)
+        self.assertTrue(item.is_related([self.fwd_relation], self.identification_tgt))
+        self.assertFalse(item.is_related(['some-other-relation'], self.identification_tgt))
+
     def test_self_test(self):
         item = dut.TraceableItem(self.identification)
         item.set_document(self.docname)
