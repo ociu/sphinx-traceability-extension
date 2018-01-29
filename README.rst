@@ -390,6 +390,28 @@ and the number of items having no target in the target-column (=not covered or a
 coverage/allocation percentage from these counts. If the *stats* flag is not given, this percentage is not
 displayed.
 
+.. _traceability_usage_2d_matrix:
+
+2D-matrix of documentation items
+================================
+
+A 2D-matrix of documentation items can be generated using:
+
+.. code-block:: rest
+
+    .. item-2d-matrix:: Requirements to test case description traceability
+        :source: SWRQT
+        :target: [IU]TEST
+        :type: validated_by
+
+where the *source* and *target* arguments can be replaced by any python regular expression. The *type* argument
+is a space-separated list of relationships that should be matched in the matrix.
+
+Documentation items matching their ID to the given *source* regular expression end up as columns of the
+generated table. Documentation items matching their ID to the given *target* regular expression end up as
+rows of the generated table. Where source and target items have a matching relationship (see *type* argument)
+an 'x' will be placed in the cell at co-ordinates of source/target.
+
 .. _traceability_usage_item_tree:
 
 Documentation items tree-view

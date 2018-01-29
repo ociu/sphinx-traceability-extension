@@ -166,6 +166,25 @@ Another matrix that should spawn a warning as the relation in *type* does not ex
     :targettitle: system requirement
     :sourcetitle: software requirement
 
+Item 2D matrix
+==============
+
+SRS to SSS
+----------
+
+.. item-2d-matrix:: System requirements fulfilled by software requirements
+    :target: SRS
+    :source: SYS
+    :type: fulfilled_by
+
+SSS to SRS
+----------
+
+.. item-2d-matrix:: Software requirements fulfilling system requirements
+    :target: SYS
+    :source: SRS
+    :type: fulfills
+
 Item tree
 =========
 

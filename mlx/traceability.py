@@ -65,6 +65,11 @@ class ItemMatrix(nodes.General, nodes.Element):
     pass
 
 
+class Item2DMatrix(nodes.General, nodes.Element):
+    '''Matrix for cross referencing documentation items in 2 dimensions'''
+    pass
+
+
 class ItemTree(nodes.General, nodes.Element):
     '''Tree-view on documentation items'''
     pass
@@ -286,6 +291,64 @@ class ItemMatrixDirective(Directive):
         return [item_matrix_node]
 
 
+class Item2DMatrixDirective(Directive):
+    """
+    Directive to generate a 2D-matrix of item cross-references, based on
+    a given set of relationship types.
+
+    Syntax::
+
+      .. item-matrix:: title
+         :target: regexp
+         :source: regexp
+         :type: <<relationship>> ...
+
+    """
+    # Optional argument: title (whitespace allowed)
+    optional_arguments = 1
+    final_argument_whitespace = True
+    # Options
+    option_spec = {'class': directives.class_option,
+                   'target': directives.unchanged,
+                   'source': directives.unchanged,
+                   'type': directives.unchanged}
+    # Content disallowed
+    has_content = False
+
+    def run(self):
+        env = self.state.document.settings.env
+
+        node = Item2DMatrix('')
+
+        # Process title (optional argument)
+        if len(self.arguments) > 0:
+            node['title'] = self.arguments[0]
+        else:
+            node['title'] = '2D traceability matrix of items'
+
+        # Process ``target`` & ``source`` options
+        for option in ('target', 'source'):
+            if option in self.options:
+                node[option] = self.options[option]
+            else:
+                node[option] = ''
+
+        # Process ``type`` option, given as a string with relationship types
+        # separated by space. It is converted to a list.
+        if 'type' in self.options:
+            node['type'] = self.options['type'].split()
+        else:
+            node['type'] = []
+
+        # Check if given relationships are in configuration
+        for rel in node['type']:
+            if rel not in env.traceability_collection.iter_relations():
+                report_warning(env, 'Traceability: unknown relation for item-2d-matrix: %s' % rel,
+                               env.docname, self.lineno)
+
+        return [node]
+
+
 class ItemTreeDirective(Directive):
     """
     Directive to generate a treeview of items, based on
@@ -478,6 +541,50 @@ def process_item_nodes(app, doctree, fromdocname):
             p_node += txt
             top_node += p_node
 
+        top_node += table
+        node.replace_self(top_node)
+
+    # Item 2D matrix:
+    # Create table with related items, printing their target references.
+    # Only source and target items matching respective regexp shall be included
+    for node in doctree.traverse(Item2DMatrix):
+        source_ids = env.traceability_collection.get_matches(node['source'])
+        target_ids = env.traceability_collection.get_matches(node['target'])
+        top_node = nodes.container()
+        admon_node = nodes.admonition()
+        title_node = nodes.title()
+        title_node += nodes.Text(node['title'])
+        admon_node += title_node
+        top_node += admon_node
+        table = nodes.table()
+        tgroup = nodes.tgroup()
+        colspecs = [nodes.colspec(colwidth=5)]
+        hrow = nodes.row('', nodes.entry('', nodes.paragraph('', '')))
+        for source_id in source_ids:
+            colspecs.append(nodes.colspec(colwidth=5))
+            src_cell = make_internal_item_ref(app, node, fromdocname, source_id, False)
+            hrow.append(nodes.entry('', src_cell))
+        tgroup += colspecs
+        tgroup += nodes.thead('', hrow)
+        tbody = nodes.tbody()
+        for target_id in target_ids:
+            row = nodes.row()
+            tgt_cell = nodes.entry()
+            tgt_cell += make_internal_item_ref(app, node, fromdocname, target_id, False)
+            row += tgt_cell
+            for source_id in source_ids:
+                cell = nodes.entry()
+                p_node = nodes.paragraph()
+                if env.traceability_collection.are_related(source_id, node['type'], target_id):
+                    txt = 'x'
+                else:
+                    txt = 'o'
+                p_node += nodes.Text(txt)
+                cell += p_node
+                row += cell
+            tbody += row
+        tgroup += tbody
+        table += tgroup
         top_node += table
         node.replace_self(top_node)
 
@@ -857,6 +964,7 @@ def setup(app):
     app.add_directive('item', ItemDirective)
     app.add_directive('item-list', ItemListDirective)
     app.add_directive('item-matrix', ItemMatrixDirective)
+    app.add_directive('item-2d-matrix', Item2DMatrixDirective)
     app.add_directive('item-tree', ItemTreeDirective)
 
     app.connect('doctree-resolved', process_item_nodes)
