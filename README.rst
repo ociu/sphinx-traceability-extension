@@ -402,6 +402,8 @@ A 2D-matrix of documentation items can be generated using:
     .. item-2d-matrix:: Requirements to test case description traceability
         :source: SWRQT
         :target: [IU]TEST
+        :hit: x
+        :miss:
         :type: validated_by
 
 where the *source* and *target* arguments can be replaced by any python regular expression. The *type* argument
