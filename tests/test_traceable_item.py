@@ -1,5 +1,6 @@
 from unittest import TestCase
 
+import mlx.traceability_exception as exception
 import mlx.traceable_item as dut
 
 
@@ -25,7 +26,7 @@ class TestTraceableItem(TestCase):
     def test_init_placeholder(self):
         item = dut.TraceableItem(self.identification, placeholder=True)
         item.set_document(self.docname)
-        with self.assertRaises(dut.TraceabilityException) as err:
+        with self.assertRaises(exception.TraceabilityException) as err:
             item.self_test()
         self.assertEqual(err.exception.get_document(), self.docname)
         self.assertEqual(self.identification, item.get_id())
@@ -33,7 +34,7 @@ class TestTraceableItem(TestCase):
 
     def test_set_document(self):
         item = dut.TraceableItem(self.identification)
-        with self.assertRaises(dut.TraceabilityException):
+        with self.assertRaises(exception.TraceabilityException):
             item.self_test()
         item.set_document('some-file.rst', 888)
         self.assertEqual('some-file.rst', item.get_document())
@@ -67,13 +68,13 @@ class TestTraceableItem(TestCase):
     def test_add_target_explicit_self(self):
         item = dut.TraceableItem(self.identification)
         item.set_document(self.docname)
-        with self.assertRaises(dut.TraceabilityException):
+        with self.assertRaises(exception.TraceabilityException):
             item.add_target(self.fwd_relation, self.identification, implicit=False)
 
     def test_add_target_implicit_self(self):
         item = dut.TraceableItem(self.identification)
         item.set_document(self.docname)
-        with self.assertRaises(dut.TraceabilityException):
+        with self.assertRaises(exception.TraceabilityException):
             item.add_target(self.fwd_relation, self.identification, implicit=True)
 
     def test_add_get_target_explicit(self):
@@ -99,7 +100,7 @@ class TestTraceableItem(TestCase):
         self.assertEqual(1, len(targets))
         self.assertEqual(targets[0], self.identification_tgt)
         # Add the same explicit target, should not change (no duplicates)
-        with self.assertRaises(dut.TraceabilityException):
+        with self.assertRaises(exception.TraceabilityException):
             item.add_target(self.fwd_relation, self.identification_tgt)
         targets = item.iter_targets(self.fwd_relation)
         self.assertEqual(1, len(targets))
@@ -110,7 +111,7 @@ class TestTraceableItem(TestCase):
         self.assertEqual(1, len(targets))
         self.assertEqual(targets[0], self.identification_tgt)
         # Add the same implicit target, should not change (is already explicit)
-        with self.assertRaises(dut.TraceabilityException):
+        with self.assertRaises(exception.TraceabilityException):
             item.add_target(self.fwd_relation, self.identification_tgt, implicit=True)
         targets = item.iter_targets(self.fwd_relation)
         self.assertEqual(1, len(targets))
@@ -253,10 +254,10 @@ class TestTraceableItem(TestCase):
         # Self test should pass
         item.self_test()
         # Add same target (fails as it is not allowed)
-        with self.assertRaises(dut.TraceabilityException):
+        with self.assertRaises(exception.TraceabilityException):
             item.add_target(self.fwd_relation, self.identification_tgt)
         # Hack into class and add same relation anyway
         item.explicit_relations[self.fwd_relation].append(self.identification_tgt)
         # Self test should fail
-        with self.assertRaises(dut.TraceabilityException):
+        with self.assertRaises(exception.TraceabilityException):
             item.self_test()
