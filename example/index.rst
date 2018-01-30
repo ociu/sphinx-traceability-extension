@@ -175,6 +175,8 @@ SRS to SSS
 .. item-2d-matrix:: System requirements fulfilled by software requirements
     :target: SRS
     :source: SYS
+    :hit: x
+    :miss: o
     :type: fulfilled_by
 
 SSS to SRS
@@ -183,6 +185,8 @@ SSS to SRS
 .. item-2d-matrix:: Software requirements fulfilling system requirements
     :target: SYS
     :source: SRS
+    :hit: x
+    :miss:
     :type: fulfills
 
 Item tree

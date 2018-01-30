@@ -311,6 +311,8 @@ class Item2DMatrixDirective(Directive):
     option_spec = {'class': directives.class_option,
                    'target': directives.unchanged,
                    'source': directives.unchanged,
+                   'hit': directives.unchanged,
+                   'miss': directives.unchanged,
                    'type': directives.unchanged}
     # Content disallowed
     has_content = False
@@ -345,6 +347,18 @@ class Item2DMatrixDirective(Directive):
             if rel not in env.traceability_collection.iter_relations():
                 report_warning(env, 'Traceability: unknown relation for item-2d-matrix: %s' % rel,
                                env.docname, self.lineno)
+
+        # Check hit string
+        if 'hit' in self.options:
+            node['hit'] = self.options['hit']
+        else:
+            node['hit'] = 'x'
+
+        # Check miss string
+        if 'miss' in self.options:
+            node['miss'] = self.options['miss']
+        else:
+            node['miss'] = ''
 
         return [node]
 
@@ -576,9 +590,9 @@ def process_item_nodes(app, doctree, fromdocname):
                 cell = nodes.entry()
                 p_node = nodes.paragraph()
                 if env.traceability_collection.are_related(source_id, node['type'], target_id):
-                    txt = 'x'
+                    txt = node['hit']
                 else:
-                    txt = 'o'
+                    txt = node['miss']
                 p_node += nodes.Text(txt)
                 cell += p_node
                 row += cell
