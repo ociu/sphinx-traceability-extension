@@ -175,6 +175,11 @@ SRS to SSS
 .. item-2d-matrix:: System requirements fulfilled by software requirements
     :target: SRS
     :source: SYS
+    :type: fulfilled_by
+
+.. item-2d-matrix:: System requirements fulfilled by software requirements
+    :target: SRS
+    :source: SYS
     :hit: x
     :miss: o
     :type: fulfilled_by
@@ -185,9 +190,19 @@ SSS to SRS
 .. item-2d-matrix:: Software requirements fulfilling system requirements
     :target: SYS
     :source: SRS
-    :hit: x
+    :hit: yes
     :miss:
     :type: fulfills
+
+Another 2D matrix that should spawn a warning as the relation in *type* does not exist
+--------------------------------------------------------------------------------------
+
+.. item-2d-matrix:: System requirements traced to software requirements, using a non-existing relationship (=warning)
+    :target: SRS
+    :source: SYS
+    :hit: yes
+    :miss: no
+    :type: non_existing_relation
 
 Item tree
 =========
