@@ -246,21 +246,21 @@ class TestTraceableCollection(TestCase):
         self.assertIn(self.identification_src, collstr)
         self.assertIn(self.identification_tgt, collstr)
 
-    def test_get_matches(self):
+    def test_get_items(self):
         coll = dut.TraceableCollection()
         coll.add_relation_pair(self.fwd_relation, self.rev_relation)
-        self.assertEqual(0, len(coll.get_matches('\w*')))
+        self.assertEqual(0, len(coll.get_items('\w*')))
         item1 = dut.TraceableItem(self.identification_src)
         coll.add_item(item1)
         coll.add_relation(self.identification_src,
                           self.fwd_relation,
                           self.identification_tgt)
         # placeholder should be excluded
-        self.assertEqual(1, len(coll.get_matches('\w*')))
+        self.assertEqual(1, len(coll.get_items('\w*')))
         item2 = dut.TraceableItem(self.identification_tgt)
         # placeholder is replaced by actual item
         coll.add_item(item2)
-        self.assertEqual(2, len(coll.get_matches('\w*')))
+        self.assertEqual(2, len(coll.get_items('\w*')))
 
     def test_related(self):
         coll = dut.TraceableCollection()

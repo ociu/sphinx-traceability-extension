@@ -264,7 +264,7 @@ class TraceableCollection(object):
             relations = self.iter_relations()
         return self.items[sourceid].is_related(relations, targetid)
 
-    def get_matches(self, regex):
+    def get_items(self, regex):
         '''
         Get all items that match a given regular expression
 

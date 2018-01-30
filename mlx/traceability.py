@@ -482,8 +482,8 @@ def process_item_nodes(app, doctree, fromdocname):
     # Create table with related items, printing their target references.
     # Only source and target items matching respective regexp shall be included
     for node in doctree.traverse(ItemMatrix):
-        source_ids = env.traceability_collection.get_matches(node['source'])
-        target_ids = env.traceability_collection.get_matches(node['target'])
+        source_ids = env.traceability_collection.get_items(node['source'])
+        target_ids = env.traceability_collection.get_items(node['target'])
         top_node = create_top_node(node['title'])
         table = nodes.table()
         tgroup = nodes.tgroup()
@@ -548,8 +548,8 @@ def process_item_nodes(app, doctree, fromdocname):
     # Create table with related items, printing their target references.
     # Only source and target items matching respective regexp shall be included
     for node in doctree.traverse(Item2DMatrix):
-        source_ids = env.traceability_collection.get_matches(node['source'])
-        target_ids = env.traceability_collection.get_matches(node['target'])
+        source_ids = env.traceability_collection.get_items(node['source'])
+        target_ids = env.traceability_collection.get_items(node['target'])
         top_node = create_top_node(node['title'])
         table = nodes.table()
         tgroup = nodes.tgroup()
@@ -587,7 +587,7 @@ def process_item_nodes(app, doctree, fromdocname):
     # Create list with target references. Only items matching list regexp
     # shall be included
     for node in doctree.traverse(ItemList):
-        item_ids = env.traceability_collection.get_matches(node['filter'])
+        item_ids = env.traceability_collection.get_items(node['filter'])
         top_node = create_top_node(node['title'])
         ul_node = nodes.bullet_list()
         for i in item_ids:
@@ -603,7 +603,7 @@ def process_item_nodes(app, doctree, fromdocname):
     # Create list with target references. Only items matching list regexp
     # shall be included
     for node in doctree.traverse(ItemTree):
-        top_item_ids = env.traceability_collection.get_matches(node['top'])
+        top_item_ids = env.traceability_collection.get_items(node['top'])
         top_node = create_top_node(node['title'])
         ul_node = nodes.bullet_list()
         ul_node.set_class('bonsai')
