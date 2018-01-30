@@ -484,6 +484,8 @@ def process_item_nodes(app, doctree, fromdocname):
     # Create table with related items, printing their target references.
     # Only source and target items matching respective regexp shall be included
     for node in doctree.traverse(ItemMatrix):
+        source_ids = env.traceability_collection.get_matches(node['source'])
+        target_ids = env.traceability_collection.get_matches(node['target'])
         top_node = nodes.container()
         admon_node = nodes.admonition()
         title_node = nodes.title()
@@ -510,37 +512,29 @@ def process_item_nodes(app, doctree, fromdocname):
         count_total = 0
         count_covered = 0
 
-        for source_id in all_item_ids:
+        for source_id in source_ids:
             source_item = env.traceability_collection.get_item(source_id)
-            # placeholders don't end up in any item-matrix (less duplicate warnings for missing items)
-            if source_item.is_placeholder():
-                continue
-            if re.match(node['source'], source_id):
-                count_total += 1
-                covered = False
-                row = nodes.row()
-                left = nodes.entry()
-                left += make_internal_item_ref(app, node, fromdocname, source_id)
-                right = nodes.entry()
-                for relationship in relationships:
-                    if REGEXP_EXTERNAL_RELATIONSHIP.search(relationship):
-                        for target_id in source_item.iter_targets(relationship):
-                            right += make_external_item_ref(app, target_id, relationship)
-                            covered = True
-                for target_id in all_item_ids:
-                    target_item = env.traceability_collection.get_item(target_id)
-                    # placeholders don't end up in any item-matrix (less duplicate warnings for missing items)
-                    if not target_item or target_item.is_placeholder():
-                        continue
-                    if (re.match(node['target'], target_id) and
-                            are_related(env, source_id, target_id, relationships)):
-                        right += make_internal_item_ref(app, node, fromdocname, target_id)
+            count_total += 1
+            covered = False
+            row = nodes.row()
+            left = nodes.entry()
+            left += make_internal_item_ref(app, node, fromdocname, source_id)
+            right = nodes.entry()
+            for relationship in relationships:
+                if REGEXP_EXTERNAL_RELATIONSHIP.search(relationship):
+                    for target_id in source_item.iter_targets(relationship):
+                        right += make_external_item_ref(app, target_id, relationship)
                         covered = True
-                if covered:
-                    count_covered += 1
-                row += left
-                row += right
-                tbody += row
+            for target_id in target_ids:
+                target_item = env.traceability_collection.get_item(target_id)
+                if env.traceability_collection.are_related(source_id, relationships, target_id):
+                    right += make_internal_item_ref(app, node, fromdocname, target_id)
+                    covered = True
+            if covered:
+                count_covered += 1
+            row += left
+            row += right
+            tbody += row
 
         try:
             percentage = int(100 * count_covered / count_total)
