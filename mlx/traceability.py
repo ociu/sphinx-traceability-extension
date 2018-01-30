@@ -486,12 +486,7 @@ def process_item_nodes(app, doctree, fromdocname):
     for node in doctree.traverse(ItemMatrix):
         source_ids = env.traceability_collection.get_matches(node['source'])
         target_ids = env.traceability_collection.get_matches(node['target'])
-        top_node = nodes.container()
-        admon_node = nodes.admonition()
-        title_node = nodes.title()
-        title_node += nodes.Text(node['title'])
-        admon_node += title_node
-        top_node += admon_node
+        top_node = create_top_node(node['title'])
         table = nodes.table()
         tgroup = nodes.tgroup()
         left_colspec = nodes.colspec(colwidth=5)
@@ -558,12 +553,7 @@ def process_item_nodes(app, doctree, fromdocname):
     for node in doctree.traverse(Item2DMatrix):
         source_ids = env.traceability_collection.get_matches(node['source'])
         target_ids = env.traceability_collection.get_matches(node['target'])
-        top_node = nodes.container()
-        admon_node = nodes.admonition()
-        title_node = nodes.title()
-        title_node += nodes.Text(node['title'])
-        admon_node += title_node
-        top_node += admon_node
+        top_node = create_top_node(node['title'])
         table = nodes.table()
         tgroup = nodes.tgroup()
         colspecs = [nodes.colspec(colwidth=5)]
@@ -600,12 +590,7 @@ def process_item_nodes(app, doctree, fromdocname):
     # Create list with target references. Only items matching list regexp
     # shall be included
     for node in doctree.traverse(ItemList):
-        top_node = nodes.container()
-        admon_node = nodes.admonition()
-        title_node = nodes.title()
-        title_node += nodes.Text(node['title'])
-        admon_node += title_node
-        top_node += admon_node
+        top_node = create_top_node(node['title'])
         ul_node = nodes.bullet_list()
         for i in all_item_ids:
             # placeholders don't end up in any item-list (less duplicate warnings for missing items)
@@ -625,12 +610,7 @@ def process_item_nodes(app, doctree, fromdocname):
     # Create list with target references. Only items matching list regexp
     # shall be included
     for node in doctree.traverse(ItemTree):
-        top_node = nodes.container()
-        admon_node = nodes.admonition()
-        title_node = nodes.title()
-        title_node += nodes.Text(node['title'])
-        admon_node += title_node
-        top_node += admon_node
+        top_node = create_top_node(node['title'])
         ul_node = nodes.bullet_list()
         ul_node.set_class('bonsai')
         for i in all_item_ids:
@@ -681,16 +661,10 @@ def process_item_nodes(app, doctree, fromdocname):
     # Item: replace item nodes, with admonition, list of relationships
     for node in doctree.traverse(Item):
         currentitem = env.traceability_collection.get_item(node['id'])
-        cont = nodes.container()
-        admon = nodes.admonition()
-        title = nodes.title()
         header = currentitem.get_id()
         if currentitem.caption:
             header += ' : ' + currentitem.caption
-        txt = nodes.Text(header)
-        title.append(txt)
-        admon.append(title)
-        cont.append(admon)
+        top_node = create_top_node(header)
         if app.config.traceability_render_relationship_per_item:
             par_node = nodes.paragraph()
             dl_node = nodes.definition_list()
@@ -718,10 +692,18 @@ def process_item_nodes(app, doctree, fromdocname):
                         li_node.append(dd_node)
                     dl_node.append(li_node)
             par_node.append(dl_node)
-            cont.append(par_node)
+            top_node.append(par_node)
         # Note: content should be displayed during read of RST file, as it contains other RST objects
-        node.replace_self(cont)
+        node.replace_self(top_node)
 
+def create_top_node(title):
+    top_node = nodes.container()
+    admon_node = nodes.admonition()
+    title_node = nodes.title()
+    title_node += nodes.Text(title)
+    admon_node += title_node
+    top_node += admon_node
+    return top_node
 
 def init_available_relationships(app):
     """
