@@ -925,8 +925,8 @@ def setup(app):
 
     # Javascript and stylesheet for the tree-view
     # app.add_javascript('jquery.js') #note: can only be included once
-    app.add_javascript('http://simonwade.me/assets/bower_components/jquery-bonsai/jquery.bonsai.js')
-    app.add_stylesheet('http://simonwade.me/assets/bower_components/jquery-bonsai/jquery.bonsai.css')
+    app.add_javascript('//simonwade.me/assets/bower_components/jquery-bonsai/jquery.bonsai.js')
+    app.add_stylesheet('//simonwade.me/assets/bower_components/jquery-bonsai/jquery.bonsai.css')
     app.add_javascript('traceability.js')
 
     # Configuration for adapting items through a callback
