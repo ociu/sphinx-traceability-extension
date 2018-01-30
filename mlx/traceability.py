@@ -478,8 +478,6 @@ def process_item_nodes(app, doctree, fromdocname):
             for err in errs.iter():
                 report_warning(env, err, err.get_document())
 
-    all_item_ids = env.traceability_collection.iter_items()
-
     # Item matrix:
     # Create table with related items, printing their target references.
     # Only source and target items matching respective regexp shall be included
@@ -521,7 +519,6 @@ def process_item_nodes(app, doctree, fromdocname):
                         right += make_external_item_ref(app, target_id, relationship)
                         covered = True
             for target_id in target_ids:
-                target_item = env.traceability_collection.get_item(target_id)
                 if env.traceability_collection.are_related(source_id, relationships, target_id):
                     right += make_internal_item_ref(app, node, fromdocname, target_id)
                     covered = True
@@ -590,19 +587,15 @@ def process_item_nodes(app, doctree, fromdocname):
     # Create list with target references. Only items matching list regexp
     # shall be included
     for node in doctree.traverse(ItemList):
+        item_ids = env.traceability_collection.get_matches(node['filter'])
         top_node = create_top_node(node['title'])
         ul_node = nodes.bullet_list()
-        for i in all_item_ids:
-            # placeholders don't end up in any item-list (less duplicate warnings for missing items)
-            if env.traceability_collection.get_item(i).is_placeholder():
-                continue
-            if re.match(node['filter'], i):
-                bullet_list_item = nodes.list_item()
-                p_node = nodes.paragraph()
-                p_node.append(make_internal_item_ref(app, node, fromdocname, i))
-                bullet_list_item.append(p_node)
-                ul_node.append(bullet_list_item)
-
+        for i in item_ids:
+            bullet_list_item = nodes.list_item()
+            p_node = nodes.paragraph()
+            p_node.append(make_internal_item_ref(app, node, fromdocname, i))
+            bullet_list_item.append(p_node)
+            ul_node.append(bullet_list_item)
         top_node += ul_node
         node.replace_self(top_node)
 
@@ -610,16 +603,13 @@ def process_item_nodes(app, doctree, fromdocname):
     # Create list with target references. Only items matching list regexp
     # shall be included
     for node in doctree.traverse(ItemTree):
+        top_item_ids = env.traceability_collection.get_matches(node['top'])
         top_node = create_top_node(node['title'])
         ul_node = nodes.bullet_list()
         ul_node.set_class('bonsai')
-        for i in all_item_ids:
-            # placeholders don't end up in any item-tree (less duplicate warnings for missing items)
-            if env.traceability_collection.get_item(i).is_placeholder():
-                continue
-            if re.match(node['top'], i):
-                if is_item_top_level(env, i, node['top'], node['top_relation_filter']):
-                    ul_node.append(generate_bullet_list_tree(app, env, node, fromdocname, i))
+        for i in top_item_ids:
+            if is_item_top_level(env, i, node['top'], node['top_relation_filter']):
+                ul_node.append(generate_bullet_list_tree(app, env, node, fromdocname, i))
         top_node += ul_node
         node.replace_self(top_node)
 
@@ -696,6 +686,7 @@ def process_item_nodes(app, doctree, fromdocname):
         # Note: content should be displayed during read of RST file, as it contains other RST objects
         node.replace_self(top_node)
 
+
 def create_top_node(title):
     top_node = nodes.container()
     admon_node = nodes.admonition()
@@ -704,6 +695,7 @@ def create_top_node(title):
     admon_node += title_node
     top_node += admon_node
     return top_node
+
 
 def init_available_relationships(app):
     """
@@ -858,12 +850,6 @@ def make_internal_item_ref(app, node, fromdocname, item_id, caption=True):
         p_node += newnode
 
     return p_node
-
-
-def naturalsortkey(text):
-    """Natural sort order"""
-    return [int(part) if part.isdigit() else part
-            for part in re.split('([0-9]+)', text)]
 
 
 # -----------------------------------------------------------------------------
