@@ -10,6 +10,10 @@
     :target: https://travis-ci.org/melexis/sphinx-traceability-extension
     :alt: Build status
 
+.. image:: https://img.shields.io/badge/Documentation-published-brightgreen.svg
+    :target: https://melexis.github.io/sphinx-traceability-extension/
+    :alt: Documentation
+
 .. image:: https://codecov.io/gh/melexis/sphinx-traceability-extension/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/melexis/sphinx-traceability-extension
     :alt: Code Coverage
@@ -371,14 +375,48 @@ A traceability matrix of documentation items can be generated using:
     .. item-matrix:: Requirements to test case description traceability
         :source: SWRQT
         :target: [IU]TEST
+        :sourcetitle: Software requirements
+        :targettitle: Integration and unit test cases
+        :type: validated_by
+        :stats:
+
+where the *source* and *target* arguments can be replaced by any python regular expression. The *type* argument
+is a space-separated list of relationships that should be matched in the matrix. The *sourcetitle* and *targettitle*
+arguments are the titles of the columns in the generated matrix.
+
+Documentation items matching their ID to the given *source* regular expression end up in the left column of the
+generated table. Documentation items matching their ID to the given *target* regular expression with a matching
+relationship (see *type* argument) will end up in the right column of the generated table.
+
+By providing the *stats* flag, some statistics (coverage percentage) are calculated and displayed above the
+matrix. The plugin counts the number of items having a target item in the target-column (=covered or allocated),
+and the number of items having no target in the target-column (=not covered or allocated). And calculates a
+coverage/allocation percentage from these counts. If the *stats* flag is not given, this percentage is not
+displayed.
+
+.. _traceability_usage_2d_matrix:
+
+2D-matrix of documentation items
+================================
+
+A 2D-matrix of documentation items can be generated using:
+
+.. code-block:: rest
+
+    .. item-2d-matrix:: Requirements to test case description traceability
+        :source: SWRQT
+        :target: [IU]TEST
+        :hit: x
+        :miss:
         :type: validated_by
 
 where the *source* and *target* arguments can be replaced by any python regular expression. The *type* argument
 is a space-separated list of relationships that should be matched in the matrix.
 
-Documentation items matching their ID to the given *source* regular expression end up in the left column of the
-generated table. Documentation items matching their ID to the given *target* regular expression with a matching
-relationship (see *type* argument) will end up in the right column of the generated table.
+Documentation items matching their ID to the given *source* regular expression end up as columns of the
+generated table. Documentation items matching their ID to the given *target* regular expression end up as
+rows of the generated table. Where source and target items have a matching relationship (see *type* argument)
+an 'x' will be placed in the cell at co-ordinates of source/target.
 
 .. _traceability_usage_item_tree:
 

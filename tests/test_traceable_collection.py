@@ -246,6 +246,43 @@ class TestTraceableCollection(TestCase):
         self.assertIn(self.identification_src, collstr)
         self.assertIn(self.identification_tgt, collstr)
 
+    def test_get_matches(self):
+        coll = dut.TraceableCollection()
+        coll.add_relation_pair(self.fwd_relation, self.rev_relation)
+        self.assertEqual(0, len(coll.get_matches('\w*')))
+        item1 = dut.TraceableItem(self.identification_src)
+        coll.add_item(item1)
+        coll.add_relation(self.identification_src,
+                          self.fwd_relation,
+                          self.identification_tgt)
+        # placeholder should be excluded
+        self.assertEqual(1, len(coll.get_matches('\w*')))
+        item2 = dut.TraceableItem(self.identification_tgt)
+        # placeholder is replaced by actual item
+        coll.add_item(item2)
+        self.assertEqual(2, len(coll.get_matches('\w*')))
+
+    def test_related(self):
+        coll = dut.TraceableCollection()
+        coll.add_relation_pair(self.fwd_relation, self.rev_relation)
+        self.assertFalse(coll.are_related(self.identification_src, [], self.identification_tgt))
+        item1 = dut.TraceableItem(self.identification_src)
+        coll.add_item(item1)
+        self.assertFalse(coll.are_related(self.identification_src, [], self.identification_tgt))
+        coll.add_relation(self.identification_src,
+                          self.fwd_relation,
+                          self.identification_tgt)
+        # placeholder should be excluded
+        self.assertFalse(coll.are_related(self.identification_src, [], self.identification_tgt))
+        item2 = dut.TraceableItem(self.identification_tgt)
+        # placeholder is replaced by actual item
+        coll.add_item(item2)
+        self.assertTrue(coll.are_related(self.identification_src, [], self.identification_tgt))
+        self.assertTrue(coll.are_related(self.identification_src, [self.fwd_relation],
+                                         self.identification_tgt))
+        self.assertTrue(coll.are_related(self.identification_src, [self.fwd_relation, 'another-relation'],
+                                         self.identification_tgt))
+
     def test_selftest(self):
         coll = dut.TraceableCollection()
         coll.add_relation_pair(self.fwd_relation, self.rev_relation)

@@ -4,6 +4,7 @@ Storage classes for traceability plugin
 
 import json
 import collections
+import re
 
 
 class MultipleTraceabilityExceptions(Exception):
@@ -253,6 +254,53 @@ class TraceableCollection(object):
             retval += str(self.items[itemid])
         return retval
 
+    def are_related(self, sourceid, relations, targetid):
+        '''
+        Check if 2 items are related using a list of relationships
+
+        Placeholders are excluded
+
+        Args:
+            - sourceid (str): id of the source item
+            - relations (list): list of relations, empty list for wildcard
+            - targetid (str): id of the target item
+        Returns:
+            (boolean) True if both items are related through the given relationships, false otherwise
+        '''
+        if sourceid not in self.items:
+            return False
+        source = self.items[sourceid]
+        if not source or source.is_placeholder():
+            return False
+        if targetid not in self.items:
+            return False
+        target = self.items[targetid]
+        if not target or target.is_placeholder():
+            return False
+        if not relations:
+            relations = self.iter_relations()
+        return self.items[sourceid].is_related(relations, targetid)
+
+    def get_matches(self, regex):
+        '''
+        Get all items that match a given regular expression
+
+        Placeholders are excluded
+
+        Args:
+            - regex (str): Regex to match the items in this collection against
+        Returns:
+            A sorted list of item-id's matching the given regex
+        '''
+        matches = []
+        for itemid in self.items:
+            if self.items[itemid].is_placeholder():
+                continue
+            if self.items[itemid].is_match(regex):
+                matches.append(itemid)
+        matches.sort()
+        return matches
+
 
 class TraceableItem(object):
     '''
@@ -451,6 +499,12 @@ class TraceableItem(object):
             implicit (bool): If true, an explicitely expressed relation is added here. If false, an implicite
                              (e.g. automatic reverse) relation is added here.
         '''
+        # When target is the item itself, it is an error: no circular relationships
+        if self.get_id() == target:
+            raise TraceabilityException('Error: circular relationship {src} {rel} {tgt}'.format(src=self.get_id(),
+                                                                                                rel=relation,
+                                                                                                tgt=target),
+                                        self.get_document())
         # When relation is already explicit, we shouldn't add. It is an error.
         if relation in self.explicit_relations and target in self.explicit_relations[relation]:
             raise TraceabilityException('Error: duplicating {src} {rel} {tgt}'.format(src=self.get_id(),
@@ -532,6 +586,33 @@ class TraceableItem(object):
             for tgtid in self.implicit_relations[relation]:
                 retval += '\t\t{target}\n'.format(target=tgtid)
         return retval
+
+    def is_match(self, regex):
+        '''
+        Check if item matches a given regular expression
+
+        Args:
+            - regex (str): Regex to match the given item against
+        Returns:
+            (boolean) True if the given regex matches the item identification
+        '''
+        return re.match(regex, self.get_id())
+
+    def is_related(self, relations, targetid):
+        '''
+        Check if a given item is related using a list of relationships
+
+        Args:
+            - relations (list): list of relations
+            - targetid (str): id of the target item
+        Returns:
+            (boolean) True if given item is related through the given relationships, false otherwise
+        '''
+        related = False
+        for relation in relations:
+            if targetid in self.iter_targets(relation, explicit=True, implicit=True):
+                related = True
+        return related
 
     def export(self, fhandle):
         '''
