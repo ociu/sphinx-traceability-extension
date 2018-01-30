@@ -866,33 +866,6 @@ def naturalsortkey(text):
             for part in re.split('([0-9]+)', text)]
 
 
-def are_related(env, source, target, relationships):
-    """
-    Returns ``True`` if ``source`` and ``target`` items are related
-    according a list, ``relationships``, of relationship types.
-    ``False`` is returned otherwise
-
-    If the list of relationship types is empty, all available
-    relationship types are to be considered.
-
-    There is no need to check the reverse relationship, as these are
-    added to the dict during the parsing of the documents.
-    """
-    if not relationships:
-        relationships = env.traceability_collection.iter_relations()
-
-    sourceitem = env.traceability_collection.get_item(source)
-    if not sourceitem:
-        return False
-
-    for rel in relationships:
-        tgts = sourceitem.iter_targets(rel)
-        if target in tgts:
-            return True
-
-    return False
-
-
 # -----------------------------------------------------------------------------
 # Extension setup
 
