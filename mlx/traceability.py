@@ -925,8 +925,8 @@ def setup(app):
 
     # Javascript and stylesheet for the tree-view
     # app.add_javascript('jquery.js') #note: can only be included once
-    app.add_javascript('//raw.githubusercontent.com/aexmachina/jquery-bonsai/master/jquery.bonsai.js')
-    app.add_stylesheet('//raw.githubusercontent.com/aexmachina/jquery-bonsai/master/jquery.bonsai.css')
+    app.add_javascript('https://cdn.rawgit.com/aexmachina/jquery-bonsai/master/jquery.bonsai.js')
+    app.add_stylesheet('https://cdn.rawgit.com/aexmachina/jquery-bonsai/master/jquery.bonsai.css')
     app.add_javascript('traceability.js')
 
     # Configuration for adapting items through a callback
