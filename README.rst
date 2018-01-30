@@ -10,6 +10,10 @@
     :target: https://travis-ci.org/melexis/sphinx-traceability-extension
     :alt: Build status
 
+.. image:: https://img.shields.io/badge/Documentation-published-brightgreen.svg
+    :target: https://melexis.github.io/sphinx-traceability-extension/
+    :alt: Documentation
+
 .. image:: https://codecov.io/gh/melexis/sphinx-traceability-extension/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/melexis/sphinx-traceability-extension
     :alt: Code Coverage
