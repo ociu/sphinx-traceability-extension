@@ -79,4 +79,5 @@ deploy:
     github_token: $GITHUB_TOKEN
     on:
       branch: master
+      python: 3.6
 
