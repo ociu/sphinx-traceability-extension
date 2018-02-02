@@ -16,7 +16,9 @@ from sphinx.environment import NoUri
 from docutils import nodes
 from docutils.parsers.rst import directives
 from docutils.utils import get_source_line
-from mlx.traceable_item import TraceableCollection, TraceableItem, TraceabilityException, MultipleTraceabilityExceptions
+from mlx.traceable_item import TraceableItem
+from mlx.traceable_collection import TraceableCollection
+from mlx.traceability_exception import TraceabilityException, MultipleTraceabilityExceptions
 from sphinx import __version__ as sphinx_version
 if sphinx_version >= '1.6.0':
     from sphinx.util.logging import getLogger
