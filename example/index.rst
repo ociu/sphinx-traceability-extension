@@ -95,7 +95,8 @@ No items
 List all items
 --------------
 
-.. item-list:: All available items
+.. item-list:: All available items (no captions)
+    :nocaptions:
 
 
 List all items beginning with ``r00``

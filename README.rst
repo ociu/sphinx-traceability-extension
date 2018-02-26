@@ -359,9 +359,13 @@ A flat list of documentation items can be generated using a python regular expre
 
     .. item-list:: All software requirements
         :filter: SWRQT
+        :nocaptions:
 
 where *SWRQT* (*filter* argument) can be replace by any python regular expression. Documentation items matching
 their ID to the given regular expression end up in the list.
+
+By default the caption for every item in the list is shown. By providing the *nocaptions* flag, the
+caption can be omitted. This gives a smaller list, but also less details.
 
 .. _traceability_usage_item_matrix:
 
@@ -389,7 +393,7 @@ Documentation items matching their ID to the given *source* regular expression e
 generated table. Documentation items matching their ID to the given *target* regular expression with a matching
 relationship (see *type* argument) will end up in the right column of the generated table.
 
-By default the captions for every item in the table is shown. By providing the *nocaptions* flag, the
+By default the caption for every item in the table is shown. By providing the *nocaptions* flag, the
 caption can be omitted. This gives a smaller table, but also less details.
 
 By providing the *stats* flag, some statistics (coverage percentage) are calculated and displayed above the

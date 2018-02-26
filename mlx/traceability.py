@@ -182,6 +182,7 @@ class ItemListDirective(Directive):
 
       .. item-list:: title
          :filter: regexp
+         :nocaptions:
 
     """
     # Optional argument: title (whitespace allowed)
@@ -189,7 +190,8 @@ class ItemListDirective(Directive):
     final_argument_whitespace = True
     # Options
     option_spec = {'class': directives.class_option,
-                   'filter': directives.unchanged}
+                   'filter': directives.unchanged,
+                   'nocaptions': directives.flag}
     # Content disallowed
     has_content = False
 
@@ -207,6 +209,12 @@ class ItemListDirective(Directive):
             item_list_node['filter'] = self.options['filter']
         else:
             item_list_node['filter'] = ''
+
+        # Check nocaptions flag
+        if 'nocaptions' in self.options:
+            item_list_node['nocaptions'] = True
+        else:
+            item_list_node['nocaptions'] = False
 
         return [item_list_node]
 
@@ -280,7 +288,7 @@ class ItemMatrixDirective(Directive):
         else:
             item_matrix_node['stats'] = False
 
-        # Check statistics flag
+        # Check nocaptions flag
         if 'nocaptions' in self.options:
             item_matrix_node['nocaptions'] = True
         else:
@@ -599,12 +607,13 @@ def process_item_nodes(app, doctree, fromdocname):
     # shall be included
     for node in doctree.traverse(ItemList):
         item_ids = env.traceability_collection.get_items(node['filter'])
+        showcaptions = not node['nocaptions']
         top_node = create_top_node(node['title'])
         ul_node = nodes.bullet_list()
         for i in item_ids:
             bullet_list_item = nodes.list_item()
             p_node = nodes.paragraph()
-            p_node.append(make_internal_item_ref(app, node, fromdocname, i))
+            p_node.append(make_internal_item_ref(app, node, fromdocname, i, showcaptions))
             bullet_list_item.append(p_node)
             ul_node.append(bullet_list_item)
         top_node += ul_node
