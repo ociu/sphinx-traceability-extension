@@ -131,8 +131,9 @@ No relationships
 All relationships
 -----------------
 
-.. item-matrix:: All
-   :stats:
+.. item-matrix:: All (no captions)
+    :nocaptions:
+    :stats:
 
 Traceability from SRS to SSS
 ----------------------------

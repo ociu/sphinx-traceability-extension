@@ -225,6 +225,7 @@ class ItemMatrixDirective(Directive):
          :sourcetitle: Source column header
          :type: <<relationship>> ...
          :stats:
+         :nocaptions:
 
     """
     # Optional argument: title (whitespace allowed)
@@ -237,7 +238,8 @@ class ItemMatrixDirective(Directive):
                    'targettitle': directives.unchanged,
                    'sourcetitle': directives.unchanged,
                    'type': directives.unchanged,
-                   'stats': directives.flag}
+                   'stats': directives.flag,
+                   'nocaptions': directives.flag}
     # Content disallowed
     has_content = False
 
@@ -277,6 +279,12 @@ class ItemMatrixDirective(Directive):
             item_matrix_node['stats'] = True
         else:
             item_matrix_node['stats'] = False
+
+        # Check statistics flag
+        if 'nocaptions' in self.options:
+            item_matrix_node['nocaptions'] = True
+        else:
+            item_matrix_node['nocaptions'] = False
 
         # Check source title
         if 'sourcetitle' in self.options:
@@ -484,6 +492,7 @@ def process_item_nodes(app, doctree, fromdocname):
     # Create table with related items, printing their target references.
     # Only source and target items matching respective regexp shall be included
     for node in doctree.traverse(ItemMatrix):
+        showcaptions = not node['nocaptions']
         source_ids = env.traceability_collection.get_items(node['source'])
         target_ids = env.traceability_collection.get_items(node['target'])
         top_node = create_top_node(node['title'])
@@ -513,7 +522,7 @@ def process_item_nodes(app, doctree, fromdocname):
             covered = False
             row = nodes.row()
             left = nodes.entry()
-            left += make_internal_item_ref(app, node, fromdocname, source_id)
+            left += make_internal_item_ref(app, node, fromdocname, source_id, showcaptions)
             right = nodes.entry()
             for relationship in relationships:
                 if REGEXP_EXTERNAL_RELATIONSHIP.search(relationship):
@@ -522,7 +531,7 @@ def process_item_nodes(app, doctree, fromdocname):
                         covered = True
             for target_id in target_ids:
                 if env.traceability_collection.are_related(source_id, relationships, target_id):
-                    right += make_internal_item_ref(app, node, fromdocname, target_id)
+                    right += make_internal_item_ref(app, node, fromdocname, target_id, showcaptions)
                     covered = True
             if covered:
                 count_covered += 1
