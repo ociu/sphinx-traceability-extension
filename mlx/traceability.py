@@ -103,6 +103,7 @@ class ItemDirective(Directive):
       .. item:: item_id [item_caption]
          :<<relationship>>:  other_item_id ...
          ...
+         :nocaptions:
 
          [item_content]
 
@@ -122,7 +123,8 @@ class ItemDirective(Directive):
     final_argument_whitespace = True
     # Options: the typical ones plus every relationship (and reverse)
     # defined in env.config.traceability_relationships
-    option_spec = {'class': directives.class_option}
+    option_spec = {'class': directives.class_option,
+                   'nocaptions': directives.flag}
     # Content allowed
     has_content = True
 
@@ -170,6 +172,12 @@ class ItemDirective(Directive):
         for line in self.content:
             template.append('    ' + line)
         self.state_machine.insert_input(template, self.state_machine.document.attributes['source'])
+
+        # Check nocaptions flag
+        if 'nocaptions' in self.options:
+            itemnode['nocaptions'] = True
+        else:
+            itemnode['nocaptions'] = False
 
         return [targetnode, itemnode]
 
@@ -680,6 +688,7 @@ def process_item_nodes(app, doctree, fromdocname):
     # Item: replace item nodes, with admonition, list of relationships
     for node in doctree.traverse(Item):
         currentitem = env.traceability_collection.get_item(node['id'])
+        showcaptions = not node['nocaptions']
         header = currentitem.get_id()
         if currentitem.caption:
             header += ' : ' + currentitem.caption
@@ -705,7 +714,7 @@ def process_item_nodes(app, doctree, fromdocname):
                         if REGEXP_EXTERNAL_RELATIONSHIP.search(rel):
                             link = make_external_item_ref(app, tgt, rel)
                         else:
-                            link = make_internal_item_ref(app, node, fromdocname, tgt, True)
+                            link = make_internal_item_ref(app, node, fromdocname, tgt, showcaptions)
                         p_node.append(link)
                         dd_node.append(p_node)
                         li_node.append(dd_node)

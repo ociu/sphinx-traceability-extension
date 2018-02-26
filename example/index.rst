@@ -43,9 +43,10 @@ This text is not part of any item
 
     Clean up all this.
 
-.. item:: r005 Another
+.. item:: r005 Another (does not show captions on the related items)
     :class: terciary
     :trace: r002 r003
+    :nocaptions:
 
     Clean up all this again
 

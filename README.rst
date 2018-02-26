@@ -322,6 +322,7 @@ Documentation items can be defined using the *item* directive, specifying:
     .. item:: SWRQT-MY_FIRST_REQUIREMENT Caption of my first requirement
         :validated_by: ITEST-MY_FIRST_INTEGRATION_TEST
         :ext_polarion_reference: project_x:workitem_y
+        :nocaptions:
 
         According to the Polarion reference, the software **shall** implement my first requirement.
 
@@ -336,6 +337,9 @@ The relations to other documentation items can be specified as:
         :validated_by:
             ITEST-MY_FIRST_INTEGRATION_TEST
             ITEST-MY_SECOND_INTEGRATION_TEST
+
+The output will contain hyperlinks to all related items. By default the caption for the target item is displayed for
+each of these related items. With the option *nocaptions* these captions can be omited.
 
 .. _traceability_usage_item_linking:
 
