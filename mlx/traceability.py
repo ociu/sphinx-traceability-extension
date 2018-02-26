@@ -16,7 +16,9 @@ from sphinx.environment import NoUri
 from docutils import nodes
 from docutils.parsers.rst import directives
 from docutils.utils import get_source_line
-from mlx.traceable_item import TraceableCollection, TraceableItem, TraceabilityException, MultipleTraceabilityExceptions
+from mlx.traceable_item import TraceableItem
+from mlx.traceable_collection import TraceableCollection
+from mlx.traceability_exception import TraceabilityException, MultipleTraceabilityExceptions
 from sphinx import __version__ as sphinx_version
 if sphinx_version >= '1.6.0':
     from sphinx.util.logging import getLogger
@@ -478,18 +480,13 @@ def process_item_nodes(app, doctree, fromdocname):
             for err in errs.iter():
                 report_warning(env, err, err.get_document())
 
-    all_item_ids = env.traceability_collection.iter_items()
-
     # Item matrix:
     # Create table with related items, printing their target references.
     # Only source and target items matching respective regexp shall be included
     for node in doctree.traverse(ItemMatrix):
-        top_node = nodes.container()
-        admon_node = nodes.admonition()
-        title_node = nodes.title()
-        title_node += nodes.Text(node['title'])
-        admon_node += title_node
-        top_node += admon_node
+        source_ids = env.traceability_collection.get_items(node['source'])
+        target_ids = env.traceability_collection.get_items(node['target'])
+        top_node = create_top_node(node['title'])
         table = nodes.table()
         tgroup = nodes.tgroup()
         left_colspec = nodes.colspec(colwidth=5)
@@ -510,37 +507,28 @@ def process_item_nodes(app, doctree, fromdocname):
         count_total = 0
         count_covered = 0
 
-        for source_id in all_item_ids:
+        for source_id in source_ids:
             source_item = env.traceability_collection.get_item(source_id)
-            # placeholders don't end up in any item-matrix (less duplicate warnings for missing items)
-            if source_item.is_placeholder():
-                continue
-            if re.match(node['source'], source_id):
-                count_total += 1
-                covered = False
-                row = nodes.row()
-                left = nodes.entry()
-                left += make_internal_item_ref(app, node, fromdocname, source_id)
-                right = nodes.entry()
-                for relationship in relationships:
-                    if REGEXP_EXTERNAL_RELATIONSHIP.search(relationship):
-                        for target_id in source_item.iter_targets(relationship):
-                            right += make_external_item_ref(app, target_id, relationship)
-                            covered = True
-                for target_id in all_item_ids:
-                    target_item = env.traceability_collection.get_item(target_id)
-                    # placeholders don't end up in any item-matrix (less duplicate warnings for missing items)
-                    if not target_item or target_item.is_placeholder():
-                        continue
-                    if (re.match(node['target'], target_id) and
-                            are_related(env, source_id, target_id, relationships)):
-                        right += make_internal_item_ref(app, node, fromdocname, target_id)
+            count_total += 1
+            covered = False
+            row = nodes.row()
+            left = nodes.entry()
+            left += make_internal_item_ref(app, node, fromdocname, source_id)
+            right = nodes.entry()
+            for relationship in relationships:
+                if REGEXP_EXTERNAL_RELATIONSHIP.search(relationship):
+                    for target_id in source_item.iter_targets(relationship):
+                        right += make_external_item_ref(app, target_id, relationship)
                         covered = True
-                if covered:
-                    count_covered += 1
-                row += left
-                row += right
-                tbody += row
+            for target_id in target_ids:
+                if env.traceability_collection.are_related(source_id, relationships, target_id):
+                    right += make_internal_item_ref(app, node, fromdocname, target_id)
+                    covered = True
+            if covered:
+                count_covered += 1
+            row += left
+            row += right
+            tbody += row
 
         try:
             percentage = int(100 * count_covered / count_total)
@@ -562,14 +550,9 @@ def process_item_nodes(app, doctree, fromdocname):
     # Create table with related items, printing their target references.
     # Only source and target items matching respective regexp shall be included
     for node in doctree.traverse(Item2DMatrix):
-        source_ids = env.traceability_collection.get_matches(node['source'])
-        target_ids = env.traceability_collection.get_matches(node['target'])
-        top_node = nodes.container()
-        admon_node = nodes.admonition()
-        title_node = nodes.title()
-        title_node += nodes.Text(node['title'])
-        admon_node += title_node
-        top_node += admon_node
+        source_ids = env.traceability_collection.get_items(node['source'])
+        target_ids = env.traceability_collection.get_items(node['target'])
+        top_node = create_top_node(node['title'])
         table = nodes.table()
         tgroup = nodes.tgroup()
         colspecs = [nodes.colspec(colwidth=5)]
@@ -606,24 +589,15 @@ def process_item_nodes(app, doctree, fromdocname):
     # Create list with target references. Only items matching list regexp
     # shall be included
     for node in doctree.traverse(ItemList):
-        top_node = nodes.container()
-        admon_node = nodes.admonition()
-        title_node = nodes.title()
-        title_node += nodes.Text(node['title'])
-        admon_node += title_node
-        top_node += admon_node
+        item_ids = env.traceability_collection.get_items(node['filter'])
+        top_node = create_top_node(node['title'])
         ul_node = nodes.bullet_list()
-        for i in all_item_ids:
-            # placeholders don't end up in any item-list (less duplicate warnings for missing items)
-            if env.traceability_collection.get_item(i).is_placeholder():
-                continue
-            if re.match(node['filter'], i):
-                bullet_list_item = nodes.list_item()
-                p_node = nodes.paragraph()
-                p_node.append(make_internal_item_ref(app, node, fromdocname, i))
-                bullet_list_item.append(p_node)
-                ul_node.append(bullet_list_item)
-
+        for i in item_ids:
+            bullet_list_item = nodes.list_item()
+            p_node = nodes.paragraph()
+            p_node.append(make_internal_item_ref(app, node, fromdocname, i))
+            bullet_list_item.append(p_node)
+            ul_node.append(bullet_list_item)
         top_node += ul_node
         node.replace_self(top_node)
 
@@ -631,21 +605,13 @@ def process_item_nodes(app, doctree, fromdocname):
     # Create list with target references. Only items matching list regexp
     # shall be included
     for node in doctree.traverse(ItemTree):
-        top_node = nodes.container()
-        admon_node = nodes.admonition()
-        title_node = nodes.title()
-        title_node += nodes.Text(node['title'])
-        admon_node += title_node
-        top_node += admon_node
+        top_item_ids = env.traceability_collection.get_items(node['top'])
+        top_node = create_top_node(node['title'])
         ul_node = nodes.bullet_list()
         ul_node.set_class('bonsai')
-        for i in all_item_ids:
-            # placeholders don't end up in any item-tree (less duplicate warnings for missing items)
-            if env.traceability_collection.get_item(i).is_placeholder():
-                continue
-            if re.match(node['top'], i):
-                if is_item_top_level(env, i, node['top'], node['top_relation_filter']):
-                    ul_node.append(generate_bullet_list_tree(app, env, node, fromdocname, i))
+        for i in top_item_ids:
+            if is_item_top_level(env, i, node['top'], node['top_relation_filter']):
+                ul_node.append(generate_bullet_list_tree(app, env, node, fromdocname, i))
         top_node += ul_node
         node.replace_self(top_node)
 
@@ -687,16 +653,10 @@ def process_item_nodes(app, doctree, fromdocname):
     # Item: replace item nodes, with admonition, list of relationships
     for node in doctree.traverse(Item):
         currentitem = env.traceability_collection.get_item(node['id'])
-        cont = nodes.container()
-        admon = nodes.admonition()
-        title = nodes.title()
         header = currentitem.get_id()
         if currentitem.caption:
             header += ' : ' + currentitem.caption
-        txt = nodes.Text(header)
-        title.append(txt)
-        admon.append(title)
-        cont.append(admon)
+        top_node = create_top_node(header)
         if app.config.traceability_render_relationship_per_item:
             par_node = nodes.paragraph()
             dl_node = nodes.definition_list()
@@ -724,9 +684,19 @@ def process_item_nodes(app, doctree, fromdocname):
                         li_node.append(dd_node)
                     dl_node.append(li_node)
             par_node.append(dl_node)
-            cont.append(par_node)
+            top_node.append(par_node)
         # Note: content should be displayed during read of RST file, as it contains other RST objects
-        node.replace_self(cont)
+        node.replace_self(top_node)
+
+
+def create_top_node(title):
+    top_node = nodes.container()
+    admon_node = nodes.admonition()
+    title_node = nodes.title()
+    title_node += nodes.Text(title)
+    admon_node += title_node
+    top_node += admon_node
+    return top_node
 
 
 def init_available_relationships(app):
@@ -882,39 +852,6 @@ def make_internal_item_ref(app, node, fromdocname, item_id, caption=True):
         p_node += newnode
 
     return p_node
-
-
-def naturalsortkey(text):
-    """Natural sort order"""
-    return [int(part) if part.isdigit() else part
-            for part in re.split('([0-9]+)', text)]
-
-
-def are_related(env, source, target, relationships):
-    """
-    Returns ``True`` if ``source`` and ``target`` items are related
-    according a list, ``relationships``, of relationship types.
-    ``False`` is returned otherwise
-
-    If the list of relationship types is empty, all available
-    relationship types are to be considered.
-
-    There is no need to check the reverse relationship, as these are
-    added to the dict during the parsing of the documents.
-    """
-    if not relationships:
-        relationships = env.traceability_collection.iter_relations()
-
-    sourceitem = env.traceability_collection.get_item(source)
-    if not sourceitem:
-        return False
-
-    for rel in relationships:
-        tgts = sourceitem.iter_targets(rel)
-        if target in tgts:
-            return True
-
-    return False
 
 
 # -----------------------------------------------------------------------------
