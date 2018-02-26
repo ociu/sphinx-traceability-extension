@@ -439,6 +439,7 @@ A tree-view of documentation items can be generated using:
         :top: SWRQT
         :top_relation_filter: depends_on
         :type: impacts_on validated_by
+        :nocaptions:
 
 where the *top* argument can be replaced by any python regular expression. The *top_relation_filter* and *type* arguments
 are space-separated lists of relationships.
@@ -457,6 +458,9 @@ the nested bullet list. This action is repeated recursively.
     The *type* is a list of relationships, which cannot hold the forward and reverse relationship of a pair.
     This would give endless repetition of the same nesting, and an endless recursion in python. The plugin
     checks the *item-tree* directives for this mistake!
+
+By default the caption for every item in the tree is shown. By providing the *nocaptions* flag, the
+caption can be omitted. This gives a smaller tree, but also less details.
 
 .. _traceability_process:
 

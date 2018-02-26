@@ -392,6 +392,7 @@ class ItemTreeDirective(Directive):
          :top: regexp
          :top_relation_filter: <<relationship>> ...
          :type: <<relationship>> ...
+         :nocaptions:
 
     """
     # Optional argument: title (whitespace allowed)
@@ -401,7 +402,8 @@ class ItemTreeDirective(Directive):
     option_spec = {'class': directives.class_option,
                    'top': directives.unchanged,
                    'top_relation_filter': directives.unchanged,
-                   'type': directives.unchanged}
+                   'type': directives.unchanged,
+                   'nocaptions': directives.flag}
     # Content disallowed
     has_content = False
 
@@ -452,6 +454,12 @@ class ItemTreeDirective(Directive):
                 report_warning(env, 'Traceability: combination of forward+reverse relations for item-tree: %s' % rel,
                                env.docname, self.lineno)
                 raise ValueError('Traceability: combination of forward+reverse relations for item-tree: %s' % rel)
+
+        # Check nocaptions flag
+        if 'nocaptions' in self.options:
+            item_tree_node['nocaptions'] = True
+        else:
+            item_tree_node['nocaptions'] = False
 
         return [item_tree_node]
 
@@ -624,12 +632,13 @@ def process_item_nodes(app, doctree, fromdocname):
     # shall be included
     for node in doctree.traverse(ItemTree):
         top_item_ids = env.traceability_collection.get_items(node['top'])
+        showcaptions = not node['nocaptions']
         top_node = create_top_node(node['title'])
         ul_node = nodes.bullet_list()
         ul_node.set_class('bonsai')
         for i in top_item_ids:
             if is_item_top_level(env, i, node['top'], node['top_relation_filter']):
-                ul_node.append(generate_bullet_list_tree(app, env, node, fromdocname, i))
+                ul_node.append(generate_bullet_list_tree(app, env, node, fromdocname, i, showcaptions))
         top_node += ul_node
         node.replace_self(top_node)
 
@@ -782,7 +791,7 @@ def is_item_top_level(env, itemid, topregex, relations):
     return True
 
 
-def generate_bullet_list_tree(app, env, node, fromdocname, itemid):
+def generate_bullet_list_tree(app, env, node, fromdocname, itemid, captions=True):
     '''
     Generate a bullet list tree for the given item id
 
@@ -795,7 +804,7 @@ def generate_bullet_list_tree(app, env, node, fromdocname, itemid):
     p_node = nodes.paragraph()
     p_node.set_class('thumb')
     bullet_list_item.append(p_node)
-    bullet_list_item.append(make_internal_item_ref(app, node, fromdocname, itemid))
+    bullet_list_item.append(make_internal_item_ref(app, node, fromdocname, itemid, captions))
     bullet_list_item.set_class('has-children')
     bullet_list_item.set_class('collapsed')
     childcontent = nodes.bullet_list()
@@ -805,7 +814,7 @@ def generate_bullet_list_tree(app, env, node, fromdocname, itemid):
         tgts = env.traceability_collection.get_item(itemid).iter_targets(relation)
         for target in tgts:
             # print('%s has child %s for relation %s' % (itemid, target, relation))
-            childcontent.append(generate_bullet_list_tree(app, env, node, fromdocname, target))
+            childcontent.append(generate_bullet_list_tree(app, env, node, fromdocname, target, captions))
     bullet_list_item.append(childcontent)
     return bullet_list_item
 

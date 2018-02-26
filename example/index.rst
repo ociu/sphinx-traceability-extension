@@ -223,6 +223,12 @@ Succesfull SYS tree
     :top_relation_filter: depends_on
     :type: fulfilled_by
 
+.. item-tree:: SYS (no captions)
+    :top: SYS
+    :top_relation_filter: depends_on
+    :type: fulfilled_by
+    :nocaptions:
+
 Another tree that should spawn a warning as the relation in *top_relation_filter* does not exist.
 -------------------------------------------------------------------------------------------------
 
