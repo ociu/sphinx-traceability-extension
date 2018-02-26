@@ -426,6 +426,8 @@ generated table. Documentation items matching their ID to the given *target* reg
 rows of the generated table. Where source and target items have a matching relationship (see *type* argument)
 an 'x' will be placed in the cell at co-ordinates of source/target.
 
+Captions for items in the 2D table are never shown, as it would give a too heavy loaded table.
+
 .. _traceability_usage_item_tree:
 
 Documentation items tree-view
