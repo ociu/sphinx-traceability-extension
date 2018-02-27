@@ -103,6 +103,7 @@ class ItemDirective(Directive):
       .. item:: item_id [item_caption]
          :<<relationship>>:  other_item_id ...
          ...
+         :nocaptions:
 
          [item_content]
 
@@ -122,7 +123,8 @@ class ItemDirective(Directive):
     final_argument_whitespace = True
     # Options: the typical ones plus every relationship (and reverse)
     # defined in env.config.traceability_relationships
-    option_spec = {'class': directives.class_option}
+    option_spec = {'class': directives.class_option,
+                   'nocaptions': directives.flag}
     # Content allowed
     has_content = True
 
@@ -171,6 +173,12 @@ class ItemDirective(Directive):
             template.append('    ' + line)
         self.state_machine.insert_input(template, self.state_machine.document.attributes['source'])
 
+        # Check nocaptions flag
+        if 'nocaptions' in self.options:
+            itemnode['nocaptions'] = True
+        else:
+            itemnode['nocaptions'] = False
+
         return [targetnode, itemnode]
 
 
@@ -182,6 +190,7 @@ class ItemListDirective(Directive):
 
       .. item-list:: title
          :filter: regexp
+         :nocaptions:
 
     """
     # Optional argument: title (whitespace allowed)
@@ -189,7 +198,8 @@ class ItemListDirective(Directive):
     final_argument_whitespace = True
     # Options
     option_spec = {'class': directives.class_option,
-                   'filter': directives.unchanged}
+                   'filter': directives.unchanged,
+                   'nocaptions': directives.flag}
     # Content disallowed
     has_content = False
 
@@ -208,6 +218,12 @@ class ItemListDirective(Directive):
         else:
             item_list_node['filter'] = ''
 
+        # Check nocaptions flag
+        if 'nocaptions' in self.options:
+            item_list_node['nocaptions'] = True
+        else:
+            item_list_node['nocaptions'] = False
+
         return [item_list_node]
 
 
@@ -225,6 +241,7 @@ class ItemMatrixDirective(Directive):
          :sourcetitle: Source column header
          :type: <<relationship>> ...
          :stats:
+         :nocaptions:
 
     """
     # Optional argument: title (whitespace allowed)
@@ -237,7 +254,8 @@ class ItemMatrixDirective(Directive):
                    'targettitle': directives.unchanged,
                    'sourcetitle': directives.unchanged,
                    'type': directives.unchanged,
-                   'stats': directives.flag}
+                   'stats': directives.flag,
+                   'nocaptions': directives.flag}
     # Content disallowed
     has_content = False
 
@@ -277,6 +295,12 @@ class ItemMatrixDirective(Directive):
             item_matrix_node['stats'] = True
         else:
             item_matrix_node['stats'] = False
+
+        # Check nocaptions flag
+        if 'nocaptions' in self.options:
+            item_matrix_node['nocaptions'] = True
+        else:
+            item_matrix_node['nocaptions'] = False
 
         # Check source title
         if 'sourcetitle' in self.options:
@@ -376,6 +400,7 @@ class ItemTreeDirective(Directive):
          :top: regexp
          :top_relation_filter: <<relationship>> ...
          :type: <<relationship>> ...
+         :nocaptions:
 
     """
     # Optional argument: title (whitespace allowed)
@@ -385,7 +410,8 @@ class ItemTreeDirective(Directive):
     option_spec = {'class': directives.class_option,
                    'top': directives.unchanged,
                    'top_relation_filter': directives.unchanged,
-                   'type': directives.unchanged}
+                   'type': directives.unchanged,
+                   'nocaptions': directives.flag}
     # Content disallowed
     has_content = False
 
@@ -437,6 +463,12 @@ class ItemTreeDirective(Directive):
                                env.docname, self.lineno)
                 raise ValueError('Traceability: combination of forward+reverse relations for item-tree: %s' % rel)
 
+        # Check nocaptions flag
+        if 'nocaptions' in self.options:
+            item_tree_node['nocaptions'] = True
+        else:
+            item_tree_node['nocaptions'] = False
+
         return [item_tree_node]
 
 
@@ -484,6 +516,7 @@ def process_item_nodes(app, doctree, fromdocname):
     # Create table with related items, printing their target references.
     # Only source and target items matching respective regexp shall be included
     for node in doctree.traverse(ItemMatrix):
+        showcaptions = not node['nocaptions']
         source_ids = env.traceability_collection.get_items(node['source'])
         target_ids = env.traceability_collection.get_items(node['target'])
         top_node = create_top_node(node['title'])
@@ -513,7 +546,7 @@ def process_item_nodes(app, doctree, fromdocname):
             covered = False
             row = nodes.row()
             left = nodes.entry()
-            left += make_internal_item_ref(app, node, fromdocname, source_id)
+            left += make_internal_item_ref(app, node, fromdocname, source_id, showcaptions)
             right = nodes.entry()
             for relationship in relationships:
                 if REGEXP_EXTERNAL_RELATIONSHIP.search(relationship):
@@ -522,7 +555,7 @@ def process_item_nodes(app, doctree, fromdocname):
                         covered = True
             for target_id in target_ids:
                 if env.traceability_collection.are_related(source_id, relationships, target_id):
-                    right += make_internal_item_ref(app, node, fromdocname, target_id)
+                    right += make_internal_item_ref(app, node, fromdocname, target_id, showcaptions)
                     covered = True
             if covered:
                 count_covered += 1
@@ -590,12 +623,13 @@ def process_item_nodes(app, doctree, fromdocname):
     # shall be included
     for node in doctree.traverse(ItemList):
         item_ids = env.traceability_collection.get_items(node['filter'])
+        showcaptions = not node['nocaptions']
         top_node = create_top_node(node['title'])
         ul_node = nodes.bullet_list()
         for i in item_ids:
             bullet_list_item = nodes.list_item()
             p_node = nodes.paragraph()
-            p_node.append(make_internal_item_ref(app, node, fromdocname, i))
+            p_node.append(make_internal_item_ref(app, node, fromdocname, i, showcaptions))
             bullet_list_item.append(p_node)
             ul_node.append(bullet_list_item)
         top_node += ul_node
@@ -606,12 +640,13 @@ def process_item_nodes(app, doctree, fromdocname):
     # shall be included
     for node in doctree.traverse(ItemTree):
         top_item_ids = env.traceability_collection.get_items(node['top'])
+        showcaptions = not node['nocaptions']
         top_node = create_top_node(node['title'])
         ul_node = nodes.bullet_list()
         ul_node.set_class('bonsai')
         for i in top_item_ids:
             if is_item_top_level(env, i, node['top'], node['top_relation_filter']):
-                ul_node.append(generate_bullet_list_tree(app, env, node, fromdocname, i))
+                ul_node.append(generate_bullet_list_tree(app, env, node, fromdocname, i, showcaptions))
         top_node += ul_node
         node.replace_self(top_node)
 
@@ -653,6 +688,7 @@ def process_item_nodes(app, doctree, fromdocname):
     # Item: replace item nodes, with admonition, list of relationships
     for node in doctree.traverse(Item):
         currentitem = env.traceability_collection.get_item(node['id'])
+        showcaptions = not node['nocaptions']
         header = currentitem.get_id()
         if currentitem.caption:
             header += ' : ' + currentitem.caption
@@ -678,7 +714,7 @@ def process_item_nodes(app, doctree, fromdocname):
                         if REGEXP_EXTERNAL_RELATIONSHIP.search(rel):
                             link = make_external_item_ref(app, tgt, rel)
                         else:
-                            link = make_internal_item_ref(app, node, fromdocname, tgt, True)
+                            link = make_internal_item_ref(app, node, fromdocname, tgt, showcaptions)
                         p_node.append(link)
                         dd_node.append(p_node)
                         li_node.append(dd_node)
@@ -764,7 +800,7 @@ def is_item_top_level(env, itemid, topregex, relations):
     return True
 
 
-def generate_bullet_list_tree(app, env, node, fromdocname, itemid):
+def generate_bullet_list_tree(app, env, node, fromdocname, itemid, captions=True):
     '''
     Generate a bullet list tree for the given item id
 
@@ -777,7 +813,7 @@ def generate_bullet_list_tree(app, env, node, fromdocname, itemid):
     p_node = nodes.paragraph()
     p_node.set_class('thumb')
     bullet_list_item.append(p_node)
-    bullet_list_item.append(make_internal_item_ref(app, node, fromdocname, itemid))
+    bullet_list_item.append(make_internal_item_ref(app, node, fromdocname, itemid, captions))
     bullet_list_item.set_class('has-children')
     bullet_list_item.set_class('collapsed')
     childcontent = nodes.bullet_list()
@@ -787,7 +823,7 @@ def generate_bullet_list_tree(app, env, node, fromdocname, itemid):
         tgts = env.traceability_collection.get_item(itemid).iter_targets(relation)
         for target in tgts:
             # print('%s has child %s for relation %s' % (itemid, target, relation))
-            childcontent.append(generate_bullet_list_tree(app, env, node, fromdocname, target))
+            childcontent.append(generate_bullet_list_tree(app, env, node, fromdocname, target, captions))
     bullet_list_item.append(childcontent)
     return bullet_list_item
 
