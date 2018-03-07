@@ -176,6 +176,8 @@ class ItemDirective(Directive):
         # Check nocaptions flag
         if 'nocaptions' in self.options:
             itemnode['nocaptions'] = True
+        elif app.config.traceability_item_no_captions:
+            itemnode['nocaptions'] = True
         else:
             itemnode['nocaptions'] = False
 
@@ -952,6 +954,10 @@ def setup(app):
 
     # Configuration for enabling the rendering of the relations on every item
     app.add_config_value('traceability_render_relationship_per_item',
+                         False, 'env')
+
+    # Configuration for disabling the rendering of the captions for item
+    app.add_config_value('traceability_item_no_captions',
                          False, 'env')
 
     # Configuration for disabling the rendering of the captions for item-list
