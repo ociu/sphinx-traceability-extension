@@ -194,6 +194,16 @@ By default, the output will contain hyperlinks to all related items. By default 
 item is displayed for each of the related items. The captions can be omitted at configuration level (see
 this section) and at directive level (see e.g. `traceability_usage_item_matrix`_).
 
+No captions for item-list
+-------------------------
+
+Example configuration of disabling the rendering of captions on item-list:
+
+.. code-block:: python
+
+    traceability_list_no_captions = True
+
+
 No captions for item-matrix
 ---------------------------
 

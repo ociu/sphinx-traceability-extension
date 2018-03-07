@@ -204,6 +204,9 @@ class ItemListDirective(Directive):
     has_content = False
 
     def run(self):
+        env = self.state.document.settings.env
+        app = env.app
+
         item_list_node = ItemList('')
 
         # Process title (optional argument)
@@ -220,6 +223,8 @@ class ItemListDirective(Directive):
 
         # Check nocaptions flag
         if 'nocaptions' in self.options:
+            item_list_node['nocaptions'] = True
+        elif app.config.traceability_list_no_captions:
             item_list_node['nocaptions'] = True
         else:
             item_list_node['nocaptions'] = False
@@ -944,6 +949,10 @@ def setup(app):
 
     # Configuration for enabling the rendering of the relations on every item
     app.add_config_value('traceability_render_relationship_per_item',
+                         False, 'env')
+
+    # Configuration for disabling the rendering of the captions for item-list
+    app.add_config_value('traceability_list_no_captions',
                          False, 'env')
 
     # Configuration for disabling the rendering of the captions for item-matrix
