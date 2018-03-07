@@ -185,6 +185,24 @@ Example configuration of enable rendering relationships per item:
 
     traceability_render_relationship_per_item = True
 
+.. _traceability_config_no_captions:
+
+No captions
+===========
+
+By default, the output will contain hyperlinks to all related items. By default the caption for the target
+item is displayed for each of the related items. The captions can be omitted at configuration level (see
+this section) and at directive level (see e.g. `traceability_usage_item_matrix`_).
+
+No captions for item-matrix
+---------------------------
+
+Example configuration of disabling the rendering of captions on item-matrix:
+
+.. code-block:: python
+
+    traceability_matrix_no_captions = True
+
 .. _traceability_config_callback:
 
 Callback per item (advanced)
