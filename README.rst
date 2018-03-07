@@ -213,6 +213,15 @@ Example configuration of disabling the rendering of captions on item-matrix:
 
     traceability_matrix_no_captions = True
 
+No captions for item-tree
+-------------------------
+
+Example configuration of disabling the rendering of captions on item-tree:
+
+.. code-block:: python
+
+    traceability_tree_no_captions = True
+
 .. _traceability_config_callback:
 
 Callback per item (advanced)

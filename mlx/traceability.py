@@ -425,6 +425,7 @@ class ItemTreeDirective(Directive):
 
     def run(self):
         env = self.state.document.settings.env
+        app = env.app
 
         item_tree_node = ItemTree('')
 
@@ -473,6 +474,8 @@ class ItemTreeDirective(Directive):
 
         # Check nocaptions flag
         if 'nocaptions' in self.options:
+            item_tree_node['nocaptions'] = True
+        elif app.config.traceability_tree_no_captions:
             item_tree_node['nocaptions'] = True
         else:
             item_tree_node['nocaptions'] = False
@@ -957,6 +960,10 @@ def setup(app):
 
     # Configuration for disabling the rendering of the captions for item-matrix
     app.add_config_value('traceability_matrix_no_captions',
+                         False, 'env')
+
+    # Configuration for disabling the rendering of the captions for item-tree
+    app.add_config_value('traceability_tree_no_captions',
                          False, 'env')
 
     app.add_node(ItemTree)
