@@ -185,6 +185,51 @@ Example configuration of enable rendering relationships per item:
 
     traceability_render_relationship_per_item = True
 
+.. _traceability_config_no_captions:
+
+No captions
+===========
+
+By default, the output will contain hyperlinks to all related items. By default the caption for the target
+item is displayed for each of the related items. The captions can be omitted at configuration level (see
+this section) and at directive level (see e.g. `traceability_usage_item_matrix`_).
+
+No captions for item
+--------------------
+
+Example configuration of disabling the rendering of captions on item:
+
+.. code-block:: python
+
+    traceability_item_no_captions = True
+
+No captions for item-list
+-------------------------
+
+Example configuration of disabling the rendering of captions on item-list:
+
+.. code-block:: python
+
+    traceability_list_no_captions = True
+
+No captions for item-matrix
+---------------------------
+
+Example configuration of disabling the rendering of captions on item-matrix:
+
+.. code-block:: python
+
+    traceability_matrix_no_captions = True
+
+No captions for item-tree
+-------------------------
+
+Example configuration of disabling the rendering of captions on item-tree:
+
+.. code-block:: python
+
+    traceability_tree_no_captions = True
+
 .. _traceability_config_callback:
 
 Callback per item (advanced)
@@ -322,6 +367,7 @@ Documentation items can be defined using the *item* directive, specifying:
     .. item:: SWRQT-MY_FIRST_REQUIREMENT Caption of my first requirement
         :validated_by: ITEST-MY_FIRST_INTEGRATION_TEST
         :ext_polarion_reference: project_x:workitem_y
+        :nocaptions:
 
         According to the Polarion reference, the software **shall** implement my first requirement.
 
@@ -336,6 +382,9 @@ The relations to other documentation items can be specified as:
         :validated_by:
             ITEST-MY_FIRST_INTEGRATION_TEST
             ITEST-MY_SECOND_INTEGRATION_TEST
+
+The output will contain hyperlinks to all related items. By default the caption for the target item is displayed for
+each of these related items. With the option *nocaptions* these captions can be omited.
 
 .. _traceability_usage_item_linking:
 
@@ -359,9 +408,13 @@ A flat list of documentation items can be generated using a python regular expre
 
     .. item-list:: All software requirements
         :filter: SWRQT
+        :nocaptions:
 
 where *SWRQT* (*filter* argument) can be replace by any python regular expression. Documentation items matching
 their ID to the given regular expression end up in the list.
+
+By default the caption for every item in the list is shown. By providing the *nocaptions* flag, the
+caption can be omitted. This gives a smaller list, but also less details.
 
 .. _traceability_usage_item_matrix:
 
@@ -378,6 +431,7 @@ A traceability matrix of documentation items can be generated using:
         :sourcetitle: Software requirements
         :targettitle: Integration and unit test cases
         :type: validated_by
+        :nocaptions:
         :stats:
 
 where the *source* and *target* arguments can be replaced by any python regular expression. The *type* argument
@@ -387,6 +441,9 @@ arguments are the titles of the columns in the generated matrix.
 Documentation items matching their ID to the given *source* regular expression end up in the left column of the
 generated table. Documentation items matching their ID to the given *target* regular expression with a matching
 relationship (see *type* argument) will end up in the right column of the generated table.
+
+By default the caption for every item in the table is shown. By providing the *nocaptions* flag, the
+caption can be omitted. This gives a smaller table, but also less details.
 
 By providing the *stats* flag, some statistics (coverage percentage) are calculated and displayed above the
 matrix. The plugin counts the number of items having a target item in the target-column (=covered or allocated),
@@ -418,6 +475,8 @@ generated table. Documentation items matching their ID to the given *target* reg
 rows of the generated table. Where source and target items have a matching relationship (see *type* argument)
 an 'x' will be placed in the cell at co-ordinates of source/target.
 
+Captions for items in the 2D table are never shown, as it would give a too heavy loaded table.
+
 .. _traceability_usage_item_tree:
 
 Documentation items tree-view
@@ -431,6 +490,7 @@ A tree-view of documentation items can be generated using:
         :top: SWRQT
         :top_relation_filter: depends_on
         :type: impacts_on validated_by
+        :nocaptions:
 
 where the *top* argument can be replaced by any python regular expression. The *top_relation_filter* and *type* arguments
 are space-separated lists of relationships.
@@ -449,6 +509,9 @@ the nested bullet list. This action is repeated recursively.
     The *type* is a list of relationships, which cannot hold the forward and reverse relationship of a pair.
     This would give endless repetition of the same nesting, and an endless recursion in python. The plugin
     checks the *item-tree* directives for this mistake!
+
+By default the caption for every item in the tree is shown. By providing the *nocaptions* flag, the
+caption can be omitted. This gives a smaller tree, but also less details.
 
 .. _traceability_process:
 

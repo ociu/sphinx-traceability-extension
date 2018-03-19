@@ -43,9 +43,10 @@ This text is not part of any item
 
     Clean up all this.
 
-.. item:: r005 Another
+.. item:: r005 Another (does not show captions on the related items)
     :class: terciary
     :trace: r002 r003
+    :nocaptions:
 
     Clean up all this again
 
@@ -95,7 +96,8 @@ No items
 List all items
 --------------
 
-.. item-list:: All available items
+.. item-list:: All available items (no captions)
+    :nocaptions:
 
 
 List all items beginning with ``r00``
@@ -131,8 +133,9 @@ No relationships
 All relationships
 -----------------
 
-.. item-matrix:: All
-   :stats:
+.. item-matrix:: All (no captions)
+    :nocaptions:
+    :stats:
 
 Traceability from SRS to SSS
 ----------------------------
@@ -220,6 +223,12 @@ Succesfull SYS tree
     :top: SYS
     :top_relation_filter: depends_on
     :type: fulfilled_by
+
+.. item-tree:: SYS (no captions)
+    :top: SYS
+    :top_relation_filter: depends_on
+    :type: fulfilled_by
+    :nocaptions:
 
 Another tree that should spawn a warning as the relation in *top_relation_filter* does not exist.
 -------------------------------------------------------------------------------------------------
