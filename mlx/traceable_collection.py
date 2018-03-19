@@ -2,6 +2,7 @@
 Storage classes for collection of traceable items
 '''
 
+import json
 from mlx.traceable_item import TraceableItem
 from mlx.traceability_exception import TraceabilityException, MultipleTraceabilityExceptions
 
@@ -137,6 +138,20 @@ class TraceableCollection(object):
                 self.add_item(tgt)
             # Add reverse relation to target-item
             self.items[targetid].add_target(reverse_relation, sourceid, implicit=True)
+
+    def export(self, fname):
+        '''
+        Export collection content
+
+        Args:
+            fname (str): Path to the json file to export
+        '''
+        with open(fname, 'w') as outfile:
+            data = []
+            for itemid in self.items:
+                item = self.get_item(itemid)
+                data.append(item.to_dict())
+            json.dump(data, outfile, indent=4, sort_keys=True)
 
     def self_test(self, docname=None):
         '''

@@ -9,7 +9,6 @@ See readme for more details.
 
 from __future__ import print_function
 import re
-import os
 from docutils.parsers.rst import Directive
 from sphinx.roles import XRefRole
 from sphinx.util.nodes import make_refnode
@@ -507,8 +506,8 @@ def perform_consistency_check(app, doctree):
             report_warning(env, err, err.get_document())
 
     if app.config.traceability_json_export_path:
-        fname = os.path.join(app.config.traceability_json_export_path, fromdocname)
-        env.traceability_collection.export(fromdocname, fname + '.json')
+        fname = app.config.traceability_json_export_path
+        env.traceability_collection.export(fname)
 
 
 def process_item_nodes(app, doctree, fromdocname):
@@ -531,10 +530,8 @@ def process_item_nodes(app, doctree, fromdocname):
                 report_warning(env, err, err.get_document())
 
         if app.config.traceability_json_export_path:
-            fname = os.path.join(app.config.traceability_json_export_path, fromdocname)
-            env.traceability_collection.export(fromdocname, fname + '.json')
-
-    all_item_ids = env.traceability_collection.iter_items()
+            fname = app.config.traceability_json_export_path
+            env.traceability_collection.export(fname)
 
     # Item matrix:
     # Create table with related items, printing their target references.
@@ -928,7 +925,7 @@ def setup(app):
 
     # Configuration for exporting collection to json
     app.add_config_value('traceability_json_export_path',
-                         '/tmp/traceability', 'env')
+                         '/tmp/traceability.json', 'env')
 
     # Configuration for adapting items through a callback
     app.add_config_value('traceability_callback_per_item',
