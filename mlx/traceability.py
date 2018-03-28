@@ -926,7 +926,7 @@ def setup(app):
 
     # Configuration for exporting collection to json
     app.add_config_value('traceability_json_export_path',
-                         '/tmp/traceability.json', 'env')
+                         None, 'env')
 
     # Configuration for adapting items through a callback
     app.add_config_value('traceability_callback_per_item',
