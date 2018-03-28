@@ -8,5 +8,6 @@ tests/docs/basic/_build
 tests/docs/autodoc/docs/_build
 .tox/
 .cache
+.pytest_cache
 .coverage
 coverage.xml
