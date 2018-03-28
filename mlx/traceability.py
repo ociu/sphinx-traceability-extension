@@ -31,7 +31,7 @@ REGEXP_EXTERNAL_RELATIONSHIP = re.compile('^ext_.*')
 EXTERNAL_LINK_FIELDNAME = 'field'
 
 
-def report_warning(env, msg, docname, lineno=None):
+def report_warning(env, msg, docname=None, lineno=None):
     '''Convenience function for logging a warning
 
     Args:
@@ -529,10 +529,6 @@ def process_item_nodes(app, doctree, fromdocname):
             for err in errs.iter():
                 report_warning(env, err, err.get_document())
 
-        if app.config.traceability_json_export_path:
-            fname = app.config.traceability_json_export_path
-            env.traceability_collection.export(fname)
-
     # Item matrix:
     # Create table with related items, printing their target references.
     # Only source and target items matching respective regexp shall be included
@@ -798,6 +794,11 @@ def initialize_environment(app):
 \\makeatletter
 \\let\@noitemerr\\relax
 \\makeatother'''
+
+    # Older sphinx versions done have the 'env-check-consistency' callback: no export possible
+    if sphinx_version < '1.6.0':
+        if app.config.traceability_json_export_path:
+            report_warning(env, 'No export possible, try upgrading sphinx installation')
 
 # -----------------------------------------------------------------------------
 # Utility functions
