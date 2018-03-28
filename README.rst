@@ -230,6 +230,34 @@ Example configuration of disabling the rendering of captions on item-tree:
 
     traceability_tree_no_captions = True
 
+.. _traceability_config_export:
+
+Export
+======
+
+The plugin allows exporting the documentation items.
+
+Export to JSON
+--------------
+
+As a preliminary test feature, the plugin allows to export the documentation items to a JSON database. The feature
+can be enabled by setting the configuration to your JSON-file to export to. Note, the JSON-file is overwritten
+(not appended) on every build of the documentation.
+
+.. code-block:: python
+
+    traceability_json_export_path = '/path/to/your/database.json'
+
+As a preliminary feature, the database only contains per documentation item:
+
+- the id,
+- the caption,
+- the relations to other items.
+
+The actual content (RST content with images, formulas, etc) of the item is currently not stored.
+
+.. note:: Requires sphinx >= 1.6.0
+
 .. _traceability_config_callback:
 
 Callback per item (advanced)
