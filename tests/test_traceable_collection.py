@@ -1,4 +1,8 @@
 from unittest import TestCase
+try:
+    from unittest.mock import MagicMock, patch, mock_open
+except ImportError as err:
+    from mock import MagicMock, patch, mock_open
 
 import mlx.traceable_item as item
 import mlx.traceability_exception as exception
@@ -12,6 +16,7 @@ class TestTraceableCollection(TestCase):
     rev_relation = 'some-random-reverse-relation'
     unidir_relation = 'some-random-unidirectional-relation'
     identification_tgt = 'another-item-to-target'
+    mock_export_file = '/tmp/my/mocked_export_file.json'
 
     def test_init(self):
         coll = dut.TraceableCollection()
@@ -313,3 +318,22 @@ class TestTraceableCollection(TestCase):
         # Mimicing the automatic reverse relation, self test should pass
         item2.add_target(self.rev_relation, self.identification_src)
         coll.self_test()
+
+    def test_export_no_items(self):
+        open_mock = mock_open()
+        coll = dut.TraceableCollection()
+        with patch('mlx.traceable_collection.open', open_mock, create=True):
+            coll.export(self.mock_export_file)
+        open_mock.assert_called_once_with(self.mock_export_file, 'w')
+
+    @patch('mlx.traceable_collection.json', autospec=True)
+    def test_export_single_item(self, json_mock):
+        json_mock_object = MagicMock(spec=dut.json)
+        json_mock.return_value = json_mock_object
+        open_mock = mock_open()
+        coll = dut.TraceableCollection()
+        item1 = item.TraceableItem(self.identification_src)
+        coll.add_item(item1)
+        with patch('mlx.traceable_collection.open', open_mock, create=True):
+            coll.export(self.mock_export_file)
+        open_mock.assert_called_once_with(self.mock_export_file, 'w')

@@ -318,6 +318,25 @@ class TraceableItem(object):
                 related = True
         return related
 
+    def to_dict(self):
+        '''
+        Export to dictionary
+
+        Returns:
+            (dict) Dictionary representation of the object
+        '''
+        data = {}
+        data['id'] = self.get_id()
+        caption = self.get_caption()
+        if caption:
+            data['caption'] = caption
+        data['targets'] = {}
+        for relation in self.iter_relations():
+            tgts = self.iter_targets(relation)
+            if tgts:
+                data['targets'][relation] = tgts
+        return data
+
     def self_test(self):
         '''
         Perform self test on collection content
