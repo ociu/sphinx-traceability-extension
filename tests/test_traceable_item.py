@@ -55,6 +55,11 @@ class TestTraceableItem(TestCase):
         item.set_document(self.docname)
         item.set_caption(txt)
         self.assertEqual(txt, item.get_caption())
+        # Verify dict
+        data = item.to_dict()
+        self.assertEqual(self.identification, data['id'])
+        self.assertEqual(txt, data['caption'])
+        self.assertEqual({}, data['targets'])
         item.self_test()
 
     def test_set_content(self):
@@ -124,6 +129,10 @@ class TestTraceableItem(TestCase):
         # Verify relations iterator
         relations = item.iter_relations()
         self.assertIn(self.fwd_relation, relations)
+        # Verify dict
+        data = item.to_dict()
+        self.assertEqual(self.identification, data['id'])
+        self.assertEqual([self.identification_tgt], data['targets'][self.fwd_relation])
         # Self test should pass
         item.self_test()
 
@@ -172,6 +181,10 @@ class TestTraceableItem(TestCase):
         # Verify relations iterator
         relations = item.iter_relations()
         self.assertIn(self.fwd_relation, relations)
+        # Verify dict
+        data = item.to_dict()
+        self.assertEqual(self.identification, data['id'])
+        self.assertEqual([self.identification_tgt], data['targets'][self.fwd_relation])
         # Self test should pass
         item.self_test()
 

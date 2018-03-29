@@ -333,6 +333,8 @@ traceability_external_relationship_to_url = {
     'ext_toolname': 'http://toolname.company.com/field1/field2/workitem?field3'
 }
 
+traceability_json_export_path = '_build/exported_items.json'
+
 # traceability_item_no_captions = True
 # traceability_list_no_captions = True
 # traceability_matrix_no_captions = True

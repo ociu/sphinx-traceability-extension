@@ -31,7 +31,7 @@ REGEXP_EXTERNAL_RELATIONSHIP = re.compile('^ext_.*')
 EXTERNAL_LINK_FIELDNAME = 'field'
 
 
-def report_warning(env, msg, docname, lineno=None):
+def report_warning(env, msg, docname=None, lineno=None):
     '''Convenience function for logging a warning
 
     Args:
@@ -505,6 +505,10 @@ def perform_consistency_check(app, doctree):
         for err in errs.iter():
             report_warning(env, err, err.get_document())
 
+    if app.config.traceability_json_export_path:
+        fname = app.config.traceability_json_export_path
+        env.traceability_collection.export(fname)
+
 
 def process_item_nodes(app, doctree, fromdocname):
     """
@@ -791,6 +795,11 @@ def initialize_environment(app):
 \\let\@noitemerr\\relax
 \\makeatother'''
 
+    # Older sphinx versions done have the 'env-check-consistency' callback: no export possible
+    if sphinx_version < '1.6.0':
+        if app.config.traceability_json_export_path:
+            report_warning(env, 'No export possible, try upgrading sphinx installation')
+
 # -----------------------------------------------------------------------------
 # Utility functions
 
@@ -914,6 +923,10 @@ def setup(app):
     app.add_javascript('https://cdn.rawgit.com/aexmachina/jquery-bonsai/master/jquery.bonsai.js')
     app.add_stylesheet('https://cdn.rawgit.com/aexmachina/jquery-bonsai/master/jquery.bonsai.css')
     app.add_javascript('traceability.js')
+
+    # Configuration for exporting collection to json
+    app.add_config_value('traceability_json_export_path',
+                         None, 'env')
 
     # Configuration for adapting items through a callback
     app.add_config_value('traceability_callback_per_item',
