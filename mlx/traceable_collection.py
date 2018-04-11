@@ -148,7 +148,7 @@ class TraceableCollection(object):
         '''
         with open(fname, 'w') as outfile:
             data = []
-            for itemid in self.items:
+            for itemid in self.iter_items():
                 item = self.get_item(itemid)
                 data.append(item.to_dict())
             json.dump(data, outfile, indent=4, sort_keys=True)
