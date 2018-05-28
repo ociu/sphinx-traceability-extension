@@ -31,6 +31,8 @@ class TestTraceableItem(TestCase):
         self.assertEqual(err.exception.get_document(), self.docname)
         self.assertEqual(self.identification, item.get_id())
         self.assertTrue(item.is_placeholder())
+        # Verify dict
+        self.assertEqual({}, item.to_dict())
 
     def test_set_document(self):
         item = dut.TraceableItem(self.identification)
