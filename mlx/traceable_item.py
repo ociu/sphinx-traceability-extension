@@ -330,6 +330,8 @@ class TraceableItem(object):
         caption = self.get_caption()
         if caption:
             data['caption'] = caption
+        data['document'] = self.docname
+        data['line'] = self.lineno
         data['targets'] = {}
         for relation in self.iter_relations():
             tgts = self.iter_targets(relation)
