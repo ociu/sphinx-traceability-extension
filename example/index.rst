@@ -11,8 +11,8 @@ Contents:
 .. toctree::
     :maxdepth: 1
 
-    SRS
-    SSS
+    rqts/SRS
+    rqts/SSS
 
 .. item:: r001 First requirement
     :class: functional requirement
