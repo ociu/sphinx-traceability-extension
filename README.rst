@@ -252,6 +252,7 @@ As a preliminary feature, the database only contains per documentation item:
 
 - the id,
 - the caption,
+- the document name and line number,
 - the relations to other items.
 
 The actual content (RST content with images, formulas, etc) of the item is currently not stored.

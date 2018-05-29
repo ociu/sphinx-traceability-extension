@@ -326,15 +326,18 @@ class TraceableItem(object):
             (dict) Dictionary representation of the object
         '''
         data = {}
-        data['id'] = self.get_id()
-        caption = self.get_caption()
-        if caption:
-            data['caption'] = caption
-        data['targets'] = {}
-        for relation in self.iter_relations():
-            tgts = self.iter_targets(relation)
-            if tgts:
-                data['targets'][relation] = tgts
+        if not self.is_placeholder():
+            data['id'] = self.get_id()
+            caption = self.get_caption()
+            if caption:
+                data['caption'] = caption
+            data['document'] = self.docname
+            data['line'] = self.lineno
+            data['targets'] = {}
+            for relation in self.iter_relations():
+                tgts = self.iter_targets(relation)
+                if tgts:
+                    data['targets'][relation] = tgts
         return data
 
     def self_test(self):

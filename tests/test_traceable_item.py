@@ -31,6 +31,8 @@ class TestTraceableItem(TestCase):
         self.assertEqual(err.exception.get_document(), self.docname)
         self.assertEqual(self.identification, item.get_id())
         self.assertTrue(item.is_placeholder())
+        # Verify dict
+        self.assertEqual({}, item.to_dict())
 
     def test_set_document(self):
         item = dut.TraceableItem(self.identification)
@@ -59,6 +61,8 @@ class TestTraceableItem(TestCase):
         data = item.to_dict()
         self.assertEqual(self.identification, data['id'])
         self.assertEqual(txt, data['caption'])
+        self.assertEqual(self.docname, data['document'])
+        self.assertEqual(0, data['line'])
         self.assertEqual({}, data['targets'])
         item.self_test()
 
@@ -133,6 +137,8 @@ class TestTraceableItem(TestCase):
         data = item.to_dict()
         self.assertEqual(self.identification, data['id'])
         self.assertEqual([self.identification_tgt], data['targets'][self.fwd_relation])
+        self.assertEqual(self.docname, data['document'])
+        self.assertEqual(0, data['line'])
         # Self test should pass
         item.self_test()
 
@@ -185,6 +191,8 @@ class TestTraceableItem(TestCase):
         data = item.to_dict()
         self.assertEqual(self.identification, data['id'])
         self.assertEqual([self.identification_tgt], data['targets'][self.fwd_relation])
+        self.assertEqual(self.docname, data['document'])
+        self.assertEqual(0, data['line'])
         # Self test should pass
         item.self_test()
 
