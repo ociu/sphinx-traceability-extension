@@ -327,7 +327,8 @@ class TraceableItem(object):
         retval = self.STRING_TEMPLATE.format(identification=self.get_id())
         retval += '\tPlaceholder: {placeholder}\n'.format(placeholder=self.is_placeholder())
         for attribute in self.attributes:
-            retval += '\tAttribute {attribute} = {value}\n'.format(attribute=attribute, value=self.attributes[attribute])
+            retval += '\tAttribute {attribute} = {value}\n'.format(attribute=attribute,
+                                                                   value=self.attributes[attribute])
         for relation in self.explicit_relations:
             retval += '\tExplicit {relation}\n'.format(relation=relation)
             for tgtid in self.explicit_relations[relation]:
