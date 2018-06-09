@@ -24,6 +24,7 @@ class TraceableItem(object):
         self.id = itemid
         self.explicit_relations = {}
         self.implicit_relations = {}
+        self.attributes = {}
         self.placeholder = placeholder
         self.docname = None
         self.lineno = None
@@ -48,6 +49,7 @@ class TraceableItem(object):
                 self.implicit_relations[relation] = []
             self.implicit_relations[relation].extend(other.implicit_relations[relation])
         # Remainder of fields: update if they improve quality of the item
+        # TODO: do something for attributes
         if not other.placeholder:
             self.placeholder = False
         if other.docname is not None:
@@ -275,12 +277,57 @@ class TraceableItem(object):
         '''
         return sorted(list(self.explicit_relations) + list(self.implicit_relations.keys()))
 
+    def add_attribute(self, attr, value):
+        '''
+        Add an attribute key-value pair to the traceable item
+
+        Args:
+            attr (str): Name of the attribute
+            value (str): Value of the attribute
+        '''
+        # TODO: just overwrites for now, are we sure about that?
+        self.attributes[attr] = value
+
+    def remove_attribute(self, attr):
+        '''
+        Removes an attribute key-value pair from the traceable item
+
+        Args:
+            attr (str): Name of the attribute
+        '''
+        del self.attributes[attr]
+
+    def get_attribute(self, attr):
+        '''
+        Get the value of an attribute from the traceable item
+
+        Args:
+            attr (str): Name of the attribute
+        Returns:
+            Value matching the given attribute key, or None if attribute does not exist
+        '''
+        value = None
+        if attr in self.attributes:
+            value = self.attributes[attr]
+        return value
+
+    def iter_attributes(self):
+        '''
+        Iterate over available attributes: sorted
+
+        Returns:
+            Sorted iterator over available attributes in the item
+        '''
+        return sorted(list(self.attributes))
+
     def __str__(self, explicit=True, implicit=True):
         '''
         Convert object to string
         '''
         retval = self.STRING_TEMPLATE.format(identification=self.get_id())
         retval += '\tPlaceholder: {placeholder}\n'.format(placeholder=self.is_placeholder())
+        for attribute in self.attributes:
+            retval += '\tAttribute {attribute} = {value}\n'.format(attribute=attribute, value=self.attributes[attribute])
         for relation in self.explicit_relations:
             retval += '\tExplicit {relation}\n'.format(relation=relation)
             for tgtid in self.explicit_relations[relation]:
@@ -333,6 +380,7 @@ class TraceableItem(object):
                 data['caption'] = caption
             data['document'] = self.docname
             data['line'] = self.lineno
+            data['attributes'] = self.attributes
             data['targets'] = {}
             for relation in self.iter_relations():
                 tgts = self.iter_targets(relation)
@@ -350,6 +398,11 @@ class TraceableItem(object):
         # Item should hold a reference to a document
         if self.get_document() is None:
             raise TraceabilityException('item {item} has no reference to source document'.format(item=self.get_id()))
+        # Item's attributes should be valid
+        for attribute in self.iter_attributes():
+            if not self.attributes[attribute]:
+                raise TraceabilityException('item {item} has invalid attribute value for {attribute}'
+                                            .format(item=self.get_id(), attribute=attribute))
         # Targets should have no duplicates
         for relation in self.iter_relations():
             tgts = self.iter_targets(relation)

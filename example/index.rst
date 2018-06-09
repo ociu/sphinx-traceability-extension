@@ -16,6 +16,8 @@ Contents:
 
 .. item:: r001 First requirement
     :class: functional requirement
+    :status: Draft
+    :value: ASIL-C ASPICE-3
 
     This is one item
 
@@ -31,6 +33,7 @@ Contents:
 
 .. item:: r002
     :class: critical
+    :status: Reviewed
 
     We have to extend this section
 
@@ -40,6 +43,7 @@ This text is not part of any item
     :class: secondary
     :trace: r002
     :ext_toolname: namespace:group:document
+    :status: Approved
 
     Clean up all this.
 

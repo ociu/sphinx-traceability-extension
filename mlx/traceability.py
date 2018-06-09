@@ -102,6 +102,7 @@ class ItemDirective(Directive):
 
       .. item:: item_id [item_caption]
          :<<relationship>>:  other_item_id ...
+         :<<attribute>>: attribute_value
          ...
          :nocaptions:
 
@@ -152,6 +153,11 @@ class ItemDirective(Directive):
             item.set_caption(caption)
             item.set_content('\n'.join(self.content))
             env.traceability_collection.add_item(item)
+
+            # ADd found attributes to item. Attribute data is a single string.
+            for attribute in app.config.traceability_attributes:
+                if attribute in self.options:
+                    item.add_attribute(attribute, self.options[attribute])
 
             # Add found relationships to item. All relationship data is a string of
             # item ids separated by space. It is splitted in a list of item ids
@@ -711,6 +717,12 @@ def process_item_nodes(app, doctree, fromdocname):
             header += ' : ' + currentitem.caption
         top_node = create_top_node(header)
         if app.config.traceability_render_relationship_per_item:
+            for attr in currentitem.iter_attributes():
+                print('{attr}: {value}'.format(attr=attr, value=currentitem.get_attribute(attr)))
+                p_node = nodes.paragraph()
+                txt = nodes.Text('{attr}: {value}'.format(attr=attr, value=currentitem.get_attribute(attr)))
+                p_node.append(txt)
+                top_node.append(p_node)
             par_node = nodes.paragraph()
             dl_node = nodes.definition_list()
             for rel in env.traceability_collection.iter_relations():
@@ -754,6 +766,9 @@ def create_top_node(title):
 
 def init_available_relationships(app):
     """
+    Update directive option_spec with custom attributes defined in
+    configuration file ``traceability_attributes`` variable.
+
     Update directive option_spec with custom relationships defined in
     configuration file ``traceability_relationships`` variable.  Both
     keys (relationships) and values (reverse relationships) are added.
@@ -764,6 +779,9 @@ def init_available_relationships(app):
     Function also passes relationships to traceability collection.
     """
     env = app.builder.env
+
+    for attr in app.config.traceability_attributes:
+        ItemDirective.option_spec[attr] = directives.unchanged
 
     for rel in list(app.config.traceability_relationships.keys()):
         revrel = app.config.traceability_relationships[rel]
@@ -931,6 +949,10 @@ def setup(app):
     # Configuration for adapting items through a callback
     app.add_config_value('traceability_callback_per_item',
                          None, 'env')
+
+    # Create default attributes dictionary. Can be customized in conf.py
+    app.add_config_value('traceability_attributes',
+                         ['value', 'status'], 'env')
 
     # Create default relationships dictionary. Can be customized in conf.py
     app.add_config_value('traceability_relationships',
