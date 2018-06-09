@@ -717,14 +717,22 @@ def process_item_nodes(app, doctree, fromdocname):
             header += ' : ' + currentitem.caption
         top_node = create_top_node(header)
         if app.config.traceability_render_relationship_per_item:
-            for attr in currentitem.iter_attributes():
-                print('{attr}: {value}'.format(attr=attr, value=currentitem.get_attribute(attr)))
-                p_node = nodes.paragraph()
-                txt = nodes.Text('{attr}: {value}'.format(attr=attr, value=currentitem.get_attribute(attr)))
-                p_node.append(txt)
-                top_node.append(p_node)
             par_node = nodes.paragraph()
             dl_node = nodes.definition_list()
+            if currentitem.iter_attributes():
+                li_node = nodes.definition_list_item()
+                dt_node = nodes.term()
+                txt = nodes.Text('Attributes')
+                dt_node.append(txt)
+                li_node.append(dt_node)
+                for attr in currentitem.iter_attributes():
+                    dd_node = nodes.definition()
+                    p_node = nodes.paragraph()
+                    txt = nodes.Text('{attr}: {value}'.format(attr=attr, value=currentitem.get_attribute(attr)))
+                    p_node.append(txt)
+                    dd_node.append(p_node)
+                    li_node.append(dd_node)
+                dl_node.append(li_node)
             for rel in env.traceability_collection.iter_relations():
                 tgts = currentitem.iter_targets(rel)
                 if tgts:
