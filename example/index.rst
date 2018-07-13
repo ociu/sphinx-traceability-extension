@@ -45,7 +45,7 @@ This text is not part of any item
 
 .. item:: r005 Another (does not show captions on the related items)
     :class: terciary
-    :trace: r002 r003
+    :trace: r002 r002 r003
     :nocaptions:
 
     Clean up all this again
