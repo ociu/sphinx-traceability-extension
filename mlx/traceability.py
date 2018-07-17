@@ -156,7 +156,7 @@ class ItemDirective(Directive):
         except TraceabilityException as err:
             report_warning(env, err, env.docname, self.lineno)
 
-        # ADd found attributes to item. Attribute data is a single string.
+        # Add found attributes to item. Attribute data is a single string.
         for attribute in app.config.traceability_attributes:
             if attribute in self.options:
                 item.add_attribute(attribute, self.options[attribute])
@@ -201,6 +201,7 @@ class ItemListDirective(Directive):
 
       .. item-list:: title
          :filter: regexp
+         :<<attribute>>: regexp
          :nocaptions:
 
     """
@@ -231,6 +232,12 @@ class ItemListDirective(Directive):
             item_list_node['filter'] = self.options['filter']
         else:
             item_list_node['filter'] = ''
+
+        # Add found attributes to item. Attribute data is a single string.
+        item_list_node['attributes'] = {}
+        for attr in app.config.traceability_attributes:
+            if attr in self.options:
+                item_list_node['attributes'][attr] = self.options[attr]
 
         # Check nocaptions flag
         if 'nocaptions' in self.options:
@@ -648,7 +655,7 @@ def process_item_nodes(app, doctree, fromdocname):
     # Create list with target references. Only items matching list regexp
     # shall be included
     for node in doctree.traverse(ItemList):
-        item_ids = env.traceability_collection.get_items(node['filter'])
+        item_ids = env.traceability_collection.get_items(node['filter'], node['attributes'])
         showcaptions = not node['nocaptions']
         top_node = create_top_node(node['title'])
         ul_node = nodes.bullet_list()
@@ -793,6 +800,7 @@ def init_available_relationships(app):
 
     for attr in app.config.traceability_attributes:
         ItemDirective.option_spec[attr] = directives.unchanged
+        ItemListDirective.option_spec[attr] = directives.unchanged
 
     for rel in list(app.config.traceability_relationships.keys()):
         revrel = app.config.traceability_relationships[rel]
@@ -963,7 +971,7 @@ def setup(app):
 
     # Create default attributes dictionary. Can be customized in conf.py
     app.add_config_value('traceability_attributes',
-                         ['value', 'status'], 'env')
+                         ['value', 'level', 'status'], 'env')
 
     # Create default relationships dictionary. Can be customized in conf.py
     app.add_config_value('traceability_relationships',

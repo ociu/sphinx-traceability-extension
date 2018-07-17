@@ -306,9 +306,9 @@ class TraceableItem(object):
         Args:
             attr (str): Name of the attribute
         Returns:
-            Value matching the given attribute key, or None if attribute does not exist
+            Value matching the given attribute key, or '' if attribute does not exist
         '''
-        value = None
+        value = ''
         if attr in self.attributes:
             value = self.attributes[attr]
         return value
@@ -351,6 +351,20 @@ class TraceableItem(object):
             (boolean) True if the given regex matches the item identification
         '''
         return re.match(regex, self.get_id())
+
+    def attributes_match(self, attributes):
+        '''
+        Check if item matches a given set of attributes
+
+        Args:
+            - attributes (dict): Dictionary with attribute-regex pairs to match the given item against
+        Returns:
+            (boolean) True if the given attributes match the item attributes
+        '''
+        for attr in attributes.keys():
+            if not re.match(attributes[attr], self.get_attribute(attr)):
+                return False
+        return True
 
     def is_related(self, relations, targetid):
         '''

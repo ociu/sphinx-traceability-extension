@@ -17,7 +17,7 @@ Contents:
 .. item:: r001 First requirement
     :class: functional requirement
     :status: Draft
-    :value: ASIL-C ASPICE-3
+    :level: ASIL-C ASPICE-3
 
     This is one item
 
@@ -43,11 +43,13 @@ This text is not part of any item
     :class: secondary
     :trace: r002
     :ext_toolname: namespace:group:document
+    :level: ASIL-A
     :status: Approved
 
     Clean up all this.
 
 .. item:: r005 Another (does not show captions on the related items)
+    :level: ASIL-C ASPICE-3
     :class: terciary
     :trace: r002 r002 r003
     :nocaptions:
@@ -64,13 +66,16 @@ This text is not part of any item
     To demonstrate that bug #2 is solved
 
 .. item:: r007 Depends on all with stereotypes
+    :level: ASIL-X
     :class: terciary
     :trace: r001
     :validates: r002
     :fulfills:  r003
         r005
 
-    To demonstrate stereotype usage in relationships
+    To demonstrate stereotype usage in relationships.
+
+    To demonstrate invalid attribute, ASIL-X is not valid attribute (should not appear in e.g. item-list).
 
 
 .. requirement:: r100 A requirement using the ``requirement`` type
@@ -79,14 +84,15 @@ This text is not part of any item
     rst semantics
 
 .. item:: r008 Requirement with invalid reference to other one
+    :level: ASIL-D
     :trace: non_existing_requirement
 
     Ai caramba, this should report a broken link to an non existing requirement.
 
-.. item:: r009 Requirement with invalid relation kind to other one
-    :non_existing_relation: r007
+.. item:: r009 Requirement with invalid relation kind or attribute
+    :non_existing_relation_or_attribute: r007
 
-    Ai caramba, this should report a warning as the relation kind does not exist.
+    Ai caramba, this should report a warning as the relation kind or attribute does not exist.
 
 Item list
 =========
@@ -121,6 +127,19 @@ List all well-formed SYS and SRS requirements
 
 .. item-list:: System and software requirements
     :filter: ^S[YR]S_\d
+
+List all items with ASIL attribute
+----------------------------------
+
+.. item-list:: All ASIL items
+    :level: ASIL-[ABCD]
+
+List all items with ASIL and Draft/Approved attribute
+-----------------------------------------------------
+
+.. item-list:: All Draft ASIL items
+    :status: (Draft|Approved)
+    :level: ASIL-[ABCD]
 
 Item matrix
 ===========

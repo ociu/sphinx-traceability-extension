@@ -301,6 +301,7 @@ The plugin itself holds a default config that can be used for any traceability d
 
     traceability_callback_per_item = None
     traceability_attributes = {
+        'level',
         'value',
         'status'
     }
@@ -409,6 +410,9 @@ Documentation items can be defined using the *item* directive, specifying:
 
         According to the Polarion reference, the software **shall** implement my first requirement.
 
+Attributes can be added to the item, using the `configured attribute keys <traceability_default_config>`_
+(e.g. *value* in the above example). The content of the attribute is a free string.
+
 The relations to other documentation items can be specified as:
 
 - a space seperated list of item ID's, or
@@ -446,10 +450,14 @@ A flat list of documentation items can be generated using a python regular expre
 
     .. item-list:: All software requirements
         :filter: SWRQT
+        :status: Appr
         :nocaptions:
 
-where *SWRQT* (*filter* argument) can be replace by any python regular expression. Documentation items matching
+where *SWRQT* (*filter* argument) can be replaced by any python regular expression. Documentation items matching
 their ID to the given regular expression end up in the list.
+
+where *status* can be replaced by any configured attribute, and *Appr* can be replaced by any python regular
+expression. Documentation items where the *status* attribute matches the given regular expression end up in the list.
 
 By default the caption for every item in the list is shown. By providing the *nocaptions* flag, the
 caption can be omitted. This gives a smaller list, but also less details.
