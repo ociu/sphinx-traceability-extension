@@ -49,7 +49,8 @@ class TraceableItem(object):
                 self.implicit_relations[relation] = []
             self.implicit_relations[relation].extend(other.implicit_relations[relation])
         # Remainder of fields: update if they improve quality of the item
-        # TODO: do something for attributes
+        for attr in other.attributes.keys():
+            self.add_attribute(attr, other.attributes[attr], False)
         if not other.placeholder:
             self.placeholder = False
         if other.docname is not None:
@@ -277,16 +278,17 @@ class TraceableItem(object):
         '''
         return sorted(list(self.explicit_relations) + list(self.implicit_relations.keys()))
 
-    def add_attribute(self, attr, value):
+    def add_attribute(self, attr, value, overwrite=True):
         '''
         Add an attribute key-value pair to the traceable item
 
         Args:
             attr (str): Name of the attribute
             value (str): Value of the attribute
+            overwrite(boolean): Overwrite existing attribute value, if any
         '''
-        # TODO: just overwrites for now, are we sure about that?
-        self.attributes[attr] = value
+        if overwrite or attr not in self.attributes:
+            self.attributes[attr] = value
 
     def remove_attribute(self, attr):
         '''
