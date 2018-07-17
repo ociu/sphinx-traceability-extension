@@ -16,6 +16,9 @@ class TestTraceableCollection(TestCase):
     rev_relation = 'some-random-reverse-relation'
     unidir_relation = 'some-random-unidirectional-relation'
     identification_tgt = 'another-item-to-target'
+    attribute_key = 'some-random-attribute-key'
+    attribute_value_src = 'some-random-attribute value1'
+    attribute_value_tgt = 'some-random-attribute value2'
     mock_export_file = '/tmp/my/mocked_export_file.json'
 
     def test_init(self):
@@ -268,6 +271,24 @@ class TestTraceableCollection(TestCase):
         # placeholder is replaced by actual item
         coll.add_item(item2)
         self.assertEqual(2, len(coll.get_items('\w*')))
+        # Empty filter should match all items
+        self.assertEqual(2, len(coll.get_items('')))
+
+    def test_get_items_attribute(self):
+        coll = dut.TraceableCollection()
+        item1 = item.TraceableItem(self.identification_src)
+        coll.add_item(item1)
+        item2 = item.TraceableItem(self.identification_tgt)
+        coll.add_item(item2)
+        self.assertEqual(2, len(coll.get_items('')))
+        self.assertEqual(0, len(coll.get_items('', {self.attribute_key: self.attribute_value_src})))
+        self.assertEqual(0, len(coll.get_items('', {self.attribute_key: self.attribute_value_tgt})))
+        item1.add_attribute(self.attribute_key, self.attribute_value_src)
+        self.assertEqual(1, len(coll.get_items('', {self.attribute_key: self.attribute_value_src})))
+        self.assertEqual(0, len(coll.get_items('', {self.attribute_key: self.attribute_value_tgt})))
+        item2.add_attribute(self.attribute_key, self.attribute_value_tgt)
+        self.assertEqual(1, len(coll.get_items('', {self.attribute_key: self.attribute_value_src})))
+        self.assertEqual(1, len(coll.get_items('', {self.attribute_key: self.attribute_value_tgt})))
 
     def test_related(self):
         coll = dut.TraceableCollection()

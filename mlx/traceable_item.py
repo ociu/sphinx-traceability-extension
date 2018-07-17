@@ -287,6 +287,8 @@ class TraceableItem(object):
             value (str): Value of the attribute
             overwrite(boolean): Overwrite existing attribute value, if any
         '''
+        if not attr or not value:
+            raise TraceabilityException('item {item} has invalid attribute ({attr}={value})'.format(item=self.get_id(), attr=attr, value=value), self.get_document())
         if overwrite or attr not in self.attributes:
             self.attributes[attr] = value
 
@@ -297,6 +299,8 @@ class TraceableItem(object):
         Args:
             attr (str): Name of the attribute
         '''
+        if not attr:
+            raise TraceabilityException('item {item} cannot remove invalid attribute ({attr})'.format(item=self.get_id(), attr=attr), self.get_document())
         del self.attributes[attr]
 
     def get_attribute(self, attr):
