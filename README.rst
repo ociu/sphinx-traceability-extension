@@ -300,6 +300,10 @@ The plugin itself holds a default config that can be used for any traceability d
 .. code-block:: python
 
     traceability_callback_per_item = None
+    traceability_attributes = {
+        'value',
+        'status'
+    }
     traceability_relationships = {
         'fulfills': 'fulfilled_by',
         'depends_on': 'impacts_on',
@@ -343,9 +347,11 @@ per documentation object:
 
     sys.path.insert(0, os.path.abspath('<path_to_process_submodule>/config'))
 
+    from traceability_config import swcc_traceability_attributes
     from traceability_config import swcc_traceability_relationships
     from traceability_config import swcc_traceability_relationship_to_string
 
+    traceability_attributes = swcc_traceability_attributes
     traceability_relationships = swcc_traceability_relationships
     traceability_relationship_to_string = swcc_traceability_relationship_to_string
     traceability_render_relationship_per_item = False
@@ -388,12 +394,15 @@ Documentation items can be defined using the *item* directive, specifying:
 
 - the name (id) of the documenation item
 - caption or short description of the documentation item
+- attributes for the documentation item
 - internal/external relationships to other documentation items (details in next paragraph)
 - content of documentation item including any rst content including text, images, formulas, code-blocks, etc.
 
 .. code-block:: rest
 
     .. item:: SWRQT-MY_FIRST_REQUIREMENT Caption of my first requirement
+        :value: 400
+        :status: Approved
         :validated_by: ITEST-MY_FIRST_INTEGRATION_TEST
         :ext_polarion_reference: project_x:workitem_y
         :nocaptions:
