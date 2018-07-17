@@ -145,33 +145,36 @@ class ItemDirective(Directive):
         if len(self.arguments) > 1:
             caption = self.arguments[1].replace('\n', ' ')
 
+        # Store item info
+        item = TraceableItem(targetid)
+        item.set_document(env.docname, self.lineno)
+        item.bind_node(targetnode)
+        item.set_caption(caption)
+        item.set_content('\n'.join(self.content))
         try:
-            # Store item info
-            item = TraceableItem(targetid)
-            item.set_document(env.docname, self.lineno)
-            item.bind_node(targetnode)
-            item.set_caption(caption)
-            item.set_content('\n'.join(self.content))
             env.traceability_collection.add_item(item)
-
-            # ADd found attributes to item. Attribute data is a single string.
-            for attribute in app.config.traceability_attributes:
-                if attribute in self.options:
-                    item.add_attribute(attribute, self.options[attribute])
-
-            # Add found relationships to item. All relationship data is a string of
-            # item ids separated by space. It is splitted in a list of item ids
-            for rel in env.traceability_collection.iter_relations():
-                if rel in self.options:
-                    related_ids = self.options[rel].split()
-                    for related_id in related_ids:
-                        env.traceability_collection.add_relation(targetid, rel, related_id)
-
-            # Custom callback for modifying items
-            if app.config.traceability_callback_per_item:
-                app.config.traceability_callback_per_item(targetid, env.traceability_collection)
         except TraceabilityException as err:
             report_warning(env, err, env.docname, self.lineno)
+
+        # ADd found attributes to item. Attribute data is a single string.
+        for attribute in app.config.traceability_attributes:
+            if attribute in self.options:
+                item.add_attribute(attribute, self.options[attribute])
+
+        # Add found relationships to item. All relationship data is a string of
+        # item ids separated by space. It is splitted in a list of item ids
+        for rel in env.traceability_collection.iter_relations():
+            if rel in self.options:
+                related_ids = self.options[rel].split()
+                for related_id in related_ids:
+                    try:
+                        env.traceability_collection.add_relation(targetid, rel, related_id)
+                    except TraceabilityException as err:
+                        report_warning(env, err, env.docname, self.lineno)
+
+        # Custom callback for modifying items
+        if app.config.traceability_callback_per_item:
+            app.config.traceability_callback_per_item(targetid, env.traceability_collection)
 
         # Output content of item to document
         template = []
