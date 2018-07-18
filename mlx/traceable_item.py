@@ -24,6 +24,7 @@ class TraceableItem(object):
         self.id = itemid
         self.explicit_relations = {}
         self.implicit_relations = {}
+        self.attributes = {}
         self.placeholder = placeholder
         self.docname = None
         self.lineno = None
@@ -48,6 +49,8 @@ class TraceableItem(object):
                 self.implicit_relations[relation] = []
             self.implicit_relations[relation].extend(other.implicit_relations[relation])
         # Remainder of fields: update if they improve quality of the item
+        for attr in other.attributes.keys():
+            self.add_attribute(attr, other.attributes[attr], False)
         if not other.placeholder:
             self.placeholder = False
         if other.docname is not None:
@@ -275,12 +278,68 @@ class TraceableItem(object):
         '''
         return sorted(list(self.explicit_relations) + list(self.implicit_relations.keys()))
 
+    def add_attribute(self, attr, value, overwrite=True):
+        '''
+        Add an attribute key-value pair to the traceable item
+
+        Args:
+            attr (str): Name of the attribute
+            value (str): Value of the attribute
+            overwrite(boolean): Overwrite existing attribute value, if any
+        '''
+        if not attr or not value:
+            raise TraceabilityException('item {item} has invalid attribute ({attr}={value})'.format(item=self.get_id(),
+                                                                                                    attr=attr,
+                                                                                                    value=value),
+                                        self.get_document())
+        if overwrite or attr not in self.attributes:
+            self.attributes[attr] = value
+
+    def remove_attribute(self, attr):
+        '''
+        Removes an attribute key-value pair from the traceable item
+
+        Args:
+            attr (str): Name of the attribute
+        '''
+        if not attr:
+            raise TraceabilityException('item {item} cannot remove invalid attribute {attr}'.format(item=self.get_id(),
+                                                                                                    attr=attr),
+                                        self.get_document())
+        del self.attributes[attr]
+
+    def get_attribute(self, attr):
+        '''
+        Get the value of an attribute from the traceable item
+
+        Args:
+            attr (str): Name of the attribute
+        Returns:
+            Value matching the given attribute key, or '' if attribute does not exist
+        '''
+        value = ''
+        if attr in self.attributes:
+            value = self.attributes[attr]
+        return value
+
+    def iter_attributes(self):
+        '''
+        Iterate over available attributes: sorted
+
+        Returns:
+            Sorted iterator over available attributes in the item
+        '''
+        return sorted(list(self.attributes))
+
     def __str__(self, explicit=True, implicit=True):
         '''
         Convert object to string
         '''
         retval = self.STRING_TEMPLATE.format(identification=self.get_id())
         retval += '\tPlaceholder: {placeholder}\n'.format(placeholder=self.is_placeholder())
+        for attribute in self.attributes:
+            retval += '\tAttribute {attribute} = {value}\n'.format(attribute=attribute,
+                                                                   value=self.attributes[attribute])
         for relation in self.explicit_relations:
             retval += '\tExplicit {relation}\n'.format(relation=relation)
             for tgtid in self.explicit_relations[relation]:
@@ -301,6 +360,20 @@ class TraceableItem(object):
             (boolean) True if the given regex matches the item identification
         '''
         return re.match(regex, self.get_id())
+
+    def attributes_match(self, attributes):
+        '''
+        Check if item matches a given set of attributes
+
+        Args:
+            - attributes (dict): Dictionary with attribute-regex pairs to match the given item against
+        Returns:
+            (boolean) True if the given attributes match the item attributes
+        '''
+        for attr in attributes.keys():
+            if not re.match(attributes[attr], self.get_attribute(attr)):
+                return False
+        return True
 
     def is_related(self, relations, targetid):
         '''
@@ -333,6 +406,7 @@ class TraceableItem(object):
                 data['caption'] = caption
             data['document'] = self.docname
             data['line'] = self.lineno
+            data['attributes'] = self.attributes
             data['targets'] = {}
             for relation in self.iter_relations():
                 tgts = self.iter_targets(relation)
@@ -350,6 +424,11 @@ class TraceableItem(object):
         # Item should hold a reference to a document
         if self.get_document() is None:
             raise TraceabilityException('item {item} has no reference to source document'.format(item=self.get_id()))
+        # Item's attributes should be valid
+        for attribute in self.iter_attributes():
+            if not self.attributes[attribute]:
+                raise TraceabilityException('item {item} has invalid attribute value for {attribute}'
+                                            .format(item=self.get_id(), attribute=attribute))
         # Targets should have no duplicates
         for relation in self.iter_relations():
             tgts = self.iter_targets(relation)

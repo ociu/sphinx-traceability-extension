@@ -240,7 +240,7 @@ class TraceableCollection(object):
             relations = self.iter_relations()
         return self.items[sourceid].is_related(relations, targetid)
 
-    def get_items(self, regex):
+    def get_items(self, regex, attributes={}):
         '''
         Get all items that match a given regular expression
 
@@ -248,6 +248,7 @@ class TraceableCollection(object):
 
         Args:
             - regex (str): Regex to match the items in this collection against
+            - attributes (dict): Dictionary with attribute-regex pairs to match the items in this collection against
         Returns:
             A sorted list of item-id's matching the given regex
         '''
@@ -255,7 +256,7 @@ class TraceableCollection(object):
         for itemid in self.items:
             if self.items[itemid].is_placeholder():
                 continue
-            if self.items[itemid].is_match(regex):
+            if self.items[itemid].is_match(regex) and self.items[itemid].attributes_match(attributes):
                 matches.append(itemid)
         matches.sort()
         return matches

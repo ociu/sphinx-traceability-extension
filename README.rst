@@ -300,6 +300,11 @@ The plugin itself holds a default config that can be used for any traceability d
 .. code-block:: python
 
     traceability_callback_per_item = None
+    traceability_attributes = {
+        'level',
+        'value',
+        'status'
+    }
     traceability_relationships = {
         'fulfills': 'fulfilled_by',
         'depends_on': 'impacts_on',
@@ -343,9 +348,11 @@ per documentation object:
 
     sys.path.insert(0, os.path.abspath('<path_to_process_submodule>/config'))
 
+    from traceability_config import swcc_traceability_attributes
     from traceability_config import swcc_traceability_relationships
     from traceability_config import swcc_traceability_relationship_to_string
 
+    traceability_attributes = swcc_traceability_attributes
     traceability_relationships = swcc_traceability_relationships
     traceability_relationship_to_string = swcc_traceability_relationship_to_string
     traceability_render_relationship_per_item = False
@@ -388,17 +395,23 @@ Documentation items can be defined using the *item* directive, specifying:
 
 - the name (id) of the documenation item
 - caption or short description of the documentation item
+- attributes for the documentation item
 - internal/external relationships to other documentation items (details in next paragraph)
 - content of documentation item including any rst content including text, images, formulas, code-blocks, etc.
 
 .. code-block:: rest
 
     .. item:: SWRQT-MY_FIRST_REQUIREMENT Caption of my first requirement
+        :value: 400
+        :status: Approved
         :validated_by: ITEST-MY_FIRST_INTEGRATION_TEST
         :ext_polarion_reference: project_x:workitem_y
         :nocaptions:
 
         According to the Polarion reference, the software **shall** implement my first requirement.
+
+Attributes can be added to the item, using the `configured attribute keys <traceability_default_config>`_
+(e.g. *value* in the above example). The content of the attribute is a free string.
 
 The relations to other documentation items can be specified as:
 
@@ -437,10 +450,14 @@ A flat list of documentation items can be generated using a python regular expre
 
     .. item-list:: All software requirements
         :filter: SWRQT
+        :status: Appr
         :nocaptions:
 
-where *SWRQT* (*filter* argument) can be replace by any python regular expression. Documentation items matching
+where *SWRQT* (*filter* argument) can be replaced by any python regular expression. Documentation items matching
 their ID to the given regular expression end up in the list.
+
+where *status* can be replaced by any configured attribute, and *Appr* can be replaced by any python regular
+expression. Documentation items where the *status* attribute matches the given regular expression end up in the list.
 
 By default the caption for every item in the list is shown. By providing the *nocaptions* flag, the
 caption can be omitted. This gives a smaller list, but also less details.
