@@ -279,8 +279,8 @@ class ItemLinkDirective(Directive):
 
         item_link_node = ItemLink('')
 
-        item_link_node['sources'] = self.options['sources']
-        item_link_node['targets'] = self.options['targets']
+        item_link_node['sources'] = self.options['sources'].split()
+        item_link_node['targets'] = self.options['targets'].split()
         item_link_node['type'] = self.options['type']
 
         return [item_link_node]
