@@ -754,29 +754,19 @@ def process_item_nodes(app, doctree, fromdocname):
 
         node.replace_self(new_node)
 
-    # We process the item-link items. These are stored in a dictionary, so they
-    # can be looked up efficiently when traversing the list of Item objects below
-    # Structure of this dictionary is as follows:
-    #
-    # {
-    #   'SWRQT-lorem': [
-    #                   ('ITEST-ipsum', 'depends_on'),
-    #                   ('ITEST-dolor', 'verifies'),
-    #                  ]
-    #   'SWRQT-sit':   [
-    #                   ('ITEST-amet', 'depends_on'),
-    #                   ('ITEST-ipsum', 'depends_on'),
-    #                  ]
-    #
-    # }
+    # Processing of the item-link items. They get added as additional relationships
+    # to the existing items.
     itemlinks = {}
     for node in doctree.traversingrse(ItemLink):
         for source in node['sources']:
             if itemlinks[source] is None:
                 itemlinks[source] = []
             for target in node['targets']:
-                itemlinks[source].append = (node['targets'], node['type'])
-        # This node has no representation, so is removed from the tree
+                try:
+                    env.traceability_collection.add_relation(target, node['type'], source)
+                except TraceabilityException as err:
+                    report_warning(env, err, env.docname, self.lineno)
+        # The ItemLink node has no final representation, so is removed from the tree
         node.replace_self([]])
 
 
