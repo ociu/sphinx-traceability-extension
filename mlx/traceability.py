@@ -776,6 +776,7 @@ def process_item_nodes(app, doctree, fromdocname):
                 itemlinks[source] = []
             for target in node['targets']:
                 itemlinks[source].append = (node['targets'], node['type'])
+        # This node has no representation, so is removed from the tree
         node.replace_self([]])
 
 
