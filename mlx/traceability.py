@@ -76,6 +76,10 @@ class ItemTree(nodes.General, nodes.Element):
     '''Tree-view on documentation items'''
     pass
 
+class ItemLink(nodes.General, nodes.Element):
+    '''List of documentation items'''
+    pass
+
 
 # -----------------------------------------------------------------------------
 # Pending item cross reference node
@@ -248,6 +252,38 @@ class ItemListDirective(Directive):
             item_list_node['nocaptions'] = False
 
         return [item_list_node]
+
+class ItemLinkDirective(Directive):
+    """
+    Directive to generate a list of items.
+
+    Syntax::
+
+      .. item-link::
+         :sources: list_of_items
+         :targets: list_of_items
+         :type: relationship_type
+
+    """
+    final_argument_whitespace = True
+    # Options
+    option_spec = {'sources': directives.unchanged,
+                   'targets': directives.unchanged,
+                   'type': directives.unchanged}
+    # Content disallowed
+    has_content = False
+
+    def run(self):
+        env = self.state.document.settings.env
+        app = env.app
+
+        item_link_node = ItemLink('')
+
+        item_link_node['sources'] = self.options['sources']
+        item_link_node['targets'] = self.options['targets']
+        item_link_node['type'] = self.options['type']
+
+        return [item_link_node]
 
 
 class ItemMatrixDirective(Directive):
@@ -718,6 +754,31 @@ def process_item_nodes(app, doctree, fromdocname):
 
         node.replace_self(new_node)
 
+    # We process the item-link items. These are stored in a dictionary, so they
+    # can be looked up efficiently when traversing the list of Item objects below
+    # Structure of this dictionary is as follows:
+    #
+    # {
+    #   'SWRQT-lorem': [
+    #                   ('ITEST-ipsum', 'depends_on'),
+    #                   ('ITEST-dolor', 'verifies'),
+    #                  ]
+    #   'SWRQT-sit':   [
+    #                   ('ITEST-amet', 'depends_on'),
+    #                   ('ITEST-ipsum', 'depends_on'),
+    #                  ]
+    #
+    # }
+    itemlinks = {}
+    for node in doctree.traversingrse(ItemLink):
+        for source in node['sources']:
+            if itemlinks[source] is None:
+                itemlinks[source] = []
+            for target in node['targets']:
+                itemlinks[source].append = (node['targets'], node['type'])
+        node.replace_self([]])
+
+
     # Item: replace item nodes, with admonition, list of relationships
     for node in doctree.traverse(Item):
         currentitem = env.traceability_collection.get_item(node['id'])
@@ -1036,6 +1097,7 @@ def setup(app):
     app.add_directive('item-matrix', ItemMatrixDirective)
     app.add_directive('item-2d-matrix', Item2DMatrixDirective)
     app.add_directive('item-tree', ItemTreeDirective)
+    app.add_directive('item-link', ItemLinkDirective)
 
     app.connect('doctree-resolved', process_item_nodes)
     if sphinx_version >= '1.6.0':
