@@ -756,7 +756,7 @@ def process_item_nodes(app, doctree, fromdocname):
 
     # Processing of the item-link items. They get added as additional relationships
     # to the existing items.
-    for node in doctree.traversingrse(ItemLink):
+    for node in doctree.traverse(ItemLink):
         for source in node['sources']:
             for target in node['targets']:
                 try:
@@ -764,7 +764,7 @@ def process_item_nodes(app, doctree, fromdocname):
                 except TraceabilityException as err:
                     report_warning(env, err, env.docname, self.lineno)
         # The ItemLink node has no final representation, so is removed from the tree
-        node.replace_self([]])
+        node.replace_self([])
 
 
     # Item: replace item nodes, with admonition, list of relationships
