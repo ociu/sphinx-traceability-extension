@@ -756,11 +756,8 @@ def process_item_nodes(app, doctree, fromdocname):
 
     # Processing of the item-link items. They get added as additional relationships
     # to the existing items.
-    itemlinks = {}
     for node in doctree.traversingrse(ItemLink):
         for source in node['sources']:
-            if itemlinks[source] is None:
-                itemlinks[source] = []
             for target in node['targets']:
                 try:
                     env.traceability_collection.add_relation(target, node['type'], source)
