@@ -255,7 +255,7 @@ class ItemListDirective(Directive):
 
 class ItemLinkDirective(Directive):
     """
-    Directive to generate a list of items.
+    Directive to add additional relations between lists of items.
 
     Syntax::
 
