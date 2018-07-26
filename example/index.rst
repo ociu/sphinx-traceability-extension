@@ -278,6 +278,14 @@ Another tree that should spawn a warning as the relation in *type* does not exis
         :top_relation_filter: depends_on
         :type: fulfilled_by fulfills
 
+This is a subtitle that has a ``item-link`` item under it. You shouldn't see anything in the rendering, though
+--------------------------------------------------------------------------------------------------------------
+
+.. item-link::
+    :sources: r001
+    :targets: r002
+    :type: trace
+
 Links and references
 ====================
 
