@@ -585,6 +585,20 @@ def process_item_nodes(app, doctree, fromdocname):
     """
     env = app.builder.env
 
+    # Processing of the item-link items. They get added as additional relationships
+    # to the existing items. Should be done before converting anything to docutils
+    # objects (rendering).
+    for node in doctree.traverse(ItemLink):
+        for source in node['sources']:
+            for target in node['targets']:
+                try:
+                    env.traceability_collection.add_relation(source, node['type'], target)
+                except TraceabilityException as err:
+                    docname, lineno = get_source_line(node)
+                    report_warning(env, err, docname, lineno)
+        # The ItemLink node has no final representation, so is removed from the tree
+        node.replace_self([])
+
     if sphinx_version < '1.6.0':
         try:
             env.traceability_collection.self_test(fromdocname)
@@ -766,19 +780,6 @@ def process_item_nodes(app, doctree, fromdocname):
                            docname, lineno)
 
         node.replace_self(new_node)
-
-    # Processing of the item-link items. They get added as additional relationships
-    # to the existing items.
-    for node in doctree.traverse(ItemLink):
-        for source in node['sources']:
-            for target in node['targets']:
-                try:
-                    env.traceability_collection.add_relation(source, node['type'], target)
-                except TraceabilityException as err:
-                    report_warning(env, err, env.docname, self.lineno)
-        # The ItemLink node has no final representation, so is removed from the tree
-        node.replace_self([])
-
 
     # Item: replace item nodes, with admonition, list of relationships
     for node in doctree.traverse(Item):
