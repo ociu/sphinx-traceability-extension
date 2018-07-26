@@ -760,7 +760,7 @@ def process_item_nodes(app, doctree, fromdocname):
         for source in node['sources']:
             for target in node['targets']:
                 try:
-                    env.traceability_collection.add_relation(target, node['type'], source)
+                    env.traceability_collection.add_relation(source, node['type'], target)
                 except TraceabilityException as err:
                     report_warning(env, err, env.docname, self.lineno)
         # The ItemLink node has no final representation, so is removed from the tree
