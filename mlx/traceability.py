@@ -277,13 +277,24 @@ class ItemLinkDirective(Directive):
 
     def run(self):
         env = self.state.document.settings.env
-        app = env.app
 
         item_link_node = ItemLink('')
+        item_link_node['sources'] = []
+        item_link_node['targets'] = []
+        item_link_node['type'] = None
 
-        item_link_node['sources'] = self.options['sources'].split()
-        item_link_node['targets'] = self.options['targets'].split()
-        item_link_node['type'] = self.options['type']
+        if 'sources' in self.options:
+            item_link_node['sources'] = self.options['sources'].split()
+        else:
+            report_warning(env, 'sources argument required for item-link directive', env.docname, self.lineno)
+        if 'targets' in self.options:
+            item_link_node['targets'] = self.options['targets'].split()
+        else:
+            report_warning(env, 'targets argument required for item-link directive', env.docname, self.lineno)
+        if 'type' in self.options:
+            item_link_node['type'] = self.options['type']
+        else:
+            report_warning(env, 'type argument required for item-link directive', env.docname, self.lineno)
 
         return [item_link_node]
 
