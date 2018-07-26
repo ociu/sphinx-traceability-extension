@@ -76,6 +76,7 @@ class ItemTree(nodes.General, nodes.Element):
     '''Tree-view on documentation items'''
     pass
 
+
 class ItemLink(nodes.General, nodes.Element):
     '''List of documentation items'''
     pass
@@ -252,6 +253,7 @@ class ItemListDirective(Directive):
             item_list_node['nocaptions'] = False
 
         return [item_list_node]
+
 
 class ItemLinkDirective(Directive):
     """

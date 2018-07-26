@@ -440,7 +440,7 @@ involved. In that case, you can use the ``item-link`` directive as follows
 
     .. item-link::
         :sources: RQT1 RQT2
-        :targets: RQT3 RQT4 RQT5
+        :targets: TST3 TST4 TST5
         :type: validates
 
 This directive has no representation in the documentation build output. It will
