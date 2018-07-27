@@ -281,9 +281,6 @@ has this prototype:
 The callback is executed while parsing the documentation item from your rst-file. Note that not all items are
 available at the time this callback executes, the *all_items* parameter is a growing set of documentation objects.
 
-In some project this callback is used to assign a relation to an ASIL attribute (also a documentation
-object) to all of the requirements.
-
 Example of no callback per item:
 
 .. code-block:: python
@@ -301,9 +298,9 @@ The plugin itself holds a default config that can be used for any traceability d
 
     traceability_callback_per_item = None
     traceability_attributes = {
-        'level',
-        'value',
-        'status'
+        'level' : '^.*$',
+        'value' : '^.*$',
+        'status' : '^.*$'
     }
     traceability_relationships = {
         'fulfills': 'fulfilled_by',
@@ -411,7 +408,8 @@ Documentation items can be defined using the *item* directive, specifying:
         According to the Polarion reference, the software **shall** implement my first requirement.
 
 Attributes can be added to the item, using the `configured attribute keys <traceability_default_config>`_
-(e.g. *value* in the above example). The content of the attribute is a free string.
+(e.g. *value* in the above example). The content of the attribute is threated as a single string and should
+match the regular expression in configuration.
 
 The relations to other documentation items can be specified as:
 
