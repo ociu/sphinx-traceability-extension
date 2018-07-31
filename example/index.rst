@@ -17,8 +17,8 @@ Contents:
 .. item:: r001 First requirement
     :class: functional requirement
     :status: Draft
-    :asil: ASIL-C
-    :aspice: ASPICE-3
+    :asil: C
+    :aspice: 3
 
     This is one item
 
@@ -44,14 +44,14 @@ This text is not part of any item
     :class: secondary
     :trace: r002
     :ext_toolname: namespace:group:document
-    :asil: ASIL-A
+    :asil: A
     :status: Approved
 
     Clean up all this.
 
 .. item:: r005 Another (does not show captions on the related items)
-    :aspice: ASPICE-3
-    :asil: ASIL-C
+    :aspice: 3
+    :asil: C
     :class: terciary
     :trace: r002 r002 r003
     :nocaptions:
@@ -68,7 +68,7 @@ This text is not part of any item
     To demonstrate that bug #2 is solved
 
 .. item:: r007 Depends on all with stereotypes
-    :asil: ASIL-X
+    :asil: X
     :class: terciary
     :trace: r001
     :validates: r002
@@ -77,7 +77,7 @@ This text is not part of any item
 
     To demonstrate stereotype usage in relationships.
 
-    To demonstrate invalid attribute, ASIL-X is not valid attribute (should not appear in e.g. item-list).
+    To demonstrate invalid attribute, X is not valid attribute for ASIL level (should not appear in e.g. item-list).
 
 
 .. requirement:: r100 A requirement using the ``requirement`` type
@@ -87,7 +87,7 @@ This text is not part of any item
     rst semantics
 
 .. item:: r008 Requirement with invalid reference to other one
-    :asil: ASIL-D
+    :asil: D
     :trace: non_existing_requirement
 
     Ai caramba, this should report a broken link to an non existing requirement.
@@ -135,14 +135,14 @@ List all items with ASIL attribute
 ----------------------------------
 
 .. item-list:: All ASIL items
-    :asil: (QM|ASIL-[ABCD])
+    :asil: (QM|[ABCD])
 
 List all items with ASIL and Draft/Approved attribute
 -----------------------------------------------------
 
 .. item-list:: All Draft ASIL items
     :status: (Draft|Approved)
-    :asil: (QM|ASIL-[ABCD])
+    :asil: (QM|[ABCD])
 
 Item matrix
 ===========
