@@ -287,14 +287,17 @@ class ItemLinkDirective(Directive):
             item_link_node['sources'] = self.options['sources'].split()
         else:
             report_warning(env, 'sources argument required for item-link directive', env.docname, self.lineno)
+            return []
         if 'targets' in self.options:
             item_link_node['targets'] = self.options['targets'].split()
         else:
             report_warning(env, 'targets argument required for item-link directive', env.docname, self.lineno)
+            return []
         if 'type' in self.options:
             item_link_node['type'] = self.options['type']
         else:
             report_warning(env, 'type argument required for item-link directive', env.docname, self.lineno)
+            return []
 
         return [item_link_node]
 
