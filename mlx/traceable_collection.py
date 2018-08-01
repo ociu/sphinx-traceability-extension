@@ -71,10 +71,9 @@ class TraceableCollection(object):
                 raise TraceabilityException('duplicating {itemid}'.format(itemid=itemid), item.get_document())
             # ... otherwise, update the item with new content
             else:
-                olditem.update(item)
-        # Otherwise (item doesn't exist), add it
-        else:
-            self.items[item.get_id()] = item
+                item.update(olditem)
+        # add it
+        self.items[item.get_id()] = item
 
     def get_item(self, itemid):
         '''

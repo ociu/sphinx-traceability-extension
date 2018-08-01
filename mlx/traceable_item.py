@@ -13,6 +13,8 @@ class TraceableItem(object):
 
     STRING_TEMPLATE = 'Item {identification}\n'
 
+    defined_attributes = {}
+
     def __init__(self, itemid, placeholder=False):
         '''
         Initialize a new traceable item
@@ -278,19 +280,38 @@ class TraceableItem(object):
         '''
         return sorted(list(self.explicit_relations) + list(self.implicit_relations.keys()))
 
+    @staticmethod
+    def define_attribute(key, value):
+        '''
+        Define a attribute key-value pair that can be assigned to TraceableItems
+
+        Args:
+            key (str): Attribute key
+            value (str): Regex to which attribute values must match
+        '''
+        TraceableItem.defined_attributes[key] = value
+
     def add_attribute(self, attr, value, overwrite=True):
         '''
         Add an attribute key-value pair to the traceable item
+
+        Note:
+            The given attribute value is compared against defined attribute possibilities. When the attribute
+            value doesn't match the defined regex, an exception is thrown.
 
         Args:
             attr (str): Name of the attribute
             value (str): Value of the attribute
             overwrite(boolean): Overwrite existing attribute value, if any
         '''
-        if not attr or not value:
+        if not attr or not value or attr not in TraceableItem.defined_attributes:
             raise TraceabilityException('item {item} has invalid attribute ({attr}={value})'.format(item=self.get_id(),
                                                                                                     attr=attr,
                                                                                                     value=value),
+                                        self.get_document())
+        if not re.match(TraceableItem.defined_attributes[attr], value):
+            raise TraceabilityException('item {item} attribute does not match defined attributes ({attr}={value})'
+                                        .format(item=self.get_id(), attr=attr, value=value),
                                         self.get_document())
         if overwrite or attr not in self.attributes:
             self.attributes[attr] = value
@@ -335,7 +356,7 @@ class TraceableItem(object):
         '''
         Convert object to string
         '''
-        retval = self.STRING_TEMPLATE.format(identification=self.get_id())
+        retval = TraceableItem.STRING_TEMPLATE.format(identification=self.get_id())
         retval += '\tPlaceholder: {placeholder}\n'.format(placeholder=self.is_placeholder())
         for attribute in self.attributes:
             retval += '\tAttribute {attribute} = {value}\n'.format(attribute=attribute,

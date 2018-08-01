@@ -8,11 +8,16 @@ class TestTraceableItem(TestCase):
     docname = 'folder/doc.rst'
     identification = 'some-random$name\'with<\"weird@symbols'
     attribute_key = 'some-random-attribute-key'
+    attribute_regex = 'some-random-attribute value[12]'
     attribute_value1 = 'some-random-attribute value1'
     attribute_value2 = 'some-random-attribute value2'
+    attribute_value_invalid = 'some-random-attribute value3'
     fwd_relation = 'some-random-forward-relation'
     rev_relation = 'some-random-reverse-relation'
     identification_tgt = 'another-item-to-target'
+
+    def setUp(self):
+        dut.TraceableItem.define_attribute(self.attribute_key, self.attribute_regex)
 
     def test_init(self):
         item = dut.TraceableItem(self.identification)
@@ -89,6 +94,8 @@ class TestTraceableItem(TestCase):
             item.add_attribute(self.attribute_key, None)
         with self.assertRaises(exception.TraceabilityException):
             item.add_attribute(self.attribute_key, '')
+        with self.assertRaises(exception.TraceabilityException):
+            item.add_attribute(self.attribute_key, self.attribute_value_invalid)
         item.self_test()
 
     def test_add_attribute_overwrite(self):

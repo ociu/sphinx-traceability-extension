@@ -157,9 +157,12 @@ class ItemDirective(Directive):
             report_warning(env, err, env.docname, self.lineno)
 
         # Add found attributes to item. Attribute data is a single string.
-        for attribute in app.config.traceability_attributes:
+        for attribute in app.config.traceability_attributes.keys():
             if attribute in self.options:
-                item.add_attribute(attribute, self.options[attribute])
+                try:
+                    item.add_attribute(attribute, self.options[attribute])
+                except TraceabilityException as err:
+                    report_warning(env, err, env.docname, self.lineno)
 
         # Add found relationships to item. All relationship data is a string of
         # item ids separated by space. It is splitted in a list of item ids
@@ -235,7 +238,7 @@ class ItemListDirective(Directive):
 
         # Add found attributes to item. Attribute data is a single string.
         item_list_node['attributes'] = {}
-        for attr in app.config.traceability_attributes:
+        for attr in app.config.traceability_attributes.keys():
             if attr in self.options:
                 item_list_node['attributes'][attr] = self.options[attr]
 
@@ -798,9 +801,10 @@ def init_available_relationships(app):
     """
     env = app.builder.env
 
-    for attr in app.config.traceability_attributes:
+    for attr in app.config.traceability_attributes.keys():
         ItemDirective.option_spec[attr] = directives.unchanged
         ItemListDirective.option_spec[attr] = directives.unchanged
+        TraceableItem.define_attribute(attr, app.config.traceability_attributes[attr])
 
     for rel in list(app.config.traceability_relationships.keys()):
         revrel = app.config.traceability_relationships[rel]
@@ -971,7 +975,10 @@ def setup(app):
 
     # Create default attributes dictionary. Can be customized in conf.py
     app.add_config_value('traceability_attributes',
-                         ['value', 'level', 'status'], 'env')
+                         {'value': '^.*$',
+                          'level': '^.*$',
+                          'status': '^.*$'},
+                         'env')
 
     # Create default relationships dictionary. Can be customized in conf.py
     app.add_config_value('traceability_relationships',
