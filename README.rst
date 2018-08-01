@@ -115,8 +115,8 @@ Valid attributes
 
 Python variable *traceability_attributes* can be defined in order to override the
 default configuration of the traceability plugin.
-It is a *set* of attribute pairs: the *key* is the name of the attribute, while the *value* holds the
-regular expression to which the attribute-value should comply.
+It is a *set* of attribute pairs: the *key* is the name of the attribute (can only be lowercase),
+while the *value* holds the regular expression to which the attribute-value should comply.
 
 Example of attributes and their regular expression:
 
@@ -154,7 +154,7 @@ Valid relationships
 Python variable *traceability_relationsips* can be defined in order to override the
 default configuration of the traceability plugin.
 It is a *set* of relationship pairs: the *key* is the name of the forward relationship, while the *value* holds the
-name of the corresponding reverse relationship.
+name of the corresponding reverse relationship. Both can only be lowercase.
 
 Relationships with prefix *ext_* are threated in a different way: they are handled as external relationships and don't
 need a reverse relationship.
