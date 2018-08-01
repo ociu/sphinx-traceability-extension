@@ -303,7 +303,8 @@ intersphinx_mapping = {'http://docs.python.org/': None}
 # -- Options for traceability extension ----------------------------------------
 
 # Attributes dictionary. You'll usually need to fit it to your needs.
-# Key is the attribute name, and value is the regex to which this attribute should comply.
+# Key is the attribute name (can be only lowercase), and value is the regex to
+# which this attribute should comply.
 traceability_attributes = {
     'value': '^.*$',
     'asil': '^\s*(QM|ASIL-[ABCD])\s*$',
