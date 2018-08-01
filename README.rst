@@ -108,6 +108,43 @@ variable.
 
     html_static_path = [os.path.join(os.path.dirname(mlx.traceability.__file__), 'assets')]
 
+.. _traceability_config_attributes:
+
+Valid attributes
+================
+
+Python variable *traceability_attributes* can be defined in order to override the
+default configuration of the traceability plugin.
+It is a *set* of attribute pairs: the *key* is the name of the attribute (can only be lowercase),
+while the *value* holds the regular expression to which the attribute-value should comply.
+
+Example of attributes and their regular expression:
+
+.. code-block:: python
+
+    traceability_attributes = {
+        'value': '^.*$',
+        'asil': '^(QM|[ABCD])$',
+    }
+
+.. _traceability_config_attribute2string:
+
+Stringification of attributes
+================================
+
+Python variable *traceability_attribute_to_string* can be defined in order to override the
+default configuration of the traceability plugin.
+It is a *set* of attribute stringifications: the *key* is the name of the attribute, while
+the *value* holds the string representation (as to be rendered in html) of the attribute name.
+
+Example of attribute stringification:
+
+.. code-block:: python
+
+    traceability_relationship_to_string = {
+        'value': 'Value',
+        'asil': 'ASIL',
+    }
 
 .. _traceability_config_relations:
 
@@ -117,7 +154,7 @@ Valid relationships
 Python variable *traceability_relationsips* can be defined in order to override the
 default configuration of the traceability plugin.
 It is a *set* of relationship pairs: the *key* is the name of the forward relationship, while the *value* holds the
-name of the corresponding reverse relationship.
+name of the corresponding reverse relationship. Both can only be lowercase.
 
 Relationships with prefix *ext_* are threated in a different way: they are handled as external relationships and don't
 need a reverse relationship.
@@ -281,9 +318,6 @@ has this prototype:
 The callback is executed while parsing the documentation item from your rst-file. Note that not all items are
 available at the time this callback executes, the *all_items* parameter is a growing set of documentation objects.
 
-In some project this callback is used to assign a relation to an ASIL attribute (also a documentation
-object) to all of the requirements.
-
 Example of no callback per item:
 
 .. code-block:: python
@@ -301,9 +335,16 @@ The plugin itself holds a default config that can be used for any traceability d
 
     traceability_callback_per_item = None
     traceability_attributes = {
-        'level',
-        'value',
-        'status'
+        'value': '^.*$',
+        'asil': '^(QM|[ABCD])$',
+        'aspice': '^[123]$',
+        'status': '^.*$'
+    }
+    traceability_attribute_to_string = {
+        'value': 'Value',
+        'asil': 'ASIL',
+        'aspice': 'ASPICE',
+        'status': 'Status'
     }
     traceability_relationships = {
         'fulfills': 'fulfilled_by',
@@ -411,7 +452,8 @@ Documentation items can be defined using the *item* directive, specifying:
         According to the Polarion reference, the software **shall** implement my first requirement.
 
 Attributes can be added to the item, using the `configured attribute keys <traceability_default_config>`_
-(e.g. *value* in the above example). The content of the attribute is a free string.
+(e.g. *value* in the above example). The content of the attribute is threated as a single string and should
+match the regular expression in configuration.
 
 The relations to other documentation items can be specified as:
 

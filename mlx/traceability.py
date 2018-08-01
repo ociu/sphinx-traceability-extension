@@ -162,9 +162,12 @@ class ItemDirective(Directive):
             report_warning(env, err, env.docname, self.lineno)
 
         # Add found attributes to item. Attribute data is a single string.
-        for attribute in app.config.traceability_attributes:
+        for attribute in app.config.traceability_attributes.keys():
             if attribute in self.options:
-                item.add_attribute(attribute, self.options[attribute])
+                try:
+                    item.add_attribute(attribute, self.options[attribute])
+                except TraceabilityException as err:
+                    report_warning(env, err, env.docname, self.lineno)
 
         # Add found relationships to item. All relationship data is a string of
         # item ids separated by space. It is splitted in a list of item ids
@@ -240,7 +243,7 @@ class ItemListDirective(Directive):
 
         # Add found attributes to item. Attribute data is a single string.
         item_list_node['attributes'] = {}
-        for attr in app.config.traceability_attributes:
+        for attr in app.config.traceability_attributes.keys():
             if attr in self.options:
                 item_list_node['attributes'][attr] = self.options[attr]
 
@@ -786,6 +789,7 @@ def process_item_nodes(app, doctree, fromdocname):
 
     # Item: replace item nodes, with admonition, list of relationships
     for node in doctree.traverse(Item):
+        docname, lineno = get_source_line(node)
         currentitem = env.traceability_collection.get_item(node['id'])
         showcaptions = not node['nocaptions']
         header = currentitem.get_id()
@@ -804,7 +808,13 @@ def process_item_nodes(app, doctree, fromdocname):
                 for attr in currentitem.iter_attributes():
                     dd_node = nodes.definition()
                     p_node = nodes.paragraph()
-                    txt = nodes.Text('{attr}: {value}'.format(attr=attr, value=currentitem.get_attribute(attr)))
+                    if attr in app.config.traceability_attribute_to_string:
+                        attrstr = app.config.traceability_attribute_to_string[attr]
+                    else:
+                        report_warning(env, 'Traceability: attribute {attr} cannot be translated to string'
+                                            .format(attr=attr), docname, lineno)
+                        continue
+                    txt = nodes.Text('{attr}: {value}'.format(attr=attrstr, value=currentitem.get_attribute(attr)))
                     p_node.append(txt)
                     dd_node.append(p_node)
                     li_node.append(dd_node)
@@ -817,6 +827,8 @@ def process_item_nodes(app, doctree, fromdocname):
                     if rel in app.config.traceability_relationship_to_string:
                         relstr = app.config.traceability_relationship_to_string[rel]
                     else:
+                        report_warning(env, 'Traceability: relation {rel} cannot be translated to string'
+                                            .format(rel=rel), docname, lineno)
                         continue
                     txt = nodes.Text(relstr)
                     dt_node.append(txt)
@@ -864,9 +876,10 @@ def init_available_relationships(app):
     """
     env = app.builder.env
 
-    for attr in app.config.traceability_attributes:
+    for attr in app.config.traceability_attributes.keys():
         ItemDirective.option_spec[attr] = directives.unchanged
         ItemListDirective.option_spec[attr] = directives.unchanged
+        TraceableItem.define_attribute(attr, app.config.traceability_attributes[attr])
 
     for rel in list(app.config.traceability_relationships.keys()):
         revrel = app.config.traceability_relationships[rel]
@@ -1037,7 +1050,19 @@ def setup(app):
 
     # Create default attributes dictionary. Can be customized in conf.py
     app.add_config_value('traceability_attributes',
-                         ['value', 'level', 'status'], 'env')
+                         {'value': '^.*$',
+                          'asil': '^(QM|[ABCD])$',
+                          'aspice': '^[123]$',
+                          'status': '^.*$'},
+                         'env')
+
+    # Configuration for translating the attribute keywords to rendered text
+    app.add_config_value('traceability_attribute_to_string',
+                         {'value': 'Value',
+                          'asil': 'ASIL',
+                          'aspice': 'ASPICE',
+                          'status': 'Status'},
+                         'env')
 
     # Create default relationships dictionary. Can be customized in conf.py
     app.add_config_value('traceability_relationships',

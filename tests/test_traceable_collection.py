@@ -17,9 +17,13 @@ class TestTraceableCollection(TestCase):
     unidir_relation = 'some-random-unidirectional-relation'
     identification_tgt = 'another-item-to-target'
     attribute_key = 'some-random-attribute-key'
+    attribute_regex = 'some-random-attribute value[12]'
     attribute_value_src = 'some-random-attribute value1'
     attribute_value_tgt = 'some-random-attribute value2'
     mock_export_file = '/tmp/my/mocked_export_file.json'
+
+    def setUp(self):
+        dut.TraceableItem.define_attribute(self.attribute_key, self.attribute_regex)
 
     def test_init(self):
         coll = dut.TraceableCollection()

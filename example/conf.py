@@ -301,6 +301,7 @@ epub_copyright = u'2017, Stein Heselmans'
 intersphinx_mapping = {'http://docs.python.org/': None}
 
 # -- Options for traceability extension ----------------------------------------
+
 # Relationships dictionary. You'll usually need to fit it to your needs.
 # Key is the relationship you'll generally set and value is the reverse.
 # Use same key/value for bidirectional relationships.
