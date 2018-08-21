@@ -281,28 +281,39 @@ class ItemLinkDirective(Directive):
     def run(self):
         env = self.state.document.settings.env
 
-        item_link_node = ItemLink('')
-        item_link_node['sources'] = []
-        item_link_node['targets'] = []
-        item_link_node['type'] = None
+        node = ItemLink('')
+        node['sources'] = []
+        node['targets'] = []
+        node['type'] = None
 
         if 'sources' in self.options:
-            item_link_node['sources'] = self.options['sources'].split()
+            node['sources'] = self.options['sources'].split()
         else:
             report_warning(env, 'sources argument required for item-link directive', env.docname, self.lineno)
             return []
         if 'targets' in self.options:
-            item_link_node['targets'] = self.options['targets'].split()
+            node['targets'] = self.options['targets'].split()
         else:
             report_warning(env, 'targets argument required for item-link directive', env.docname, self.lineno)
             return []
         if 'type' in self.options:
-            item_link_node['type'] = self.options['type']
+            node['type'] = self.options['type']
         else:
             report_warning(env, 'type argument required for item-link directive', env.docname, self.lineno)
             return []
 
-        return [item_link_node]
+        # Processing of the item-link items. They get added as additional relationships
+        # to the existing items. Should be done before converting anything to docutils.
+        for source in node['sources']:
+            for target in node['targets']:
+                try:
+                    env.traceability_collection.add_relation(source, node['type'], target)
+                except TraceabilityException as err:
+                    docname, lineno = get_source_line(node)
+                    report_warning(env, err, docname, lineno)
+
+        # The ItemLink node has no final representation, so is removed from the tree
+        return [node]
 
 
 class ItemMatrixDirective(Directive):
@@ -591,20 +602,6 @@ def process_item_nodes(app, doctree, fromdocname):
     """
     env = app.builder.env
 
-    # Processing of the item-link items. They get added as additional relationships
-    # to the existing items. Should be done before converting anything to docutils
-    # objects (rendering).
-    for node in doctree.traverse(ItemLink):
-        for source in node['sources']:
-            for target in node['targets']:
-                try:
-                    env.traceability_collection.add_relation(source, node['type'], target)
-                except TraceabilityException as err:
-                    docname, lineno = get_source_line(node)
-                    report_warning(env, err, docname, lineno)
-        # The ItemLink node has no final representation, so is removed from the tree
-        node.replace_self([])
-
     if sphinx_version < '1.6.0':
         try:
             env.traceability_collection.self_test(fromdocname)
@@ -613,6 +610,11 @@ def process_item_nodes(app, doctree, fromdocname):
         except MultipleTraceabilityExceptions as errs:
             for err in errs.iter():
                 report_warning(env, err, err.get_document())
+
+    # Processing of the item-link items.
+    for node in doctree.traverse(ItemLink):
+        # The ItemLink node has no final representation, so is removed from the tree
+        node.replace_self([])
 
     # Item matrix:
     # Create table with related items, printing their target references.
