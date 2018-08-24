@@ -195,6 +195,30 @@ Another matrix that should spawn a warning as the relation in *type* does not ex
     :targettitle: system requirement
     :sourcetitle: software requirement
 
+Item attribute matrix
+=====================
+
+ASIL attribute for all r-items
+------------------------------
+
+.. item-attributes-matrix:: None
+    :filter: r
+    :attributes: asil
+
+Some attributes for all items
+-----------------------------
+
+.. item-attributes-matrix:: ASIL and status attribute for all items
+    :filter:
+    :attributes: asil status
+
+All attributes for all r-items
+------------------------------
+
+.. item-attributes-matrix:: All attributes for all items
+    :filter: r
+    :attributes:
+
 Item 2D matrix
 ==============
 
