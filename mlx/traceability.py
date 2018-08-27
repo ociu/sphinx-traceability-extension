@@ -77,6 +77,11 @@ class ItemTree(nodes.General, nodes.Element):
     pass
 
 
+class ItemLink(nodes.General, nodes.Element):
+    '''List of documentation items'''
+    pass
+
+
 # -----------------------------------------------------------------------------
 # Pending item cross reference node
 
@@ -251,6 +256,64 @@ class ItemListDirective(Directive):
             item_list_node['nocaptions'] = False
 
         return [item_list_node]
+
+
+class ItemLinkDirective(Directive):
+    """
+    Directive to add additional relations between lists of items.
+
+    Syntax::
+
+      .. item-link::
+         :sources: list_of_items
+         :targets: list_of_items
+         :type: relationship_type
+
+    """
+    final_argument_whitespace = True
+    # Options
+    option_spec = {'sources': directives.unchanged,
+                   'targets': directives.unchanged,
+                   'type': directives.unchanged}
+    # Content disallowed
+    has_content = False
+
+    def run(self):
+        env = self.state.document.settings.env
+
+        node = ItemLink('')
+        node['sources'] = []
+        node['targets'] = []
+        node['type'] = None
+
+        if 'sources' in self.options:
+            node['sources'] = self.options['sources'].split()
+        else:
+            report_warning(env, 'sources argument required for item-link directive', env.docname, self.lineno)
+            return []
+        if 'targets' in self.options:
+            node['targets'] = self.options['targets'].split()
+        else:
+            report_warning(env, 'targets argument required for item-link directive', env.docname, self.lineno)
+            return []
+        if 'type' in self.options:
+            node['type'] = self.options['type']
+        else:
+            report_warning(env, 'type argument required for item-link directive', env.docname, self.lineno)
+            return []
+
+        # Processing of the item-link items. They get added as additional relationships
+        # to the existing items. Should be done before converting anything to docutils.
+        for source in node['sources']:
+            for target in node['targets']:
+                try:
+                    env.traceability_collection.add_relation(source, node['type'], target)
+                except TraceabilityException as err:
+                    docname, lineno = get_source_line(node)
+                    report_warning(env, err, docname, lineno)
+
+        # The ItemLink node has no final representation, so is removed from the tree
+        return [node]
 
 
 class ItemMatrixDirective(Directive):
@@ -547,6 +610,11 @@ def process_item_nodes(app, doctree, fromdocname):
         except MultipleTraceabilityExceptions as errs:
             for err in errs.iter():
                 report_warning(env, err, err.get_document())
+
+    # Processing of the item-link items.
+    for node in doctree.traverse(ItemLink):
+        # The ItemLink node has no final representation, so is removed from the tree
+        node.replace_self([])
 
     # Item matrix:
     # Create table with related items, printing their target references.
@@ -1061,6 +1129,7 @@ def setup(app):
     app.add_directive('item-matrix', ItemMatrixDirective)
     app.add_directive('item-2d-matrix', Item2DMatrixDirective)
     app.add_directive('item-tree', ItemTreeDirective)
+    app.add_directive('item-link', ItemLinkDirective)
 
     app.connect('doctree-resolved', process_item_nodes)
     if sphinx_version >= '1.6.0':
