@@ -470,6 +470,25 @@ The relations to other documentation items can be specified as:
 The output will contain hyperlinks to all related items. By default the caption for the target item is displayed for
 each of these related items. With the option *nocaptions* these captions can be omited.
 
+.. _adding_relations:
+
+Adding relations outside of the item definitions
+================================================
+
+In some cases, it's useful to add relations outside of the definition of the items
+involved. In that case, you can use the ``item-link`` directive as follows
+
+.. code-block:: rest
+
+    .. item-link::
+        :sources: RQT1 RQT2
+        :targets: TST3 TST4 TST5
+        :type: validates
+
+This directive has no representation in the documentation build output. It will
+just add an additional relationship to the items mentioned in ``sources`` and
+``targets``
+
 .. _traceability_usage_item_linking:
 
 Manual link to documentation items

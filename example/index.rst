@@ -305,6 +305,46 @@ Another tree that should spawn a warning as the relation in *type* does not exis
         :top_relation_filter: depends_on
         :type: fulfilled_by fulfills
 
+This is a subtitle that has a ``item-link`` item under it. You shouldn't see anything in the rendering, though
+--------------------------------------------------------------------------------------------------------------
+
+.. item-link::
+    :sources: r001
+    :targets: r002
+    :type: trace
+
+.. test: link to later (bottom of this page) defined source, should not warn
+
+.. item-link::
+    :sources: late001
+    :type: trace
+    :targets: r001
+
+.. warning on next item-link due to missing sources:
+
+.. item-link::
+    :type: trace
+    :targets: r100
+
+.. warning on next item-link due to missing targets:
+
+.. item-link::
+    :sources: r100
+    :type: trace
+
+.. warning on next item-link due to missing relation type:
+
+.. item-link::
+    :sources: r100
+    :targets: r001
+
+Extra late requirements
+-----------------------
+
+.. item:: late001
+
+    Item is added after adding links from it using item-link above. This shouldn't give a warning.
+
 Links and references
 ====================
 

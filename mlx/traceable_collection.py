@@ -119,9 +119,10 @@ class TraceableCollection(object):
             relation (str): Relation between source and target item
             targetid (str): ID of the target item
         '''
-        # Fail if source item is unknown
+        # Add placeholder if source item is unknown
         if sourceid not in self.items:
-            raise ValueError('Source item {name} not known'.format(name=sourceid))
+            src = TraceableItem(sourceid, True)
+            self.add_item(src)
         source = self.items[sourceid]
         # Error if relation is unknown
         if relation not in self.relations:

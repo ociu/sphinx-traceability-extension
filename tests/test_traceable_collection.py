@@ -124,18 +124,34 @@ class TestTraceableCollection(TestCase):
         self.assertFalse(item2_out.is_placeholder())
 
     def test_add_relation_unknown_source(self):
-        # with unknown source item, exception is expected
+        # with unknown source item, the generation of a placeholder is expected
         coll = dut.TraceableCollection()
         item2 = item.TraceableItem(self.identification_tgt)
         item2.set_document(self.docname)
         coll.add_item(item2)
         coll.add_relation_pair(self.fwd_relation, self.rev_relation)
-        with self.assertRaises(ValueError):
-            coll.add_relation(self.identification_src,
-                              self.fwd_relation,
-                              self.identification_tgt)
-        # Self test should pass
-        coll.self_test()
+        coll.add_relation(self.identification_src,
+                          self.fwd_relation,
+                          self.identification_tgt)
+        # Assert placeholder item is created
+        item1 = coll.get_item(self.identification_src)
+        self.assertIsNotNone(item1)
+        self.assertEqual(self.identification_src, item1.get_id())
+        self.assertTrue(item1.is_placeholder())
+        # Assert explicit forward relation is created
+        relations = item1.iter_targets(self.fwd_relation, explicit=True, implicit=False)
+        self.assertEqual(1, len(relations))
+        self.assertEqual(relations[0], self.identification_tgt)
+        relations = item1.iter_targets(self.fwd_relation, explicit=False, implicit=True)
+        # Assert implicit reverse relation is created
+        relations = item2.iter_targets(self.rev_relation, explicit=False, implicit=True)
+        self.assertEqual(1, len(relations))
+        self.assertEqual(relations[0], self.identification_src)
+        relations = item2.iter_targets(self.fwd_relation, explicit=True, implicit=False)
+        self.assertEqual(0, len(relations))
+        # Self test should fail, as we have a placeholder item
+        with self.assertRaises(dut.MultipleTraceabilityExceptions):
+            coll.self_test()
 
     def test_add_relation_unknown_relation(self):
         # with unknown relation, warning is expected
