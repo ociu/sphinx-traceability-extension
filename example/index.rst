@@ -215,9 +215,14 @@ Some attributes for all items
 All attributes for all r-items
 ------------------------------
 
-.. item-attributes-matrix:: All attributes for all items
+.. item-attributes-matrix:: All attributes for all r-items
     :filter: r
     :attributes:
+
+All attributes for all items
+------------------------------
+
+.. item-attributes-matrix:: All attributes for all items
 
 Item 2D matrix
 ==============

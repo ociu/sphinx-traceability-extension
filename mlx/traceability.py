@@ -455,12 +455,12 @@ class ItemAttributesMatrixDirective(Directive):
 
         # Process ``attributes`` option, given as a string with attributes
         # separated by space. It is converted to a list.
-        if 'attributes' in self.options:
+        if 'attributes' in self.options and self.options['attributes']:
             node['attributes'] = self.options['attributes'].split()
         else:
-            node['attributes'] = app.config.traceability_attributes.keys()
+            node['attributes'] = list(app.config.traceability_attributes.keys())
 
-        # Check if given relationships are in configuration
+        # Check if given attributes are in configuration
         for attr in node['attributes']:
             if attr not in app.config.traceability_attributes.keys():
                 report_warning(env, 'Traceability: unknown attribute for item-attributes-matrix: %s' % attr,
