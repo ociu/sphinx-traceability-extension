@@ -224,6 +224,18 @@ All attributes for all items
 
 .. item-attributes-matrix:: All attributes for all items
 
+All attributes for non-matching-filter
+--------------------------------------
+
+.. item-attributes-matrix:: Non-matching filter: empty table
+    :filter: regex_doesnt_match_anything
+
+Invalid attribute for all items
+-------------------------------
+
+.. item-attributes-matrix:: Invalid attribute
+    :attributes: non_existing_relation_or_attribute asil
+
 Item 2D matrix
 ==============
 

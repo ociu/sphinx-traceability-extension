@@ -465,6 +465,7 @@ class ItemAttributesMatrixDirective(Directive):
             if attr not in app.config.traceability_attributes.keys():
                 report_warning(env, 'Traceability: unknown attribute for item-attributes-matrix: %s' % attr,
                                env.docname, self.lineno)
+                node['attributes'].remove(attr)
 
         return [node]
 
