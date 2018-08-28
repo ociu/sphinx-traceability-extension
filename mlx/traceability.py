@@ -919,7 +919,7 @@ def process_item_nodes(app, doctree, fromdocname):
                     else:
                         report_warning(env, 'Traceability: attribute {attr} cannot be translated to string'
                                             .format(attr=attr), docname, lineno)
-                        continue
+                        attrstr = attr
                     txt = nodes.Text('{attr}: {value}'.format(attr=attrstr, value=currentitem.get_attribute(attr)))
                     p_node.append(txt)
                     dd_node.append(p_node)
@@ -935,7 +935,7 @@ def process_item_nodes(app, doctree, fromdocname):
                     else:
                         report_warning(env, 'Traceability: relation {rel} cannot be translated to string'
                                             .format(rel=rel), docname, lineno)
-                        continue
+                        relstr = rel
                     txt = nodes.Text(relstr)
                     dt_node.append(txt)
                     li_node.append(dt_node)
