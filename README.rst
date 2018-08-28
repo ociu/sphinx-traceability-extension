@@ -523,6 +523,28 @@ expression. Documentation items where the *status* attribute matches the given r
 By default the caption for every item in the list is shown. By providing the *nocaptions* flag, the
 caption can be omitted. This gives a smaller list, but also less details.
 
+.. _traceability_usage_item_attributes_matrix:
+
+Matrix with attributes of documentation items
+=============================================
+
+A matrix lising the attributes of documentation items can be generated using:
+
+.. code-block:: rest
+
+    .. item-attributes-matrix:: Attributes for requirements
+        :filter: SWRQT
+        :attributes: status
+
+where the *filter* argument can be replaced by any python regular expression. The *attributes* argument
+is a space-separated list of attributes that should be matched in the matrix.
+Both arguments can be avoided, or left empty, in which case the table will contain all attributes for all
+documentation items.
+
+Documentation items matching their ID to the given *filter* regular expression end up in as rows in the
+generated table. The matching attribute values end up as columns in the generated table. Documentation items
+that don't have a value for a certain attribute will have an empty cell at the corresponding location.
+
 .. _traceability_usage_item_matrix:
 
 Traceability matrix of documentation items

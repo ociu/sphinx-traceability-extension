@@ -49,7 +49,7 @@ def report_warning(env, msg, docname=None, lineno=None):
         env.warn(docname, msg, lineno=lineno)
 
 # -----------------------------------------------------------------------------
-# Declare new node types (based on others): Item, ItemList, ItemMatrix, ItemTree
+# Declare new node types
 
 
 class Item(nodes.General, nodes.Element):
@@ -64,6 +64,11 @@ class ItemList(nodes.General, nodes.Element):
 
 class ItemMatrix(nodes.General, nodes.Element):
     '''Matrix for cross referencing documentation items'''
+    pass
+
+
+class ItemAttributesMatrix(nodes.General, nodes.Element):
+    '''Matrix for referencing documentation items with their attributes'''
     pass
 
 
@@ -409,6 +414,62 @@ class ItemMatrixDirective(Directive):
         return [item_matrix_node]
 
 
+class ItemAttributesMatrixDirective(Directive):
+    """
+    Directive to generate a matrix of items with their attribute values.
+
+    Syntax::
+
+      .. item-attributes-matrix:: title
+         :filter: regexp
+         :attributes: <<attribute>> ...
+
+    """
+    # Optional argument: title (whitespace allowed)
+    optional_arguments = 1
+    final_argument_whitespace = True
+    # Options
+    option_spec = {'class': directives.class_option,
+                   'filter': directives.unchanged,
+                   'attributes': directives.unchanged}
+    # Content disallowed
+    has_content = False
+
+    def run(self):
+        env = self.state.document.settings.env
+        app = env.app
+
+        node = ItemAttributesMatrix('')
+
+        # Process title (optional argument)
+        if len(self.arguments) > 0:
+            node['title'] = self.arguments[0]
+        else:
+            node['title'] = 'Matrix of items and attributes'
+
+        # Process ``filter`` options
+        if 'filter' in self.options:
+            node['filter'] = self.options['filter']
+        else:
+            node['filter'] = ''
+
+        # Process ``attributes`` option, given as a string with attributes
+        # separated by space. It is converted to a list.
+        if 'attributes' in self.options and self.options['attributes']:
+            node['attributes'] = self.options['attributes'].split()
+        else:
+            node['attributes'] = list(app.config.traceability_attributes.keys())
+
+        # Check if given attributes are in configuration
+        for attr in node['attributes']:
+            if attr not in app.config.traceability_attributes.keys():
+                report_warning(env, 'Traceability: unknown attribute for item-attributes-matrix: %s' % attr,
+                               env.docname, self.lineno)
+                node['attributes'].remove(attr)
+
+        return [node]
+
+
 class Item2DMatrixDirective(Directive):
     """
     Directive to generate a 2D-matrix of item cross-references, based on
@@ -680,6 +741,49 @@ def process_item_nodes(app, doctree, fromdocname):
             p_node += txt
             top_node += p_node
 
+        top_node += table
+        node.replace_self(top_node)
+
+    # Item attribute matrix:
+    # Create table with items, printing their attribute values.
+    for node in doctree.traverse(ItemAttributesMatrix):
+        docname, lineno = get_source_line(node)
+        item_ids = env.traceability_collection.get_items(node['filter'])
+        top_node = create_top_node(node['title'])
+        table = nodes.table()
+        tgroup = nodes.tgroup()
+        colspecs = [nodes.colspec(colwidth=5)]
+        hrow = nodes.row('', nodes.entry('', nodes.paragraph('', '')))
+        for attr in node['attributes']:
+            colspecs.append(nodes.colspec(colwidth=5))
+            p_node = nodes.paragraph()
+            if attr in app.config.traceability_attribute_to_string:
+                attrstr = app.config.traceability_attribute_to_string[attr]
+            else:
+                report_warning(env, 'Traceability: attribute {attr} cannot be translated to string'
+                                    .format(attr=attr), docname, lineno)
+                attrstr = attr
+            p_node += nodes.Text(attrstr)
+            hrow.append(nodes.entry('', p_node))
+        tgroup += colspecs
+        tgroup += nodes.thead('', hrow)
+        tbody = nodes.tbody()
+        for item_id in item_ids:
+            item = env.traceability_collection.get_item(item_id)
+            row = nodes.row()
+            cell = nodes.entry()
+            cell += make_internal_item_ref(app, node, fromdocname, item_id, False)
+            row += cell
+            for attr in node['attributes']:
+                cell = nodes.entry()
+                p_node = nodes.paragraph()
+                txt = item.get_attribute(attr)
+                p_node += nodes.Text(txt)
+                cell += p_node
+                row += cell
+            tbody += row
+        tgroup += tbody
+        table += tgroup
         top_node += table
         node.replace_self(top_node)
 
@@ -1121,12 +1225,15 @@ def setup(app):
 
     app.add_node(ItemTree)
     app.add_node(ItemMatrix)
+    app.add_node(ItemAttributesMatrix)
+    app.add_node(Item2DMatrix)
     app.add_node(ItemList)
     app.add_node(Item)
 
     app.add_directive('item', ItemDirective)
     app.add_directive('item-list', ItemListDirective)
     app.add_directive('item-matrix', ItemMatrixDirective)
+    app.add_directive('item-attributes-matrix', ItemAttributesMatrixDirective)
     app.add_directive('item-2d-matrix', Item2DMatrixDirective)
     app.add_directive('item-tree', ItemTreeDirective)
     app.add_directive('item-link', ItemLinkDirective)

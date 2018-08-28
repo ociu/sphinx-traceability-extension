@@ -195,6 +195,47 @@ Another matrix that should spawn a warning as the relation in *type* does not ex
     :targettitle: system requirement
     :sourcetitle: software requirement
 
+Item attribute matrix
+=====================
+
+ASIL attribute for all r-items
+------------------------------
+
+.. item-attributes-matrix:: None
+    :filter: r
+    :attributes: asil
+
+Some attributes for all items
+-----------------------------
+
+.. item-attributes-matrix:: ASIL and status attribute for all items
+    :filter:
+    :attributes: asil status
+
+All attributes for all r-items
+------------------------------
+
+.. item-attributes-matrix:: All attributes for all r-items
+    :filter: r
+    :attributes:
+
+All attributes for all items
+------------------------------
+
+.. item-attributes-matrix:: All attributes for all items
+
+All attributes for non-matching-filter
+--------------------------------------
+
+.. item-attributes-matrix:: Non-matching filter: empty table
+    :filter: regex_doesnt_match_anything
+
+Invalid attribute for all items
+-------------------------------
+
+.. item-attributes-matrix:: Invalid attribute
+    :attributes: non_existing_relation_or_attribute asil
+
 Item 2D matrix
 ==============
 
