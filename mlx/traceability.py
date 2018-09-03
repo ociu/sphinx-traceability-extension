@@ -336,7 +336,6 @@ class ItemMatrixDirective(Directive):
          :type: <<relationship>> ...
          :stats:
          :nocaptions:
-
     """
     # Optional argument: title (whitespace allowed)
     optional_arguments = 1
@@ -423,7 +422,7 @@ class ItemAttributesMatrixDirective(Directive):
       .. item-attributes-matrix:: title
          :filter: regexp
          :attributes: <<attribute>> ...
-
+         :nocaptions:
     """
     # Optional argument: title (whitespace allowed)
     optional_arguments = 1
@@ -431,7 +430,8 @@ class ItemAttributesMatrixDirective(Directive):
     # Options
     option_spec = {'class': directives.class_option,
                    'filter': directives.unchanged,
-                   'attributes': directives.unchanged}
+                   'attributes': directives.unchanged,
+                   'nocaptions': directives.flag}
     # Content disallowed
     has_content = False
 
@@ -467,6 +467,14 @@ class ItemAttributesMatrixDirective(Directive):
                                env.docname, self.lineno)
                 node['attributes'].remove(attr)
 
+        # Check nocaptions flag
+        if 'nocaptions' in self.options:
+            node['nocaptions'] = True
+        elif app.config.traceability_attributes_matrix_no_captions:
+            node['nocaptions'] = True
+        else:
+            node['nocaptions'] = False
+
         return [node]
 
 
@@ -477,7 +485,7 @@ class Item2DMatrixDirective(Directive):
 
     Syntax::
 
-      .. item-matrix:: title
+      .. item-2d-matrix:: title
          :target: regexp
          :source: regexp
          :type: <<relationship>> ...
@@ -748,6 +756,7 @@ def process_item_nodes(app, doctree, fromdocname):
     # Create table with items, printing their attribute values.
     for node in doctree.traverse(ItemAttributesMatrix):
         docname, lineno = get_source_line(node)
+        showcaptions = not node['nocaptions']
         item_ids = env.traceability_collection.get_items(node['filter'])
         top_node = create_top_node(node['title'])
         table = nodes.table()
@@ -772,7 +781,7 @@ def process_item_nodes(app, doctree, fromdocname):
             item = env.traceability_collection.get_item(item_id)
             row = nodes.row()
             cell = nodes.entry()
-            cell += make_internal_item_ref(app, node, fromdocname, item_id, False)
+            cell += make_internal_item_ref(app, node, fromdocname, item_id, showcaptions)
             row += cell
             for attr in node['attributes']:
                 cell = nodes.entry()
@@ -1217,6 +1226,10 @@ def setup(app):
 
     # Configuration for disabling the rendering of the captions for item-matrix
     app.add_config_value('traceability_matrix_no_captions',
+                         False, 'env')
+
+    # Configuration for disabling the rendering of the captions for item-attributes-matrix
+    app.add_config_value('traceability_attributes_matrix_no_captions',
                          False, 'env')
 
     # Configuration for disabling the rendering of the captions for item-tree
