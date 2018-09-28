@@ -218,6 +218,7 @@ All attributes for all r-items
 .. item-attributes-matrix:: All attributes for all r-items
     :filter: r
     :attributes:
+    :nocaptions:
 
 All attributes for all items
 ------------------------------

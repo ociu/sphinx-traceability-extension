@@ -258,6 +258,15 @@ Example configuration of disabling the rendering of captions on item-matrix:
 
     traceability_matrix_no_captions = True
 
+No captions for item-attributes-matrix
+--------------------------------------
+
+Example configuration of disabling the rendering of captions on item-attributes-matrix:
+
+.. code-block:: python
+
+    traceability_attributes_matrix_no_captions = True
+
 No captions for item-tree
 -------------------------
 
@@ -535,6 +544,7 @@ A matrix lising the attributes of documentation items can be generated using:
     .. item-attributes-matrix:: Attributes for requirements
         :filter: SWRQT
         :attributes: status
+        :nocaptions:
 
 where the *filter* argument can be replaced by any python regular expression. The *attributes* argument
 is a space-separated list of attributes that should be matched in the matrix.
@@ -544,6 +554,9 @@ documentation items.
 Documentation items matching their ID to the given *filter* regular expression end up in as rows in the
 generated table. The matching attribute values end up as columns in the generated table. Documentation items
 that don't have a value for a certain attribute will have an empty cell at the corresponding location.
+
+By default the caption for every item in the table is shown. By providing the *nocaptions* flag, the
+caption can be omitted. This gives a smaller table, but also less details.
 
 .. _traceability_usage_item_matrix:
 
