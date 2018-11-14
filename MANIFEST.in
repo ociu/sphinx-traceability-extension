@@ -6,7 +6,7 @@ include mlx/assets/*.js
 
 
 # added by check_manifest.py
-include LICENSE
+include LICENSE.txt
 include NOTICE
 include tox.ini
 recursive-include example *.bat
