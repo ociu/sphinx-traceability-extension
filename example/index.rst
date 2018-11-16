@@ -260,6 +260,12 @@ Invalid attribute for all items
 .. item-attributes-matrix:: Invalid attribute
     :attributes: non_existing_relation_or_attribute asil
 
+Invalid sort attributes for all items
+-------------------------------------
+
+.. item-attributes-matrix:: Invalid sort attribute
+    :sort: non_existing_relation_or_attribute asil
+
 Item 2D matrix
 ==============
 
