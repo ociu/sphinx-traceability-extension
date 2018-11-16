@@ -19,6 +19,7 @@ Contents:
     :status: Draft
     :asil: C
     :aspice: 1
+    :value: 5
 
     This is one item
 
@@ -35,6 +36,8 @@ Contents:
 .. item:: r002
     :class: critical
     :status: Reviewed
+    :asil: C
+    :value: 1
 
     We have to extend this section
 
@@ -60,6 +63,8 @@ This text is not part of any item
 
 .. item:: r006 Depends on all
     :class: terciary
+    :asil: C
+    :value: 12
     :trace: r001
         r002
         r003
@@ -236,10 +241,10 @@ All attributes for all items, sorted
 All attributes for all items, reverse sorted on 2 attributes
 ------------------------------------------------------------
 
-.. item-attributes-matrix:: All attributes for all items, reverse sorted on ASIL level and status
+.. item-attributes-matrix:: All attributes for all items, reverse sorted on ASIL level and value
     :filter: r
-    :attributes: asil aspice
-    :sort: asil aspice
+    :attributes: asil value
+    :sort: asil value
     :nocaptions:
     :reverse:
 
