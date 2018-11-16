@@ -780,9 +780,9 @@ def process_item_nodes(app, doctree, fromdocname):
     for node in doctree.traverse(ItemAttributesMatrix):
         docname, lineno = get_source_line(node)
         showcaptions = not node['nocaptions']
-        item_ids = env.traceability_collection.get_items(node['filter'], reverse=node['reverse'])
-        item_ids.sort(key=lambda itemid: env.traceability_collection.get_item(itemid).get_attributes(node['sort']),
-                      reverse=node['reverse'])
+        item_ids = env.traceability_collection.get_items(node['filter'],
+                                                         sortattributes=node['sort'],
+                                                         reverse=node['reverse'])
         top_node = create_top_node(node['title'])
         table = nodes.table()
         tgroup = nodes.tgroup()
