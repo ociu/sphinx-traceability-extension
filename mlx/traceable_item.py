@@ -343,6 +343,21 @@ class TraceableItem(object):
             value = self.attributes[attr]
         return value
 
+    def get_attributes(self, attrs):
+        '''
+        Get the values of a list of attributes from the traceable item
+
+        Args:
+            attr (list): List of names of the attribute
+        Returns:
+            Value matching the given attribute key, or '' if attribute does not exist
+        '''
+        value = ''
+        if attrs:
+            for attr in attrs:
+                value += self.get_attribute(attr)
+        return value
+
     def iter_attributes(self):
         '''
         Iterate over available attributes: sorted

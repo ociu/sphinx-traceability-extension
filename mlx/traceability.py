@@ -422,6 +422,8 @@ class ItemAttributesMatrixDirective(Directive):
       .. item-attributes-matrix:: title
          :filter: regexp
          :attributes: <<attribute>> ...
+         :sort: <attribute>> ...
+         :reverse:
          :nocaptions:
     """
     # Optional argument: title (whitespace allowed)
@@ -431,6 +433,8 @@ class ItemAttributesMatrixDirective(Directive):
     option_spec = {'class': directives.class_option,
                    'filter': directives.unchanged,
                    'attributes': directives.unchanged,
+                   'sort': directives.unchanged,
+                   'reverse': directives.flag,
                    'nocaptions': directives.flag}
     # Content disallowed
     has_content = False
@@ -466,6 +470,25 @@ class ItemAttributesMatrixDirective(Directive):
                 report_warning(env, 'Traceability: unknown attribute for item-attributes-matrix: %s' % attr,
                                env.docname, self.lineno)
                 node['attributes'].remove(attr)
+
+        # Process ``sort`` option, given as a string with attributes
+        # separated by space. It is converted to a list.
+        if 'sort' in self.options and self.options['sort']:
+            node['sort'] = self.options['sort'].split()
+            # Check if given sort-attributes are in configuration
+            for attr in node['sort']:
+                if attr not in app.config.traceability_attributes.keys():
+                    report_warning(env, 'Traceability: unknown sorting attribute for item-attributes-matrix: %s' % attr,
+                                   env.docname, self.lineno)
+                    node['sort'].remove(attr)
+        else:
+            node['sort'] = None
+
+        # Check reverse flag
+        if 'reverse' in self.options:
+            node['reverse'] = True
+        else:
+            node['reverse'] = False
 
         # Check nocaptions flag
         if 'nocaptions' in self.options:
@@ -757,7 +780,9 @@ def process_item_nodes(app, doctree, fromdocname):
     for node in doctree.traverse(ItemAttributesMatrix):
         docname, lineno = get_source_line(node)
         showcaptions = not node['nocaptions']
-        item_ids = env.traceability_collection.get_items(node['filter'])
+        item_ids = env.traceability_collection.get_items(node['filter'], reverse=node['reverse'])
+        item_ids.sort(key=lambda itemid: env.traceability_collection.get_item(itemid).get_attributes(node['sort']),
+                      reverse=node['reverse'])
         top_node = create_top_node(node['title'])
         table = nodes.table()
         tgroup = nodes.tgroup()

@@ -18,7 +18,7 @@ Contents:
     :class: functional requirement
     :status: Draft
     :asil: C
-    :aspice: 3
+    :aspice: 1
 
     This is one item
 
@@ -50,7 +50,7 @@ This text is not part of any item
     Clean up all this.
 
 .. item:: r005 Another (does not show captions on the related items)
-    :aspice: 3
+    :aspice: 2
     :asil: C
     :class: terciary
     :trace: r002 r002 r003
@@ -201,9 +201,10 @@ Item attribute matrix
 ASIL attribute for all r-items
 ------------------------------
 
-.. item-attributes-matrix:: None
+.. item-attributes-matrix:: ASIL attribute for all r-items, reverse sorted on item-ID
     :filter: r
     :attributes: asil
+    :reverse:
 
 Some attributes for all items
 -----------------------------
@@ -221,9 +222,26 @@ All attributes for all r-items
     :nocaptions:
 
 All attributes for all items
-------------------------------
+----------------------------
 
 .. item-attributes-matrix:: All attributes for all items
+
+All attributes for all items, sorted
+------------------------------------
+
+.. item-attributes-matrix:: All attributes for all items, sorted on ASIL level
+    :sort: asil
+    :nocaptions:
+
+All attributes for all items, reverse sorted on 2 attributes
+------------------------------------------------------------
+
+.. item-attributes-matrix:: All attributes for all items, reverse sorted on ASIL level and status
+    :filter: r
+    :attributes: asil aspice
+    :sort: asil aspice
+    :nocaptions:
+    :reverse:
 
 All attributes for non-matching-filter
 --------------------------------------
