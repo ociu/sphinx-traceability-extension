@@ -49,12 +49,12 @@ class TraceableCollection(object):
 
     def iter_relations(self):
         '''
-        Iterate over available relations: sorted
+        Iterate over available relations: naturally sorted
 
         Returns:
             Sorted iterator over available relations in the collection
         '''
-        return sorted(self.relations.keys())
+        return natsorted(self.relations.keys())
 
     def add_item(self, item):
         '''
@@ -91,12 +91,12 @@ class TraceableCollection(object):
 
     def iter_items(self):
         '''
-        Iterate over items: sorted identification
+        Iterate over items: naturally sorted identification
 
         Returns:
             Sorted iterator over identification of the items in the collection
         '''
-        return sorted(self.items.keys())
+        return natsorted(self.items.keys())
 
     def has_item(self, itemid):
         '''
@@ -253,7 +253,7 @@ class TraceableCollection(object):
             - sortattributes (list): List of attributes on which to sort the items
             - reverse (bool): True for reverse sorting
         Returns:
-            A sorted list of item-id's matching the given regex
+            A naturally sorted list of item-id's matching the given regex
         '''
         matches = []
         for itemid in self.items:
