@@ -3,6 +3,7 @@ Storage classes for collection of traceable items
 '''
 
 import json
+from natsort import natsorted
 from mlx.traceable_item import TraceableItem
 from mlx.traceability_exception import TraceabilityException, MultipleTraceabilityExceptions
 
@@ -261,8 +262,8 @@ class TraceableCollection(object):
             if self.items[itemid].is_match(regex) and self.items[itemid].attributes_match(attributes):
                 matches.append(itemid)
         if sortattributes:
-            matches.sort(key=lambda itemid: self.get_item(itemid).get_attributes(sortattributes),
-                         reverse=reverse)
+            matches = natsorted(matches, key=lambda itemid: self.get_item(itemid).get_attributes(sortattributes),
+                                reverse=reverse)
         else:
-            matches.sort(reverse=reverse)
+            matches = natsorted(matches, reverse=reverse)
         return matches
