@@ -350,12 +350,12 @@ class TraceableItem(object):
         Args:
             attr (list): List of names of the attribute
         Returns:
-            Value matching the given attribute key, or '' if attribute does not exist
+            List of values matching the given attributes, or [] if attributes do not exist
         '''
-        value = ''
+        value = []
         if attrs:
             for attr in attrs:
-                value += self.get_attribute(attr)
+                value.append(self.get_attribute(attr))
         return value
 
     def iter_attributes(self):
