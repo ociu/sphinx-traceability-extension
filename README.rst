@@ -544,6 +544,8 @@ A matrix lising the attributes of documentation items can be generated using:
     .. item-attributes-matrix:: Attributes for requirements
         :filter: SWRQT
         :attributes: status
+        :sort: status
+        :reverse:
         :nocaptions:
 
 where the *filter* argument can be replaced by any python regular expression. The *attributes* argument
@@ -557,6 +559,10 @@ that don't have a value for a certain attribute will have an empty cell at the c
 
 By default the caption for every item in the table is shown. By providing the *nocaptions* flag, the
 caption can be omitted. This gives a smaller table, but also less details.
+
+By default items are sorted based on their name. With the *sort* argument it is possible to sort on one
+or more attribute values. When providing multiple attributes on which to sort, the attribute keys are
+space separated. The sorting is a natural sort. With the *reverse* argument, the sorting is reversed.
 
 .. _traceability_usage_item_matrix:
 
