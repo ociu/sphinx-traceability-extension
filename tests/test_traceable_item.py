@@ -7,7 +7,8 @@ import mlx.traceable_item as dut
 class TestTraceableItem(TestCase):
     docname = 'folder/doc.rst'
     identification = 'some-random$name\'with<\"weird@symbols'
-    attribute_key = 'some-random-attribute-key'
+    attribute_key1 = 'some-random-attribute-key'
+    attribute_key2 = 'some-random-attribute-2key'
     attribute_regex = 'some-random-attribute value[12]'
     attribute_value1 = 'some-random-attribute value1'
     attribute_value2 = 'some-random-attribute value2'
@@ -17,7 +18,8 @@ class TestTraceableItem(TestCase):
     identification_tgt = 'another-item-to-target'
 
     def setUp(self):
-        dut.TraceableItem.define_attribute(self.attribute_key, self.attribute_regex)
+        dut.TraceableItem.define_attribute(self.attribute_key1, self.attribute_regex)
+        dut.TraceableItem.define_attribute(self.attribute_key2, self.attribute_regex)
 
     def test_init(self):
         item = dut.TraceableItem(self.identification)
@@ -85,43 +87,43 @@ class TestTraceableItem(TestCase):
     def test_add_invalid_attribute(self):
         item = dut.TraceableItem(self.identification)
         item.set_document(self.docname)
-        self.assertFalse(item.get_attribute(self.attribute_key))
+        self.assertFalse(item.get_attribute(self.attribute_key1))
         with self.assertRaises(exception.TraceabilityException):
             item.add_attribute(None, self.attribute_value1)
         with self.assertRaises(exception.TraceabilityException):
             item.add_attribute('', self.attribute_value1)
         with self.assertRaises(exception.TraceabilityException):
-            item.add_attribute(self.attribute_key, None)
+            item.add_attribute(self.attribute_key1, None)
         with self.assertRaises(exception.TraceabilityException):
-            item.add_attribute(self.attribute_key, '')
+            item.add_attribute(self.attribute_key1, '')
         with self.assertRaises(exception.TraceabilityException):
-            item.add_attribute(self.attribute_key, self.attribute_value_invalid)
+            item.add_attribute(self.attribute_key1, self.attribute_value_invalid)
         item.self_test()
 
     def test_add_attribute_overwrite(self):
         item = dut.TraceableItem(self.identification)
         item.set_document(self.docname)
-        self.assertFalse(item.get_attribute(self.attribute_key))
-        item.add_attribute(self.attribute_key, self.attribute_value1)
-        self.assertEqual(self.attribute_value1, item.get_attribute(self.attribute_key))
-        item.add_attribute(self.attribute_key, self.attribute_value2)
-        self.assertEqual(self.attribute_value2, item.get_attribute(self.attribute_key))
+        self.assertFalse(item.get_attribute(self.attribute_key1))
+        item.add_attribute(self.attribute_key1, self.attribute_value1)
+        self.assertEqual(self.attribute_value1, item.get_attribute(self.attribute_key1))
+        item.add_attribute(self.attribute_key1, self.attribute_value2)
+        self.assertEqual(self.attribute_value2, item.get_attribute(self.attribute_key1))
         item.self_test()
 
     def test_add_attribute_no_overwrite(self):
         item = dut.TraceableItem(self.identification)
         item.set_document(self.docname)
-        self.assertFalse(item.get_attribute(self.attribute_key))
-        item.add_attribute(self.attribute_key, self.attribute_value1)
-        self.assertEqual(self.attribute_value1, item.get_attribute(self.attribute_key))
-        item.add_attribute(self.attribute_key, self.attribute_value2, overwrite=False)
-        self.assertEqual(self.attribute_value1, item.get_attribute(self.attribute_key))
+        self.assertFalse(item.get_attribute(self.attribute_key1))
+        item.add_attribute(self.attribute_key1, self.attribute_value1)
+        self.assertEqual(self.attribute_value1, item.get_attribute(self.attribute_key1))
+        item.add_attribute(self.attribute_key1, self.attribute_value2, overwrite=False)
+        self.assertEqual(self.attribute_value1, item.get_attribute(self.attribute_key1))
         item.self_test()
 
     def test_remove_invalid_attribute(self):
         item = dut.TraceableItem(self.identification)
         item.set_document(self.docname)
-        self.assertFalse(item.get_attribute(self.attribute_key))
+        self.assertFalse(item.get_attribute(self.attribute_key1))
         with self.assertRaises(exception.TraceabilityException):
             item.remove_attribute(None)
         with self.assertRaises(exception.TraceabilityException):
@@ -131,10 +133,25 @@ class TestTraceableItem(TestCase):
     def test_remove_attribute(self):
         item = dut.TraceableItem(self.identification)
         item.set_document(self.docname)
-        item.add_attribute(self.attribute_key, self.attribute_value1)
-        self.assertEqual(self.attribute_value1, item.get_attribute(self.attribute_key))
-        item.remove_attribute(self.attribute_key)
-        self.assertFalse(item.get_attribute(self.attribute_key))
+        item.add_attribute(self.attribute_key1, self.attribute_value1)
+        self.assertEqual(self.attribute_value1, item.get_attribute(self.attribute_key1))
+        item.remove_attribute(self.attribute_key1)
+        self.assertFalse(item.get_attribute(self.attribute_key1))
+        item.self_test()
+
+    def test_get_attributes(self):
+        item = dut.TraceableItem(self.identification)
+        item.set_document(self.docname)
+        self.assertEqual([''], item.get_attributes([self.attribute_key1]))
+        item.add_attribute(self.attribute_key1, self.attribute_value1)
+        self.assertEqual([self.attribute_value1], item.get_attributes([self.attribute_key1]))
+        item.add_attribute(self.attribute_key2, self.attribute_value2)
+        self.assertEqual([self.attribute_value1], item.get_attributes([self.attribute_key1]))
+        self.assertEqual([self.attribute_value2], item.get_attributes([self.attribute_key2]))
+        self.assertEqual([self.attribute_value1, self.attribute_value2],
+                         item.get_attributes([self.attribute_key1, self.attribute_key2]))
+        self.assertEqual([self.attribute_value2, self.attribute_value1],
+                         item.get_attributes([self.attribute_key2, self.attribute_key1]))
         item.self_test()
 
     def test_add_target_explicit_self(self):
@@ -304,12 +321,12 @@ class TestTraceableItem(TestCase):
     def test_stringify(self):
         item = dut.TraceableItem(self.identification)
         item.set_document(self.docname)
-        item.add_attribute(self.attribute_key, self.attribute_value1)
+        item.add_attribute(self.attribute_key1, self.attribute_value1)
         item.add_target(self.fwd_relation, self.identification_tgt, implicit=False)
         item.add_target(self.rev_relation, 'one more item', implicit=True)
         itemstr = str(item)
         self.assertIn(self.identification, itemstr)
-        self.assertIn(self.attribute_key, itemstr)
+        self.assertIn(self.attribute_key1, itemstr)
         self.assertIn(self.attribute_value1, itemstr)
         self.assertIn(self.fwd_relation, itemstr)
         self.assertIn(self.identification_tgt, itemstr)
@@ -327,9 +344,9 @@ class TestTraceableItem(TestCase):
 
     def test_attributes_match(self):
         item = dut.TraceableItem(self.identification)
-        item.add_attribute(self.attribute_key, self.attribute_value1)
-        self.assertFalse(item.attributes_match({self.attribute_key: self.attribute_value2}))
-        self.assertTrue(item.attributes_match({self.attribute_key: self.attribute_value1}))
+        item.add_attribute(self.attribute_key1, self.attribute_value1)
+        self.assertFalse(item.attributes_match({self.attribute_key1: self.attribute_value2}))
+        self.assertTrue(item.attributes_match({self.attribute_key1: self.attribute_value1}))
 
     def test_related(self):
         item = dut.TraceableItem(self.identification)
@@ -359,14 +376,14 @@ class TestTraceableItem(TestCase):
         item = dut.TraceableItem(self.identification)
         item.set_document(self.docname)
         # Add a valid attribute
-        item.add_attribute(self.attribute_key, self.attribute_value1)
+        item.add_attribute(self.attribute_key1, self.attribute_value1)
         # Self test should pass
         item.self_test()
         # Add invalid attribute (fails as it is not allowed)
         with self.assertRaises(exception.TraceabilityException):
-            item.add_attribute(self.attribute_key, None)
+            item.add_attribute(self.attribute_key1, None)
         # Hack into class and add invalid attribute anyway
-        item.attributes[self.attribute_key] = None
+        item.attributes[self.attribute_key1] = None
         # Self test should fail
         with self.assertRaises(exception.TraceabilityException):
             item.self_test()

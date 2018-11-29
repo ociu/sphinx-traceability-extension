@@ -18,7 +18,8 @@ Contents:
     :class: functional requirement
     :status: Draft
     :asil: C
-    :aspice: 3
+    :aspice: 1
+    :value: 5
 
     This is one item
 
@@ -35,6 +36,8 @@ Contents:
 .. item:: r002
     :class: critical
     :status: Reviewed
+    :asil: C
+    :value: 1
 
     We have to extend this section
 
@@ -50,7 +53,7 @@ This text is not part of any item
     Clean up all this.
 
 .. item:: r005 Another (does not show captions on the related items)
-    :aspice: 3
+    :aspice: 2
     :asil: C
     :class: terciary
     :trace: r002 r002 r003
@@ -60,6 +63,8 @@ This text is not part of any item
 
 .. item:: r006 Depends on all
     :class: terciary
+    :asil: C
+    :value: 12
     :trace: r001
         r002
         r003
@@ -201,9 +206,10 @@ Item attribute matrix
 ASIL attribute for all r-items
 ------------------------------
 
-.. item-attributes-matrix:: None
+.. item-attributes-matrix:: ASIL attribute for all r-items, reverse sorted on item-ID
     :filter: r
     :attributes: asil
+    :reverse:
 
 Some attributes for all items
 -----------------------------
@@ -221,9 +227,26 @@ All attributes for all r-items
     :nocaptions:
 
 All attributes for all items
-------------------------------
+----------------------------
 
 .. item-attributes-matrix:: All attributes for all items
+
+All attributes for all items, sorted
+------------------------------------
+
+.. item-attributes-matrix:: All attributes for all items, sorted on ASIL level
+    :sort: asil
+    :nocaptions:
+
+All attributes for all items, reverse sorted on 2 attributes
+------------------------------------------------------------
+
+.. item-attributes-matrix:: All attributes for all items, reverse sorted on ASIL level and value
+    :filter: r
+    :attributes: asil value
+    :sort: asil value
+    :nocaptions:
+    :reverse:
 
 All attributes for non-matching-filter
 --------------------------------------
@@ -236,6 +259,12 @@ Invalid attribute for all items
 
 .. item-attributes-matrix:: Invalid attribute
     :attributes: non_existing_relation_or_attribute asil
+
+Invalid sort attributes for all items
+-------------------------------------
+
+.. item-attributes-matrix:: Invalid sort attribute
+    :sort: non_existing_relation_or_attribute asil
 
 Item 2D matrix
 ==============

@@ -3,6 +3,7 @@ Storage classes for traceable item
 '''
 
 import re
+from natsort import natsorted
 from mlx.traceability_exception import TraceabilityException
 
 
@@ -254,7 +255,7 @@ class TraceableItem(object):
 
     def iter_targets(self, relation, explicit=True, implicit=True):
         '''
-        Get a sorted list of targets to other traceable item(s)
+        Get a naturally sorted list of targets to other traceable item(s)
 
         Args:
             relation (str): Name of the relation
@@ -268,17 +269,16 @@ class TraceableItem(object):
         if implicit is True:
             if relation in self.implicit_relations.keys():
                 relations.extend(self.implicit_relations[relation])
-        relations.sort()
-        return relations
+        return natsorted(relations)
 
     def iter_relations(self):
         '''
-        Iterate over available relations: sorted
+        Iterate over available relations: naturally sorted
 
         Returns:
             Sorted iterator over available relations in the item
         '''
-        return sorted(list(self.explicit_relations) + list(self.implicit_relations.keys()))
+        return natsorted(list(self.explicit_relations) + list(self.implicit_relations.keys()))
 
     @staticmethod
     def define_attribute(key, value):
@@ -343,14 +343,29 @@ class TraceableItem(object):
             value = self.attributes[attr]
         return value
 
+    def get_attributes(self, attrs):
+        '''
+        Get the values of a list of attributes from the traceable item
+
+        Args:
+            attr (list): List of names of the attribute
+        Returns:
+            List of values matching the given attributes, or [] if attributes do not exist
+        '''
+        value = []
+        if attrs:
+            for attr in attrs:
+                value.append(self.get_attribute(attr))
+        return value
+
     def iter_attributes(self):
         '''
-        Iterate over available attributes: sorted
+        Iterate over available attributes: naturally sorted
 
         Returns:
             Sorted iterator over available attributes in the item
         '''
-        return sorted(list(self.attributes))
+        return natsorted(list(self.attributes))
 
     def __str__(self, explicit=True, implicit=True):
         '''

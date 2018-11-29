@@ -3,6 +3,7 @@ Storage classes for collection of traceable items
 '''
 
 import json
+from natsort import natsorted
 from mlx.traceable_item import TraceableItem
 from mlx.traceability_exception import TraceabilityException, MultipleTraceabilityExceptions
 
@@ -48,12 +49,12 @@ class TraceableCollection(object):
 
     def iter_relations(self):
         '''
-        Iterate over available relations: sorted
+        Iterate over available relations: naturally sorted
 
         Returns:
             Sorted iterator over available relations in the collection
         '''
-        return sorted(self.relations.keys())
+        return natsorted(self.relations.keys())
 
     def add_item(self, item):
         '''
@@ -90,12 +91,12 @@ class TraceableCollection(object):
 
     def iter_items(self):
         '''
-        Iterate over items: sorted identification
+        Iterate over items: naturally sorted identification
 
         Returns:
             Sorted iterator over identification of the items in the collection
         '''
-        return sorted(self.items.keys())
+        return natsorted(self.items.keys())
 
     def has_item(self, itemid):
         '''
@@ -240,7 +241,7 @@ class TraceableCollection(object):
             relations = self.iter_relations()
         return self.items[sourceid].is_related(relations, targetid)
 
-    def get_items(self, regex, attributes={}):
+    def get_items(self, regex, attributes={}, sortattributes=None, reverse=False):
         '''
         Get all items that match a given regular expression
 
@@ -249,8 +250,10 @@ class TraceableCollection(object):
         Args:
             - regex (str): Regex to match the items in this collection against
             - attributes (dict): Dictionary with attribute-regex pairs to match the items in this collection against
+            - sortattributes (list): List of attributes on which to sort the items
+            - reverse (bool): True for reverse sorting
         Returns:
-            A sorted list of item-id's matching the given regex
+            A naturally sorted list of item-id's matching the given regex
         '''
         matches = []
         for itemid in self.items:
@@ -258,5 +261,9 @@ class TraceableCollection(object):
                 continue
             if self.items[itemid].is_match(regex) and self.items[itemid].attributes_match(attributes):
                 matches.append(itemid)
-        matches.sort()
+        if sortattributes:
+            matches = natsorted(matches, key=lambda itemid: self.get_item(itemid).get_attributes(sortattributes),
+                                reverse=reverse)
+        else:
+            matches = natsorted(matches, reverse=reverse)
         return matches
