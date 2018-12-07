@@ -938,26 +938,27 @@ def process_item_nodes(app, doctree, fromdocname):
         top_node = create_top_node(header)    
         par_node = nodes.paragraph()
         dl_node = nodes.definition_list()
-        if currentitem.iter_attributes():
-            li_node = nodes.definition_list_item()
-            dt_node = nodes.term()
-            txt = nodes.Text('Attributes')
-            dt_node.append(txt)
-            li_node.append(dt_node)
-            for attr in currentitem.iter_attributes():
-                dd_node = nodes.definition()
-                p_node = nodes.paragraph()
-                if attr in app.config.traceability_attribute_to_string:
-                    attrstr = app.config.traceability_attribute_to_string[attr]
-                else:
-                    report_warning(env, 'Traceability: attribute {attr} cannot be translated to string'
-                                        .format(attr=attr), docname, lineno)
-                    attrstr = attr
-                txt = nodes.Text('{attr}: {value}'.format(attr=attrstr, value=currentitem.get_attribute(attr)))
-                p_node.append(txt)
-                dd_node.append(p_node)
-                li_node.append(dd_node)
-            dl_node.append(li_node)
+        if app.config.traceability_render_attributes_per_item:
+            if currentitem.iter_attributes():
+                li_node = nodes.definition_list_item()
+                dt_node = nodes.term()
+                txt = nodes.Text('Attributes')
+                dt_node.append(txt)
+                li_node.append(dt_node)
+                for attr in currentitem.iter_attributes():
+                    dd_node = nodes.definition()
+                    p_node = nodes.paragraph()
+                    if attr in app.config.traceability_attribute_to_string:
+                        attrstr = app.config.traceability_attribute_to_string[attr]
+                    else:
+                        report_warning(env, 'Traceability: attribute {attr} cannot be translated to string'
+                                            .format(attr=attr), docname, lineno)
+                        attrstr = attr
+                    txt = nodes.Text('{attr}: {value}'.format(attr=attrstr, value=currentitem.get_attribute(attr)))
+                    p_node.append(txt)
+                    dd_node.append(p_node)
+                    li_node.append(dd_node)
+                dl_node.append(li_node)
         if app.config.traceability_render_relationship_per_item:
             for rel in env.traceability_collection.iter_relations():
                 tgts = currentitem.iter_targets(rel)
@@ -1236,6 +1237,10 @@ def setup(app):
     app.add_config_value('traceability_external_relationship_to_url',
                          {'ext_toolname': 'http://toolname.company.com/field1/workitem?field2'},
                          'env')
+
+    # Configuration for enabling the rendering of the attributes on every item
+    app.add_config_value('traceability_render_attributes_per_item',
+                         True, 'env')
 
     # Configuration for enabling the rendering of the relations on every item
     app.add_config_value('traceability_render_relationship_per_item',
