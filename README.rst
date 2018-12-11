@@ -222,6 +222,19 @@ Example configuration of enable rendering relationships per item:
 
     traceability_render_relationship_per_item = True
 
+Rendering of attributes per documentation object
+================================================
+
+The rendering of attributes of documentation objects can be controlled through the *boolean* variable
+*traceability_render_attributes_per_item*: rendering of attributes is enabled by setting it to 'True' (the default)
+while a value of 'False' will prevent the attribute list from being rendered.
+
+Example configuration of disabling per item attribute rendering:
+
+.. code-block:: python
+
+    traceability_render_attributes_per_item = False
+
 .. _traceability_config_no_captions:
 
 No captions

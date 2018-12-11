@@ -340,6 +340,7 @@ traceability_json_export_path = '_build/exported_items.json'
 # traceability_list_no_captions = True
 # traceability_matrix_no_captions = True
 # traceability_tree_no_captions = True
+# traceability_render_attributes_per_item = False
 
 def setup(app):
 

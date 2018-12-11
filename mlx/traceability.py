@@ -935,10 +935,10 @@ def process_item_nodes(app, doctree, fromdocname):
         header = currentitem.get_id()
         if currentitem.caption:
             header += ' : ' + currentitem.caption
-        top_node = create_top_node(header)
-        if app.config.traceability_render_relationship_per_item:
-            par_node = nodes.paragraph()
-            dl_node = nodes.definition_list()
+        top_node = create_top_node(header)    
+        par_node = nodes.paragraph()
+        dl_node = nodes.definition_list()
+        if app.config.traceability_render_attributes_per_item:
             if currentitem.iter_attributes():
                 li_node = nodes.definition_list_item()
                 dt_node = nodes.term()
@@ -959,6 +959,7 @@ def process_item_nodes(app, doctree, fromdocname):
                     dd_node.append(p_node)
                     li_node.append(dd_node)
                 dl_node.append(li_node)
+        if app.config.traceability_render_relationship_per_item:
             for rel in env.traceability_collection.iter_relations():
                 tgts = currentitem.iter_targets(rel)
                 if tgts:
@@ -984,8 +985,8 @@ def process_item_nodes(app, doctree, fromdocname):
                         dd_node.append(p_node)
                         li_node.append(dd_node)
                     dl_node.append(li_node)
-            par_node.append(dl_node)
-            top_node.append(par_node)
+        par_node.append(dl_node)
+        top_node.append(par_node)
         # Note: content should be displayed during read of RST file, as it contains other RST objects
         node.replace_self(top_node)
 
@@ -1236,6 +1237,10 @@ def setup(app):
     app.add_config_value('traceability_external_relationship_to_url',
                          {'ext_toolname': 'http://toolname.company.com/field1/workitem?field2'},
                          'env')
+
+    # Configuration for enabling the rendering of the attributes on every item
+    app.add_config_value('traceability_render_attributes_per_item',
+                         True, 'env')
 
     # Configuration for enabling the rendering of the relations on every item
     app.add_config_value('traceability_render_relationship_per_item',
