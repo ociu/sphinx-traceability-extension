@@ -358,6 +358,9 @@ class ItemMatrixDirective(Directive):
 
         item_matrix_node = ItemMatrix('')
 
+        if self.options.get('class'):
+            item_matrix_node.get('classes').extend(self.options.get('class'))
+
         # Process title (optional argument)
         if len(self.arguments) > 0:
             item_matrix_node['title'] = self.arguments[0]
@@ -445,6 +448,9 @@ class ItemAttributesMatrixDirective(Directive):
 
         node = ItemAttributesMatrix('')
 
+        if self.options.get('class'):
+            node.get('classes').extend(self.options.get('class'))
+
         # Process title (optional argument)
         if len(self.arguments) > 0:
             node['title'] = self.arguments[0]
@@ -531,6 +537,9 @@ class Item2DMatrixDirective(Directive):
         env = self.state.document.settings.env
 
         node = Item2DMatrix('')
+
+        if self.options.get('class'):
+            node.get('classes').extend(self.options.get('class'))
 
         # Process title (optional argument)
         if len(self.arguments) > 0:
@@ -717,6 +726,8 @@ def process_item_nodes(app, doctree, fromdocname):
         target_ids = env.traceability_collection.get_items(node['target'])
         top_node = create_top_node(node['title'])
         table = nodes.table()
+        if node.get('classes'):
+            table.get('classes').extend(node.get('classes'))
         tgroup = nodes.tgroup()
         left_colspec = nodes.colspec(colwidth=5)
         right_colspec = nodes.colspec(colwidth=5)
@@ -785,6 +796,8 @@ def process_item_nodes(app, doctree, fromdocname):
                                                          reverse=node['reverse'])
         top_node = create_top_node(node['title'])
         table = nodes.table()
+        if node.get('classes'):
+            table.get('classes').extend(node.get('classes'))
         tgroup = nodes.tgroup()
         colspecs = [nodes.colspec(colwidth=5)]
         hrow = nodes.row('', nodes.entry('', nodes.paragraph('', '')))
@@ -829,6 +842,8 @@ def process_item_nodes(app, doctree, fromdocname):
         target_ids = env.traceability_collection.get_items(node['target'])
         top_node = create_top_node(node['title'])
         table = nodes.table()
+        if node.get('classes'):
+            table.get('classes').extend(node.get('classes'))
         tgroup = nodes.tgroup()
         colspecs = [nodes.colspec(colwidth=5)]
         hrow = nodes.row('', nodes.entry('', nodes.paragraph('', '')))
@@ -935,7 +950,7 @@ def process_item_nodes(app, doctree, fromdocname):
         header = currentitem.get_id()
         if currentitem.caption:
             header += ' : ' + currentitem.caption
-        top_node = create_top_node(header)    
+        top_node = create_top_node(header)
         par_node = nodes.paragraph()
         dl_node = nodes.definition_list()
         if app.config.traceability_render_attributes_per_item:

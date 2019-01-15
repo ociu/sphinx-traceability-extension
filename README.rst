@@ -550,7 +550,7 @@ caption can be omitted. This gives a smaller list, but also less details.
 Matrix with attributes of documentation items
 =============================================
 
-A matrix lising the attributes of documentation items can be generated using:
+A matrix listing the attributes of documentation items can be generated using:
 
 .. code-block:: rest
 
@@ -576,6 +576,10 @@ caption can be omitted. This gives a smaller table, but also less details.
 By default items are sorted based on their name. With the *sort* argument it is possible to sort on one
 or more attribute values. When providing multiple attributes on which to sort, the attribute keys are
 space separated. The sorting is a natural sort. With the *reverse* argument, the sorting is reversed.
+
+Optionally, the *class* attribute can be specified, to customize table output, especially useful when rendering to
+LaTeX.  Normally the *longtable* class is used when the number of rows is greater than 30 which allows long tables to
+span multiple pages. By setting *class* to *longtable* manually you can force the use of this environment.
 
 .. _traceability_usage_item_matrix:
 
@@ -612,6 +616,10 @@ and the number of items having no target in the target-column (=not covered or a
 coverage/allocation percentage from these counts. If the *stats* flag is not given, this percentage is not
 displayed.
 
+Optionally, the *class* attribute can be specified, to customize table output, especially useful when rendering to
+LaTeX.  Normally the *longtable* class is used when the number of rows is greater than 30 which allows long tables to
+span multiple pages. By setting *class* to *longtable* manually you can force the use of this environment.
+
 .. _traceability_usage_2d_matrix:
 
 2D-matrix of documentation items
@@ -637,6 +645,10 @@ rows of the generated table. Where source and target items have a matching relat
 an 'x' will be placed in the cell at co-ordinates of source/target.
 
 Captions for items in the 2D table are never shown, as it would give a too heavy loaded table.
+
+Optionally, the *class* attribute can be specified, to customize table output, especially useful when rendering to
+LaTeX.  Normally the *longtable* class is used when the number of rows is greater than 30 which allows long tables to
+span multiple pages. By setting *class* to *longtable* manually you can force the use of this environment.
 
 .. _traceability_usage_item_tree:
 
