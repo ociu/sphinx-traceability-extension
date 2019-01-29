@@ -556,14 +556,21 @@ A matrix listing the attributes of documentation items can be generated using:
 
     .. item-attributes-matrix:: Attributes for requirements
         :filter: SWRQT
+        :status: Appr
         :attributes: status
         :sort: status
         :reverse:
         :nocaptions:
 
-where the *filter* argument can be replaced by any python regular expression. The *attributes* argument
-is a space-separated list of attributes that should be matched in the matrix.
-Both arguments can be avoided, or left empty, in which case the table will contain all attributes for all
+where the *filter* argument can be replaced by any python regular expression. Documentation items matching
+their ID to the given regular expression end up in the list.
+
+where *status* can be replaced by any configured attribute, and *Appr* can be replaced by any python regular
+expression. Documentation items where the *status* attribute matches the given regular expression end up in the list.
+
+where *attributes* argument is a space-separated list of attributes that should be matched in the matrix.
+
+Above arguments can be avoided, or left empty, in which case the table will contain all attributes for all
 documentation items.
 
 Documentation items matching their ID to the given *filter* regular expression end up in as rows in the
@@ -593,13 +600,20 @@ A traceability matrix of documentation items can be generated using:
     .. item-matrix:: Requirements to test case description traceability
         :source: SWRQT
         :target: [IU]TEST
+        :status: Appr
         :sourcetitle: Software requirements
         :targettitle: Integration and unit test cases
         :type: validated_by
         :nocaptions:
         :stats:
 
-where the *source* and *target* arguments can be replaced by any python regular expression. The *type* argument
+where the *source* and *target* arguments can be replaced by any python regular expression.
+
+where *status* can be replaced by any configured attribute, and *Appr* can be replaced by any python regular
+expression. Only documentation items where the *status* attribute matches the given regular expression end up in
+the matrix. This is valid for source and target items.
+
+The *type* argument
 is a space-separated list of relationships that should be matched in the matrix. The *sourcetitle* and *targettitle*
 arguments are the titles of the columns in the generated matrix.
 
@@ -632,12 +646,18 @@ A 2D-matrix of documentation items can be generated using:
     .. item-2d-matrix:: Requirements to test case description traceability
         :source: SWRQT
         :target: [IU]TEST
+        :status: Appr
         :hit: x
         :miss:
         :type: validated_by
 
-where the *source* and *target* arguments can be replaced by any python regular expression. The *type* argument
-is a space-separated list of relationships that should be matched in the matrix.
+where the *source* and *target* arguments can be replaced by any python regular expression.
+
+where *status* can be replaced by any configured attribute, and *Appr* can be replaced by any python regular
+expression. Only documentation items where the *status* attribute matches the given regular expression end up in
+the matrix. This is valid for source and target items.
+
+The *type* argument is a space-separated list of relationships that should be matched in the matrix.
 
 Documentation items matching their ID to the given *source* regular expression end up as columns of the
 generated table. Documentation items matching their ID to the given *target* regular expression end up as
@@ -662,6 +682,7 @@ A tree-view of documentation items can be generated using:
     .. item-tree:: Requirements tree view
         :top: SWRQT
         :top_relation_filter: depends_on
+        :status: Appr
         :type: impacts_on validated_by
         :nocaptions:
 
@@ -672,6 +693,10 @@ The directive generates an expandable tree of links to documentation items. A ne
 with at the top level, the top level documentation items. These are the ones matching their ID to the *top*
 regular expression, and not having any relation of *top_relation_filter* kind to a documentation item matching the same
 *top* regular expression against its ID.
+
+The *status* can be replaced by any configured attribute, and *Appr* can be replaced by any python regular
+expression. Only documentation items where the *status* attribute matches the given regular expression end up in
+the tree.
 
 Going deeper down this nested bullet list, the items relationships are checked: if there is a *type*
 relationship (*type* is a space seperated list of relationships) it gets added as a one-level-deeper item in

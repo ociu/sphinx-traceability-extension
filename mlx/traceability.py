@@ -247,10 +247,10 @@ class ItemListDirective(Directive):
             item_list_node['filter'] = ''
 
         # Add found attributes to item. Attribute data is a single string.
-        item_list_node['attributes'] = {}
+        item_list_node['filter-attributes'] = {}
         for attr in app.config.traceability_attributes.keys():
             if attr in self.options:
-                item_list_node['attributes'][attr] = self.options[attr]
+                item_list_node['filter-attributes'][attr] = self.options[attr]
 
         # Check nocaptions flag
         if 'nocaptions' in self.options:
@@ -331,6 +331,7 @@ class ItemMatrixDirective(Directive):
       .. item-matrix:: title
          :target: regexp
          :source: regexp
+         :<<attribute>>: regexp
          :targettitle: Target column header
          :sourcetitle: Source column header
          :type: <<relationship>> ...
@@ -366,6 +367,12 @@ class ItemMatrixDirective(Directive):
             item_matrix_node['title'] = self.arguments[0]
         else:
             item_matrix_node['title'] = 'Traceability matrix of items'
+
+        # Add found attributes to item. Attribute data is a single string.
+        item_matrix_node['filter-attributes'] = {}
+        for attr in app.config.traceability_attributes.keys():
+            if attr in self.options:
+                item_matrix_node['filter-attributes'][attr] = self.options[attr]
 
         # Process ``target`` & ``source`` options
         for option in ('target', 'source'):
@@ -424,6 +431,7 @@ class ItemAttributesMatrixDirective(Directive):
 
       .. item-attributes-matrix:: title
          :filter: regexp
+         :<<attribute>>: regexp
          :attributes: <<attribute>> ...
          :sort: <attribute>> ...
          :reverse:
@@ -462,6 +470,12 @@ class ItemAttributesMatrixDirective(Directive):
             node['filter'] = self.options['filter']
         else:
             node['filter'] = ''
+
+        # Add found attributes to item. Attribute data is a single string.
+        node['filter-attributes'] = {}
+        for attr in app.config.traceability_attributes.keys():
+            if attr in self.options:
+                node['filter-attributes'][attr] = self.options[attr]
 
         # Process ``attributes`` option, given as a string with attributes
         # separated by space. It is converted to a list.
@@ -517,6 +531,7 @@ class Item2DMatrixDirective(Directive):
       .. item-2d-matrix:: title
          :target: regexp
          :source: regexp
+         :<<attribute>>: regexp
          :type: <<relationship>> ...
 
     """
@@ -535,6 +550,7 @@ class Item2DMatrixDirective(Directive):
 
     def run(self):
         env = self.state.document.settings.env
+        app = env.app
 
         node = Item2DMatrix('')
 
@@ -553,6 +569,12 @@ class Item2DMatrixDirective(Directive):
                 node[option] = self.options[option]
             else:
                 node[option] = ''
+
+        # Add found attributes to item. Attribute data is a single string.
+        node['filter-attributes'] = {}
+        for attr in app.config.traceability_attributes.keys():
+            if attr in self.options:
+                node['filter-attributes'][attr] = self.options[attr]
 
         # Process ``type`` option, given as a string with relationship types
         # separated by space. It is converted to a list.
@@ -592,6 +614,7 @@ class ItemTreeDirective(Directive):
       .. item-tree:: title
          :top: regexp
          :top_relation_filter: <<relationship>> ...
+         :<<attribute>>: regexp
          :type: <<relationship>> ...
          :nocaptions:
 
@@ -632,6 +655,12 @@ class ItemTreeDirective(Directive):
             item_tree_node['top_relation_filter'] = self.options['top_relation_filter'].split()
         else:
             item_tree_node['top_relation_filter'] = ''
+
+        # Add found attributes to item. Attribute data is a single string.
+        item_tree_node['filter-attributes'] = {}
+        for attr in app.config.traceability_attributes.keys():
+            if attr in self.options:
+                item_tree_node['filter-attributes'][attr] = self.options[attr]
 
         # Check if given relationships are in configuration
         for rel in item_tree_node['top_relation_filter']:
@@ -722,8 +751,8 @@ def process_item_nodes(app, doctree, fromdocname):
     # Only source and target items matching respective regexp shall be included
     for node in doctree.traverse(ItemMatrix):
         showcaptions = not node['nocaptions']
-        source_ids = env.traceability_collection.get_items(node['source'])
-        target_ids = env.traceability_collection.get_items(node['target'])
+        source_ids = env.traceability_collection.get_items(node['source'], node['filter-attributes'])
+        target_ids = env.traceability_collection.get_items(node['target'], node['filter-attributes'])
         top_node = create_top_node(node['title'])
         table = nodes.table()
         if node.get('classes'):
@@ -791,7 +820,7 @@ def process_item_nodes(app, doctree, fromdocname):
     for node in doctree.traverse(ItemAttributesMatrix):
         docname, lineno = get_source_line(node)
         showcaptions = not node['nocaptions']
-        item_ids = env.traceability_collection.get_items(node['filter'],
+        item_ids = env.traceability_collection.get_items(node['filter'], node['filter-attributes'],
                                                          sortattributes=node['sort'],
                                                          reverse=node['reverse'])
         top_node = create_top_node(node['title'])
@@ -838,8 +867,8 @@ def process_item_nodes(app, doctree, fromdocname):
     # Create table with related items, printing their target references.
     # Only source and target items matching respective regexp shall be included
     for node in doctree.traverse(Item2DMatrix):
-        source_ids = env.traceability_collection.get_items(node['source'])
-        target_ids = env.traceability_collection.get_items(node['target'])
+        source_ids = env.traceability_collection.get_items(node['source'], node['filter-attributes'])
+        target_ids = env.traceability_collection.get_items(node['target'], node['filter-attributes'])
         top_node = create_top_node(node['title'])
         table = nodes.table()
         if node.get('classes'):
@@ -879,7 +908,7 @@ def process_item_nodes(app, doctree, fromdocname):
     # Create list with target references. Only items matching list regexp
     # shall be included
     for node in doctree.traverse(ItemList):
-        item_ids = env.traceability_collection.get_items(node['filter'], node['attributes'])
+        item_ids = env.traceability_collection.get_items(node['filter'], node['filter-attributes'])
         showcaptions = not node['nocaptions']
         top_node = create_top_node(node['title'])
         ul_node = nodes.bullet_list()
@@ -896,7 +925,7 @@ def process_item_nodes(app, doctree, fromdocname):
     # Create list with target references. Only items matching list regexp
     # shall be included
     for node in doctree.traverse(ItemTree):
-        top_item_ids = env.traceability_collection.get_items(node['top'])
+        top_item_ids = env.traceability_collection.get_items(node['top'], node['filter-attributes'])
         showcaptions = not node['nocaptions']
         top_node = create_top_node(node['title'])
         ul_node = nodes.bullet_list()
@@ -1035,6 +1064,10 @@ def init_available_relationships(app):
     for attr in app.config.traceability_attributes.keys():
         ItemDirective.option_spec[attr] = directives.unchanged
         ItemListDirective.option_spec[attr] = directives.unchanged
+        ItemMatrixDirective.option_spec[attr] = directives.unchanged
+        ItemAttributesMatrixDirective.option_spec[attr] = directives.unchanged
+        Item2DMatrixDirective.option_spec[attr] = directives.unchanged
+        ItemTreeDirective.option_spec[attr] = directives.unchanged
         TraceableItem.define_attribute(attr, app.config.traceability_attributes[attr])
 
     for rel in list(app.config.traceability_relationships.keys()):
@@ -1117,7 +1150,8 @@ def generate_bullet_list_tree(app, env, node, fromdocname, itemid, captions=True
         tgts = env.traceability_collection.get_item(itemid).iter_targets(relation)
         for target in tgts:
             # print('%s has child %s for relation %s' % (itemid, target, relation))
-            childcontent.append(generate_bullet_list_tree(app, env, node, fromdocname, target, captions))
+            if env.traceability_collection.get_item(target).attributes_match(node['filter-attributes']):
+                childcontent.append(generate_bullet_list_tree(app, env, node, fromdocname, target, captions))
     bullet_list_item.append(childcontent)
     return bullet_list_item
 
