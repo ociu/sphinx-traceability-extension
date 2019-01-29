@@ -752,7 +752,7 @@ def process_item_nodes(app, doctree, fromdocname):
     for node in doctree.traverse(ItemMatrix):
         showcaptions = not node['nocaptions']
         source_ids = env.traceability_collection.get_items(node['source'], node['filter-attributes'])
-        target_ids = env.traceability_collection.get_items(node['target'], node['filter-attributes'])
+        target_ids = env.traceability_collection.get_items(node['target'])
         top_node = create_top_node(node['title'])
         table = nodes.table()
         if node.get('classes'):
@@ -868,7 +868,7 @@ def process_item_nodes(app, doctree, fromdocname):
     # Only source and target items matching respective regexp shall be included
     for node in doctree.traverse(Item2DMatrix):
         source_ids = env.traceability_collection.get_items(node['source'], node['filter-attributes'])
-        target_ids = env.traceability_collection.get_items(node['target'], node['filter-attributes'])
+        target_ids = env.traceability_collection.get_items(node['target'])
         top_node = create_top_node(node['title'])
         table = nodes.table()
         if node.get('classes'):

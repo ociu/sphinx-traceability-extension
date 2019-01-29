@@ -611,7 +611,7 @@ where the *source* and *target* arguments can be replaced by any python regular 
 
 where *status* can be replaced by any configured attribute, and *Appr* can be replaced by any python regular
 expression. Only documentation items where the *status* attribute matches the given regular expression end up in
-the matrix. This is valid for source and target items.
+the *source* part of the matrix. The attribute value is **not** used as a filter on the *target* part.
 
 The *type* argument
 is a space-separated list of relationships that should be matched in the matrix. The *sourcetitle* and *targettitle*
@@ -655,7 +655,7 @@ where the *source* and *target* arguments can be replaced by any python regular 
 
 where *status* can be replaced by any configured attribute, and *Appr* can be replaced by any python regular
 expression. Only documentation items where the *status* attribute matches the given regular expression end up in
-the matrix. This is valid for source and target items.
+the *source* part of the matrix. The attribute value is **not** used as a filter on the *target* part.
 
 The *type* argument is a space-separated list of relationships that should be matched in the matrix.
 
