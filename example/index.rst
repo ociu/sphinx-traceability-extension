@@ -1,18 +1,23 @@
-.. Example documentation master file, created by
-   sphinx-quickstart on Sat Sep  7 17:17:38 2013.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
 
+===================================
 Welcome to Example's documentation!
 ===================================
 
-Contents:
+.. contents:: `Contents`
+    :depth: 3
+    :local:
+
+SRS and SSS
+===========
 
 .. toctree::
     :maxdepth: 1
 
     rqts/SRS
     rqts/SSS
+
+Other requirements
+==================
 
 .. item:: r001 First requirement
     :class: functional requirement
@@ -397,6 +402,9 @@ Another tree that should spawn a warning as the relation in *type* does not exis
         :top_relation_filter: depends_on
         :type: fulfilled_by fulfills
 
+Item link
+=========
+
 This is a subtitle that has a ``item-link`` item under it. You shouldn't see anything in the rendering, though
 --------------------------------------------------------------------------------------------------------------
 
@@ -444,10 +452,3 @@ Item reference: :item:`r001`
 
 :item:`Item reference with alternative text<r001>`
 
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

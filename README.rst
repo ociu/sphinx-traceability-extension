@@ -675,6 +675,8 @@ span multiple pages. By setting *class* to *longtable* manually you can force th
 Documentation items tree-view
 =============================
 
+Note: this feature is not supported when building for latex/pdf.
+
 A tree-view of documentation items can be generated using:
 
 .. code-block:: rest
