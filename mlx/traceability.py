@@ -13,6 +13,7 @@ from docutils.parsers.rst import Directive
 from sphinx.roles import XRefRole
 from sphinx.util.nodes import make_refnode
 from sphinx.environment import NoUri
+from sphinx.builders.latex import LaTeXBuilder
 from docutils import nodes
 from docutils.parsers.rst import directives
 from docutils.utils import get_source_line
@@ -925,15 +926,21 @@ def process_item_nodes(app, doctree, fromdocname):
     # Create list with target references. Only items matching list regexp
     # shall be included
     for node in doctree.traverse(ItemTree):
+        docname, lineno = get_source_line(node)
         top_item_ids = env.traceability_collection.get_items(node['top'], node['filter-attributes'])
         showcaptions = not node['nocaptions']
         top_node = create_top_node(node['title'])
-        ul_node = nodes.bullet_list()
-        ul_node.set_class('bonsai')
-        for i in top_item_ids:
-            if is_item_top_level(env, i, node['top'], node['top_relation_filter']):
-                ul_node.append(generate_bullet_list_tree(app, env, node, fromdocname, i, showcaptions))
-        top_node += ul_node
+        if isinstance(app.builder, LaTeXBuilder):
+            p_node = nodes.paragraph()
+            p_node.append(nodes.Text('Item tree is not supported in latex builder'))
+            top_node.append(p_node)
+        else:
+            ul_node = nodes.bullet_list()
+            ul_node.set_class('bonsai')
+            for i in top_item_ids:
+                if is_item_top_level(env, i, node['top'], node['top_relation_filter']):
+                    ul_node.append(generate_bullet_list_tree(app, env, node, fromdocname, i, showcaptions))
+            top_node += ul_node
         node.replace_self(top_node)
 
     # Resolve item cross references (from ``item`` role)
