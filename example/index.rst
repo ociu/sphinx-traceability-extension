@@ -1,18 +1,23 @@
-.. Example documentation master file, created by
-   sphinx-quickstart on Sat Sep  7 17:17:38 2013.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
 
+===================================
 Welcome to Example's documentation!
 ===================================
 
-Contents:
+.. contents:: `Contents`
+    :depth: 3
+    :local:
+
+SRS and SSS
+===========
 
 .. toctree::
     :maxdepth: 1
 
     rqts/SRS
     rqts/SSS
+
+Other requirements
+==================
 
 .. item:: r001 First requirement
     :class: functional requirement
