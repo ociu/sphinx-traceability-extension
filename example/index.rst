@@ -402,6 +402,9 @@ Another tree that should spawn a warning as the relation in *type* does not exis
         :top_relation_filter: depends_on
         :type: fulfilled_by fulfills
 
+Item link
+=========
+
 This is a subtitle that has a ``item-link`` item under it. You shouldn't see anything in the rendering, though
 --------------------------------------------------------------------------------------------------------------
 
@@ -449,10 +452,3 @@ Item reference: :item:`r001`
 
 :item:`Item reference with alternative text<r001>`
 
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
