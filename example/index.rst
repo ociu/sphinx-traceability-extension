@@ -168,6 +168,13 @@ All relationships
     :nocaptions:
     :stats:
 
+All relationships with items having ASIL-C/D attribute
+------------------------------------------------------
+
+.. item-matrix:: All ASIL-C/D (with captions)
+    :asil: [CD]
+    :stats:
+
 Traceability from SRS to SSS
 ----------------------------
 
@@ -211,6 +218,14 @@ ASIL attribute for all r-items
     :attributes: asil
     :reverse:
 
+ASIL attribute for all r-items having ASIL-B/C
+----------------------------------------------
+
+.. item-attributes-matrix:: ASIL attribute for all r-items, having ASIL-C/D
+    :filter: r
+    :attributes: asil
+    :asil: [CD]
+
 Some attributes for all items
 -----------------------------
 
@@ -248,6 +263,19 @@ All attributes for all items, reverse sorted on 2 attributes
     :nocaptions:
     :reverse:
 
+All attributes for items having a non-empty attribute
+-----------------------------------------------------
+
+.. item-attributes-matrix:: All attributes for items having a non-empty asil attribute
+    :asil: ^.+$
+    :sort: asil
+
+.. item-attributes-matrix:: All attributes for items having a non-empty asil+aspice attribute
+    :asil: ^.+$
+    :aspice: ^.+$
+    :sort: asil aspice
+    :reverse:
+
 All attributes for non-matching-filter
 --------------------------------------
 
@@ -283,6 +311,12 @@ SRS to SSS
     :hit: x
     :miss: o
     :type: fulfilled_by
+
+.. item-2d-matrix:: all to all with ASIL-C/D attribute
+    :target:
+    :source:
+    :asil: [CD]
+    :type: trace traced_by
 
 SSS to SRS
 ----------
@@ -326,6 +360,17 @@ Succesfull SYS tree
     :top_relation_filter: depends_on
     :type: fulfilled_by
     :nocaptions:
+
+.. item-tree:: r
+    :top: r
+    :top_relation_filter: trace
+    :type: traced_by
+
+.. item-tree:: r (only ASIL-C/D attributed)
+    :top: r
+    :top_relation_filter: trace
+    :type: traced_by
+    :asil: [CD]
 
 Another tree that should spawn a warning as the relation in *top_relation_filter* does not exist.
 -------------------------------------------------------------------------------------------------
