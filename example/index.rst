@@ -263,6 +263,19 @@ All attributes for all items, reverse sorted on 2 attributes
     :nocaptions:
     :reverse:
 
+All attributes for items having a non-empty attribute
+-----------------------------------------------------
+
+.. item-attributes-matrix:: All attributes for items having a non-empty asil attribute
+    :asil: ^.+$
+    :sort: asil
+
+.. item-attributes-matrix:: All attributes for items having a non-empty asil+aspice attribute
+    :asil: ^.+$
+    :aspice: ^.+$
+    :sort: asil aspice
+    :reverse:
+
 All attributes for non-matching-filter
 --------------------------------------
 
