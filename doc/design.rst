@@ -122,3 +122,14 @@ Design reverse coverage
     :nocaptions:
     :stats:
 
+Implementation coverage
+=======================
+
+.. item-matrix:: Trace design to implementation
+    :source: DESIGN
+    :target: IMPL
+    :sourcetitle: Design
+    :targettitle: Implementation
+    :nocaptions:
+    :stats:
+
