@@ -52,7 +52,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Example'
+project = u'Traceability'
 copyright = u'2017, Stein Heselmans'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -176,7 +176,7 @@ html_static_path = [os.path.join(os.path.dirname(mlx.traceability.__file__), 'as
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'Exampledoc'
+htmlhelp_basename = 'Traceability'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -195,7 +195,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'Example.tex', u'Example Documentation',
+  ('index', 'traceability.tex', u'Traceability sphinx plugin documentation',
    u'Stein Heselmans', 'manual'),
 ]
 
@@ -225,7 +225,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'example', u'Example Documentation',
+    ('index', 'traceability', u'Traceability for sphinx documentation',
      [u'Stein Heselmans'], 1)
 ]
 
@@ -239,8 +239,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'Example', u'Example Documentation',
-   u'Stein Heselmans', 'Example', 'One line description of project.',
+  ('index', 'traceability', u'Traceability for sphinx documentation',
+   u'Stein Heselmans', 'traceability', 'One line description of project.',
    'Miscellaneous'),
 ]
 
@@ -257,7 +257,7 @@ texinfo_documents = [
 # -- Options for Epub output ---------------------------------------------------
 
 # Bibliographic Dublin Core info.
-epub_title = u'Example'
+epub_title = u'Traceability'
 epub_author = u'Stein Heselmans'
 epub_publisher = u'Stein Heselmans'
 epub_copyright = u'2017, Stein Heselmans'

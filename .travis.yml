@@ -52,8 +52,8 @@ notifications:
 
 # Deploy: disable jekyll in order to publish subfolders with leading underscores as well to pages
 before_deploy:
-  - mkdir -p example/_build/html/
-  - touch example/_build/html/.nojekyll
+  - mkdir -p doc/_build/html/
+  - touch doc/_build/html/.nojekyll
 deploy:
   # production pypi
   - provider: pypi
@@ -65,10 +65,10 @@ deploy:
       branch: master
       python: 3.6
       tags: true
-  # publish example: build by tox, published to pages
+  # publish documentation: build by tox, published to pages
   - provider: pages
     skip_cleanup: true
-    local_dir: example/_build/html/
+    local_dir: doc/_build/html/
     github_token: $GITHUB_TOKEN
     on:
       branch: master

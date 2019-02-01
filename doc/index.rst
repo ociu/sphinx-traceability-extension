@@ -1,7 +1,7 @@
 
-===================================
-Welcome to Example's documentation!
-===================================
+==============================
+Documentation mlx.traceability
+==============================
 
 .. contents:: `Contents`
     :depth: 3
