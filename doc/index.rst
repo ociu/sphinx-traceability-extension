@@ -13,6 +13,8 @@ SRS and SSS
 .. toctree::
     :maxdepth: 1
 
+    requirements
+    design
     rqts/SRS
     rqts/SSS
 
