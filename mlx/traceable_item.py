@@ -5,7 +5,6 @@ Storage classes for traceable item
 import re
 from natsort import natsorted
 from mlx.traceability_exception import TraceabilityException
-from mlx.traceable_attribute import TraceableAttribute
 
 
 class TraceableItem(object):

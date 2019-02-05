@@ -4,6 +4,7 @@ Storage class for traceable item attribute
 
 import re
 
+
 class TraceableAttribute(object):
     '''
     Storage for an attribute to a traceable documentation item
@@ -17,8 +18,8 @@ class TraceableAttribute(object):
             attrid (str): Attribute identification, converted to lowercase as sphinx only allows lower case arguments
             value (str): Regex to which the attribute values should match
         '''
-        self.id = attrid.lower();
-        self.value = value;
+        self.id = attrid.lower()
+        self.value = value
         self.name = attrid
         self.caption = None
         self.docname = None

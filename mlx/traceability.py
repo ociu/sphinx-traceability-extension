@@ -234,7 +234,6 @@ class ItemAttributeDirective(Directive):
 
     def run(self):
         env = self.state.document.settings.env
-        app = env.app
 
         # Convert to lower-case as sphinx only allows lower case arguments (attribute to item directive)
         attrid = self.arguments[0].lower()
@@ -610,7 +609,6 @@ class Item2DMatrixDirective(Directive):
 
     def run(self):
         env = self.state.document.settings.env
-        app = env.app
 
         node = Item2DMatrix('')
 
@@ -1298,7 +1296,6 @@ def make_attribute_ref(app, node, fromdocname, attr_id, value=''):
     """
     Creates a reference node for an attribute, embedded in a paragraph.
     """
-    env = app.builder.env
     p_node = nodes.paragraph()
 
     if value:
