@@ -17,6 +17,7 @@ from sphinx.builders.latex import LaTeXBuilder
 from docutils import nodes
 from docutils.parsers.rst import directives
 from docutils.utils import get_source_line
+from mlx.traceable_attribute import TraceableAttribute
 from mlx.traceable_item import TraceableItem
 from mlx.traceable_collection import TraceableCollection
 from mlx.traceability_exception import TraceabilityException, MultipleTraceabilityExceptions
@@ -55,6 +56,11 @@ def report_warning(env, msg, docname=None, lineno=None):
 
 class Item(nodes.General, nodes.Element):
     '''Documentation item'''
+    pass
+
+
+class ItemAttribute(nodes.General, nodes.Element):
+    '''Attribute to documentation item'''
     pass
 
 
@@ -168,7 +174,7 @@ class ItemDirective(Directive):
             report_warning(env, err, env.docname, self.lineno)
 
         # Add found attributes to item. Attribute data is a single string.
-        for attribute in app.config.traceability_attributes.keys():
+        for attribute in TraceableItem.defined_attributes.keys():
             if attribute in self.options:
                 try:
                     item.add_attribute(attribute, self.options[attribute])
@@ -205,6 +211,59 @@ class ItemDirective(Directive):
             itemnode['nocaptions'] = False
 
         return [targetnode, itemnode]
+
+
+class ItemAttributeDirective(Directive):
+    """
+    Directive to declare attribute for items
+
+    Syntax::
+
+      .. item-attribute:: attribute_id [attribute_caption]
+
+         [attribute_content]
+
+    """
+    # Required argument: id
+    required_arguments = 1
+    # Optional argument: caption (whitespace allowed)
+    optional_arguments = 1
+    final_argument_whitespace = True
+    # Content allowed
+    has_content = True
+
+    def run(self):
+        env = self.state.document.settings.env
+        app = env.app
+
+        # Convert to lower-case as sphinx only allows lower case arguments (attribute to item directive)
+        attrid = self.arguments[0].lower()
+        targetnode = nodes.target('', '', ids=[attrid])
+
+        attrnode = ItemAttribute('')
+        attrnode['id'] = attrid
+
+        # Item caption is the text following the mandatory id argument.
+        # Caption should be considered a line of text. Remove line breaks.
+        caption = ''
+        if len(self.arguments) > 1:
+            caption = self.arguments[1].replace('\n', ' ')
+
+        if attrid not in TraceableItem.defined_attributes.keys():
+            report_warning(env, 'Found attribute description which is not defined in configuration',
+                           env.docname, self.lineno)
+        else:
+            attr = TraceableItem.defined_attributes[attrid]
+            attr.set_caption(caption)
+            attr.set_document(env.docname, self.lineno)
+
+        # Output content of attribute to document
+        template = []
+        for line in self.content:
+            template.append('    ' + line)
+        self.state_machine.insert_input(template, self.state_machine.document.attributes['source'])
+
+        return [targetnode, attrnode]
 
 
 class ItemListDirective(Directive):
@@ -249,7 +308,7 @@ class ItemListDirective(Directive):
 
         # Add found attributes to item. Attribute data is a single string.
         item_list_node['filter-attributes'] = {}
-        for attr in app.config.traceability_attributes.keys():
+        for attr in TraceableItem.defined_attributes.keys():
             if attr in self.options:
                 item_list_node['filter-attributes'][attr] = self.options[attr]
 
@@ -371,7 +430,7 @@ class ItemMatrixDirective(Directive):
 
         # Add found attributes to item. Attribute data is a single string.
         item_matrix_node['filter-attributes'] = {}
-        for attr in app.config.traceability_attributes.keys():
+        for attr in TraceableItem.defined_attributes.keys():
             if attr in self.options:
                 item_matrix_node['filter-attributes'][attr] = self.options[attr]
 
@@ -474,7 +533,7 @@ class ItemAttributesMatrixDirective(Directive):
 
         # Add found attributes to item. Attribute data is a single string.
         node['filter-attributes'] = {}
-        for attr in app.config.traceability_attributes.keys():
+        for attr in TraceableItem.defined_attributes.keys():
             if attr in self.options:
                 node['filter-attributes'][attr] = self.options[attr]
 
@@ -487,7 +546,7 @@ class ItemAttributesMatrixDirective(Directive):
 
         # Check if given attributes are in configuration
         for attr in node['attributes']:
-            if attr not in app.config.traceability_attributes.keys():
+            if attr not in TraceableItem.defined_attributes.keys():
                 report_warning(env, 'Traceability: unknown attribute for item-attributes-matrix: %s' % attr,
                                env.docname, self.lineno)
                 node['attributes'].remove(attr)
@@ -498,7 +557,7 @@ class ItemAttributesMatrixDirective(Directive):
             node['sort'] = self.options['sort'].split()
             # Check if given sort-attributes are in configuration
             for attr in node['sort']:
-                if attr not in app.config.traceability_attributes.keys():
+                if attr not in TraceableItem.defined_attributes.keys():
                     report_warning(env, 'Traceability: unknown sorting attribute for item-attributes-matrix: %s' % attr,
                                    env.docname, self.lineno)
                     node['sort'].remove(attr)
@@ -573,7 +632,7 @@ class Item2DMatrixDirective(Directive):
 
         # Add found attributes to item. Attribute data is a single string.
         node['filter-attributes'] = {}
-        for attr in app.config.traceability_attributes.keys():
+        for attr in TraceableItem.defined_attributes.keys():
             if attr in self.options:
                 node['filter-attributes'][attr] = self.options[attr]
 
@@ -659,7 +718,7 @@ class ItemTreeDirective(Directive):
 
         # Add found attributes to item. Attribute data is a single string.
         item_tree_node['filter-attributes'] = {}
-        for attr in app.config.traceability_attributes.keys():
+        for attr in TraceableItem.defined_attributes.keys():
             if attr in self.options:
                 item_tree_node['filter-attributes'][attr] = self.options[attr]
 
@@ -834,13 +893,7 @@ def process_item_nodes(app, doctree, fromdocname):
         for attr in node['attributes']:
             colspecs.append(nodes.colspec(colwidth=5))
             p_node = nodes.paragraph()
-            if attr in app.config.traceability_attribute_to_string:
-                attrstr = app.config.traceability_attribute_to_string[attr]
-            else:
-                report_warning(env, 'Traceability: attribute {attr} cannot be translated to string'
-                                    .format(attr=attr), docname, lineno)
-                attrstr = attr
-            p_node += nodes.Text(attrstr)
+            p_node += make_attribute_ref(app, node, fromdocname, attr)
             hrow.append(nodes.entry('', p_node))
         tgroup += colspecs
         tgroup += nodes.thead('', hrow)
@@ -978,6 +1031,23 @@ def process_item_nodes(app, doctree, fromdocname):
 
         node.replace_self(new_node)
 
+    # ItemAttribute: replace item nodes, with admonition
+    for node in doctree.traverse(ItemAttribute):
+        docname, lineno = get_source_line(node)
+        if node['id'] in TraceableItem.defined_attributes.keys():
+            attr = TraceableItem.defined_attributes[node['id']]
+            header = attr.get_name()
+            if attr.get_caption():
+                header += ' : ' + attr.get_caption()
+        else:
+            header = node['id']
+        top_node = create_top_node(header)
+        par_node = nodes.paragraph()
+        dl_node = nodes.definition_list()
+        par_node.append(dl_node)
+        top_node.append(par_node)
+        node.replace_self(top_node)
+
     # Item: replace item nodes, with admonition, list of relationships
     for node in doctree.traverse(Item):
         docname, lineno = get_source_line(node)
@@ -999,14 +1069,8 @@ def process_item_nodes(app, doctree, fromdocname):
                 for attr in currentitem.iter_attributes():
                     dd_node = nodes.definition()
                     p_node = nodes.paragraph()
-                    if attr in app.config.traceability_attribute_to_string:
-                        attrstr = app.config.traceability_attribute_to_string[attr]
-                    else:
-                        report_warning(env, 'Traceability: attribute {attr} cannot be translated to string'
-                                            .format(attr=attr), docname, lineno)
-                        attrstr = attr
-                    txt = nodes.Text('{attr}: {value}'.format(attr=attrstr, value=currentitem.get_attribute(attr)))
-                    p_node.append(txt)
+                    link = make_attribute_ref(app, node, fromdocname, attr, currentitem.get_attribute(attr))
+                    p_node.append(link)
                     dd_node.append(p_node)
                     li_node.append(dd_node)
                 dl_node.append(li_node)
@@ -1075,7 +1139,12 @@ def init_available_relationships(app):
         ItemAttributesMatrixDirective.option_spec[attr] = directives.unchanged
         Item2DMatrixDirective.option_spec[attr] = directives.unchanged
         ItemTreeDirective.option_spec[attr] = directives.unchanged
-        TraceableItem.define_attribute(attr, app.config.traceability_attributes[attr])
+        attrobject = TraceableAttribute(attr, app.config.traceability_attributes[attr])
+        if attr in app.config.traceability_attribute_to_string:
+            attrobject.set_name(app.config.traceability_attribute_to_string[attr])
+        else:
+            report_warning(env, 'Traceability: attribute {attr} cannot be translated to string'.format(attr=attr))
+        TraceableItem.define_attribute(attrobject)
 
     for rel in list(app.config.traceability_relationships.keys()):
         revrel = app.config.traceability_relationships[rel]
@@ -1225,6 +1294,39 @@ def make_internal_item_ref(app, node, fromdocname, item_id, caption=True):
     return p_node
 
 
+def make_attribute_ref(app, node, fromdocname, attr_id, value=''):
+    """
+    Creates a reference node for an attribute, embedded in a paragraph.
+    """
+    env = app.builder.env
+    p_node = nodes.paragraph()
+
+    if value:
+        value = ': ' + value
+
+    if attr_id in TraceableItem.defined_attributes.keys():
+        attr_info = TraceableItem.defined_attributes[attr_id]
+        if attr_info.docname:
+            newnode = nodes.reference('', '')
+            innernode = nodes.emphasis(attr_info.get_name() + value, attr_info.get_name() + value)
+            newnode['refdocname'] = attr_info.docname
+            try:
+                newnode['refuri'] = app.builder.get_relative_uri(fromdocname,
+                                                                 attr_info.docname)
+                newnode['refuri'] += '#' + attr_info.get_id()
+            except NoUri:
+                # ignore if no URI can be determined, e.g. for LaTeX output :(
+                pass
+            newnode.append(innernode)
+        else:
+            newnode = nodes.Text('{attr}{value}'.format(attr=attr_info.get_name(), value=value))
+    else:
+        newnode = nodes.Text('{attr}{value}'.format(attr=attr_id, value=value))
+    p_node += newnode
+
+    return p_node
+
+
 # -----------------------------------------------------------------------------
 # Extension setup
 
@@ -1327,9 +1429,11 @@ def setup(app):
     app.add_node(ItemAttributesMatrix)
     app.add_node(Item2DMatrix)
     app.add_node(ItemList)
+    app.add_node(ItemAttribute)
     app.add_node(Item)
 
     app.add_directive('item', ItemDirective)
+    app.add_directive('item-attribute', ItemAttributeDirective)
     app.add_directive('item-list', ItemListDirective)
     app.add_directive('item-matrix', ItemMatrixDirective)
     app.add_directive('item-attributes-matrix', ItemAttributesMatrixDirective)
