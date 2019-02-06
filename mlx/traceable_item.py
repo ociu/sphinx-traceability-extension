@@ -328,6 +328,7 @@ class TraceableItem(TraceableBaseClass):
         '''
         data = {}
         if not self.is_placeholder():
+            data = super(TraceableItem, self).to_dict()
             data['id'] = self.get_id()
             caption = self.get_caption()
             if caption:
@@ -346,12 +347,10 @@ class TraceableItem(TraceableBaseClass):
         '''
         Perform self test on collection content
         '''
+        super(TraceableItem, self).self_test()
         # Item should not be a placeholder
         if self.is_placeholder():
             raise TraceabilityException('item {item} is not defined'.format(item=self.get_id()), self.get_document())
-        # Item should hold a reference to a document
-        if self.get_document() is None:
-            raise TraceabilityException('item {item} has no reference to source document'.format(item=self.get_id()))
         # Item's attributes should be valid
         for attribute in self.iter_attributes():
             if not self.attributes[attribute]:

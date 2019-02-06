@@ -2,6 +2,8 @@
 Base class for traceable stuff
 '''
 
+from mlx.traceability_exception import TraceabilityException
+
 
 class TraceableBaseClass(object):
     '''
@@ -153,3 +155,28 @@ class TraceableBaseClass(object):
             node: Docutils node object
         '''
         return self.node
+
+    def to_dict(self):
+        '''
+        Export to dictionary
+
+        Returns:
+            (dict) Dictionary representation of the object
+        '''
+        data = {}
+        data['id'] = self.get_id()
+        data['name'] = self.get_name()
+        caption = self.get_caption()
+        if caption:
+            data['caption'] = caption
+        data['document'] = self.docname
+        data['line'] = self.lineno
+        return data
+
+    def self_test(self):
+        '''
+        Perform self test on content
+        '''
+        # should hold a reference to a document
+        if self.get_document() is None:
+            raise TraceabilityException('{identification} has no reference to source document'.format(identification=self.get_id()))
