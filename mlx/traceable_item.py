@@ -287,7 +287,7 @@ class TraceableItem(TraceableBaseClass):
         Returns:
             (boolean) True if the given regex matches the item identification
         '''
-        return re.match(regex, self.get_id())
+        return re.match(regex, self.get_name())
 
     def attributes_match(self, attributes):
         '''

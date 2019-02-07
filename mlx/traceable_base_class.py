@@ -10,20 +10,32 @@ class TraceableBaseClass(object):
     Storage for a traceable base class
     '''
 
-    def __init__(self, identification):
+    def __init__(self, name):
         '''
         Initialize a new base class
 
         Args:
-            identification (str): Base class object identification
+            name (str): Base class object identification
         '''
-        self.id = identification
-        self.name = identification
+        self.id = self.to_id(name)
+        self.name = name
         self.caption = None
         self.docname = None
         self.lineno = None
         self.node = None
         self.content = None
+
+    @staticmethod
+    def to_id(id):
+        '''
+        Convert a given identification to a storable id
+
+        Args:
+            id (str): input identification
+        Returns:
+            str - Converted storable identification
+        '''
+        return id.lower()
 
     def update(self, other):
         '''

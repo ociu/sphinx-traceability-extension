@@ -16,10 +16,10 @@ class TraceableAttribute(TraceableBaseClass):
         Initialize a new attribute
 
         Args:
-            attrid (str): Attribute identification, converted to lowercase as sphinx only allows lower case arguments
+            attrid (str): Attribute identification
             value (str): Regex to which the attribute values should match
         '''
-        super(TraceableAttribute, self).__init__(attrid.lower())
+        super(TraceableAttribute, self).__init__(attrid)
         self.value = value
 
     def update(self, other):
