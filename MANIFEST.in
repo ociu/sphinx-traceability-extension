@@ -5,6 +5,8 @@ include README.rst
 include mlx/assets/*.js
 
 
+exclude mlx __traceability_version__.py
+
 # added by check_manifest.py
 include LICENSE.txt
 include NOTICE
