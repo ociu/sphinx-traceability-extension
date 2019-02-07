@@ -66,6 +66,10 @@ This text is not part of any item
 
     Clean up all this again
 
+.. item:: r005 Duplicate: should trigger warning
+
+    As this one is the second one, this should **not** appear in the generated documentation.
+
 .. item:: r006 Depends on all
     :class: terciary
     :asil: C
@@ -79,6 +83,7 @@ This text is not part of any item
 
 .. item:: r007 Depends on all with stereotypes
     :asil: X
+    :aspice: 2
     :class: terciary
     :trace: r001
     :validates: r002
@@ -88,7 +93,6 @@ This text is not part of any item
     To demonstrate stereotype usage in relationships.
 
     To demonstrate invalid attribute, X is not valid attribute for ASIL level (should not appear in e.g. item-list).
-
 
 .. requirement:: r100 A requirement using the ``requirement`` type
     :asil: QM
