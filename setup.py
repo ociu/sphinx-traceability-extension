@@ -3,15 +3,16 @@
 from setuptools import setup, find_packages
 
 project_url = 'https://github.com/melexis/sphinx-traceability-extension'
-version = '2.12.0'
 
 requires = ['Sphinx>=0.6', 'docutils', 'natsort']
 
 setup(
     name='mlx.traceability',
-    version=version,
+    use_scm_version={
+        'write_to': 'mlx/__traceability_version__.py'
+    },
+    setup_requires=['setuptools_scm'],
     url=project_url,
-    download_url=project_url + '/tarball/' + version,
     license='GNU General Public License v3 (GPLv3)',
     author='Stein Heselmans',
     author_email='teh@melexis.com',
