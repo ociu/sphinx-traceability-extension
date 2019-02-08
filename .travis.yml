@@ -11,19 +11,19 @@ matrix:
   include:
     - python: '2.7'
       env:
-        - TOXENV=py27,sphinx1.3,sphinx1.4,sphinx1.5,sphinx1.6,sphinx1.7,sphinx1.8,sphinx-latest,codecov
+        - TOXENV=py27,sphinx1.6,sphinx1.7,sphinx1.8,sphinx-latest,codecov
     - python: '3.4'
       env:
-        - TOXENV=py34,sphinx1.3,sphinx1.4,sphinx1.5,sphinx1.6,sphinx1.7,sphinx1.8,sphinx-latest,codecov
+        - TOXENV=py34,sphinx1.6,sphinx1.7,sphinx1.8,sphinx-latest,codecov
     - python: '3.5'
       env:
-        - TOXENV=py35,sphinx1.3,sphinx1.4,sphinx1.5,sphinx1.6,sphinx1.7,sphinx1.8,sphinx-latest,codecov
+        - TOXENV=py35,sphinx1.6,sphinx1.7,sphinx1.8,sphinx-latest,codecov
     - python: '3.6'
       env:
-        - TOXENV=py36,sphinx1.3,sphinx1.4,sphinx1.5,sphinx1.6,sphinx1.7,sphinx1.8,sphinx-latest,codecov
-    - python: '3.7-dev'
+        - TOXENV=py36,sphinx1.6,sphinx1.7,sphinx1.8,sphinx-latest,codecov
+    - python: '3.7-dev
       env:
-        - TOXENV=py37,sphinx1.3,sphinx1.4,sphinx1.5,sphinx1.6,sphinx1.7,sphinx1.8,sphinx-latest,codecov
+        - TOXENV=py37,sphinx1.6,sphinx1.7,sphinx1.8,sphinx-latest,codecov
 
 before_install:
   - python --version
