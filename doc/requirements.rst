@@ -33,20 +33,20 @@ Requirements for mlx.traceability
 .. item:: RQT-CONTENT Conten of documentation part
     :depends_on: RQT-ITEMIZE
 
-    A documentation part shall have optional content. The content shall be parseable RST, and passed
-    through the configured sphinx parser/renderer.
+    A documentation part shall have optional content. The content shall be parseable reStructured
+    text (rst), and passed through the configured sphinx parser/renderer.
 
 .. item:: RQT-ATTRIBUTES Documentation parts can have attributes
     :depends_on: RQT-ITEMIZE
 
-    Attributes shall be able to be added to the documentation parts.
+    It shall be possible to add attributes to the documentation parts.
     Attributes have a key and an optional value.
     The set of attributes and the validness of the attribute values shall be configurable.
 
 .. item:: RQT-RELATIONS Documentation parts can be linked to each other
     :depends_on: RQT-ITEMIZE
 
-    Documentation parts shall be able to link to other documentation parts.
+    It shall be possible to link documentation parts to other documentation parts.
     The set of relations shall be configurable.
 
 .. item:: RQT-AUTO_REVERSE Automatic creation of reverse relations
@@ -58,25 +58,25 @@ Requirements for mlx.traceability
 .. item:: RQT-LIST Listing documentation parts
     :depends_on: RQT-ITEMIZE
 
-    A list of documentation parts matching a certain query shall be able to be retrieved.
+    It shall be possible to generate a list of documentation parts matching a certain query.
 
 .. item:: RQT-COVERAGE Calculation of coverage for relations between documentation parts
     :depends_on: RQT-RELATIONS
 
-    The plugin shall be able to calculate the coverage for a certain type of relation between
+    It shall be possible to calculate the coverage for a certain type of relation between
     documentation parts.
 
 .. item:: RQT-MATRIX Auto-generation of a traceability matrix
     :depends_on: RQT-RELATIONS
 
-    The relations between documentation parts shall be able to be queried, and an overview matrix
-    shall be able to be generated.
+    It shall be possible to query the relations between documentation parts.
+    It shall be possible to generate overview matrix of these relations.
 
 .. item:: RQT-TREE Auto-generation of a traceability tree
     :depends_on: RQT-RELATIONS
 
-    The relations between documentation parts shall be able to be queried, and an overview tree
-    shall be able to be generated.
+    It shall be possible to query the relations between documentation parts.
+    It shall be possible to generate overview tree of these relations.
 
 .. item:: RQT-ATTRIBUTES_MATRIX Overview of attributes on documentation parts
     :depends_on: RQT-ATTRIBUTES
