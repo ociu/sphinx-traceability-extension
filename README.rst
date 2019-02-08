@@ -452,7 +452,7 @@ Defining documentation items
 
 Documentation items can be defined using the *item* directive, specifying:
 
-- the name (id) of the documenation item
+- the name (id) of the documentation item
 - caption or short description of the documentation item
 - attributes for the documentation item
 - internal/external relationships to other documentation items (details in next paragraph)
