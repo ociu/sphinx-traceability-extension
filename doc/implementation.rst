@@ -38,3 +38,14 @@ TraceabilityException
         :members:
         :show-inheritance:
 
+Design coverage
+===============
+
+.. item-matrix:: Trace implementation to design
+    :source: IMPL
+    :target: DESIGN
+    :sourcetitle: Implementation
+    :targettitle: Design
+    :nocaptions:
+    :stats:
+

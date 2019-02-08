@@ -16,7 +16,6 @@ Design for mlx.traceability
     Since the sphinx documentation system is python based, and it allows for plugin development in seperate
     python packages, python was chosen. No limit should exist on the version of python or sphinx.
 
-
 .. item:: DESIGN-ITEMIZE Allow splitting the documentation in parts
     :depends_on: DESIGN-TRACEABILITY
     :fulfills: RQT-ITEMIZE
