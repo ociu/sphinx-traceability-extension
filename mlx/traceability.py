@@ -1189,8 +1189,10 @@ def is_item_top_level(env, itemid, topregex, relations):
     Check if item with given itemid is a top level item
 
     True, if the item is a top level item:
-        - given relation does not exist for given item,
-        - or given relation exists, but targets don't match the 'top' regexp.
+
+    - given relation does not exist for given item,
+    - or given relation exists, but targets don't match the 'top' regexp.
+
     False, otherwise.
     '''
     item = env.traceability_collection.get_item(itemid)

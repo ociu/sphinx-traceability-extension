@@ -6,7 +6,7 @@
 *.pyc
 build/
 dist/
-example/_build
+doc/_build
 tests/docs/basic/_build
 tests/docs/autodoc/docs/_build
 .tox/

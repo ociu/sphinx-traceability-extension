@@ -1,42 +1,38 @@
-.. image:: https://img.shields.io/badge/License-GPL%20v3-blue.svg
+.. image:: https://img.shields.io/badge/License-GPL%20v3-blue.png
     :target: https://www.gnu.org/licenses/gpl-3.0
     :alt: GPL3 License
 
-.. image:: https://badge.fury.io/py/mlx.traceability.svg
+.. image:: https://badge.fury.io/py/mlx.traceability.png
     :target: https://badge.fury.io/py/mlx.traceability
     :alt: Pypi packaged release
 
-.. image:: https://travis-ci.org/melexis/sphinx-traceability-extension.svg?branch=master
+.. image:: https://travis-ci.org/melexis/sphinx-traceability-extension.png?branch=master
     :target: https://travis-ci.org/melexis/sphinx-traceability-extension
     :alt: Build status
 
-.. image:: https://img.shields.io/badge/Documentation-published-brightgreen.svg
+.. image:: https://img.shields.io/badge/Documentation-published-brightgreen.png
     :target: https://melexis.github.io/sphinx-traceability-extension/
     :alt: Documentation
 
-.. image:: https://codecov.io/gh/melexis/sphinx-traceability-extension/branch/master/graph/badge.svg
+.. image:: https://codecov.io/gh/melexis/sphinx-traceability-extension/coverage.png
     :target: https://codecov.io/gh/melexis/sphinx-traceability-extension
     :alt: Code Coverage
 
-.. image:: https://codeclimate.com/github/melexis/sphinx-traceability-extension/badges/gpa.svg
+.. image:: https://codeclimate.com/github/melexis/sphinx-traceability-extension/badges/gpa.png
     :target: https://codeclimate.com/github/melexis/sphinx-traceability-extension
     :alt: Code Climate Status
 
-.. image:: https://codeclimate.com/github/melexis/sphinx-traceability-extension/badges/issue_count.svg
-    :target: https://codeclimate.com/github/melexis/sphinx-traceability-extension
-    :alt: Issue Count
-
-.. image:: https://requires.io/github/melexis/sphinx-traceability-extension/requirements.svg?branch=master
+.. image:: https://requires.io/github/melexis/sphinx-traceability-extension/requirements.png?branch=master
     :target: https://requires.io/github/melexis/sphinx-traceability-extension/requirements/?branch=master
     :alt: Requirements Status
 
-.. image:: https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat
+.. image:: https://img.shields.io/badge/contributions-welcome-brightgreen.png?style=flat
     :target: https://github.com/melexis/sphinx-traceability-extension/issues
     :alt: Contributions welcome
 
-==========================
-Sphinx Traceability plugin
-==========================
+===================================
+Sphinx Traceability plugin - README
+===================================
 
 Sphinx plugin that allows defining documentation items and relations between those items. Can be used
 as a requirements management tool for e.g. ISO26262 projects.
@@ -76,7 +72,7 @@ The plugin can generate
 Installing
 ----------
 
-.. code-block::
+.. code-block:: bash
 
     pip3 install mlx.traceability
 
@@ -91,7 +87,7 @@ to configure the traceability plugin.
 
 First the plugin needs to be enabled in the *extensions* variable:
 
-.. code-block::
+.. code-block:: bash
 
     extensions = [
         'mlx.traceability.traceability',
@@ -101,7 +97,7 @@ First the plugin needs to be enabled in the *extensions* variable:
 Second the path to the static javascript assets needs to be added to the sphinx ``html_static_path``
 variable.
 
-.. code-block::
+.. code-block:: bash
 
     import os
     import mlx.traceability
@@ -435,7 +431,7 @@ By default sphinx (*sphinx-build*) performs an incremental build: it only parses
 new output for changed files. As this plugin generates automatic reverse relations, the incremental build option
 of sphinx needs to be disabled. This can be done using the *-E* option:
 
-.. code-block::
+.. code-block:: bash
 
     sphinx-build -E <other_options>
 
