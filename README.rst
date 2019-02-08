@@ -14,17 +14,13 @@
     :target: https://melexis.github.io/sphinx-traceability-extension/
     :alt: Documentation
 
-.. image:: https://codecov.io/gh/melexis/sphinx-traceability-extension/branch/master/graph/badge.png
+.. image:: https://codecov.io/gh/melexis/sphinx-traceability-extension/coverage.png
     :target: https://codecov.io/gh/melexis/sphinx-traceability-extension
     :alt: Code Coverage
 
 .. image:: https://codeclimate.com/github/melexis/sphinx-traceability-extension/badges/gpa.png
     :target: https://codeclimate.com/github/melexis/sphinx-traceability-extension
     :alt: Code Climate Status
-
-.. image:: https://codeclimate.com/github/melexis/sphinx-traceability-extension/badges/issue_count.png
-    :target: https://codeclimate.com/github/melexis/sphinx-traceability-extension
-    :alt: Issue Count
 
 .. image:: https://requires.io/github/melexis/sphinx-traceability-extension/requirements.png?branch=master
     :target: https://requires.io/github/melexis/sphinx-traceability-extension/requirements/?branch=master
