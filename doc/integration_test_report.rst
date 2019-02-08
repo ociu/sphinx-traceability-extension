@@ -1,7 +1,7 @@
 
-===================================
-Welcome to Example's documentation!
-===================================
+=======================
+Integration test report
+=======================
 
 .. contents:: `Contents`
     :depth: 3
