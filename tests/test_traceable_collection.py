@@ -1,7 +1,7 @@
 from unittest import TestCase
 try:
     from unittest.mock import MagicMock, patch, mock_open
-except ImportError as err:
+except ImportError:
     from mock import MagicMock, patch, mock_open
 
 import mlx.traceable_item as item
