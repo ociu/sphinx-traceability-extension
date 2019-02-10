@@ -40,7 +40,8 @@ extensions = [
     'traceability',
     'sphinx_selective_exclude.eager_only',
     'sphinx_selective_exclude.modindex_exclude',
-    'sphinx_selective_exclude.search_auto_exclude'
+    'sphinx_selective_exclude.search_auto_exclude',
+    'sphinxcontrib.plantuml',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -345,6 +346,26 @@ traceability_json_export_path = '_build/exported_items.json'
 # traceability_matrix_no_captions = True
 # traceability_tree_no_captions = True
 # traceability_render_attributes_per_item = False
+
+# Point to plantuml jar file
+# confirm we have plantuml in the path
+if 'nt' in os.name:
+    plantuml_path = subprocess.check_output(["where", "/F", "plantuml.jar"])
+    if not plantuml_path :
+        print("Can't find 'plantuml.jar' file.")
+        print("You need to add path to 'plantuml.jar' file to your PATH variable.")
+        sys.exit(os.strerror(errno.EPERM))
+    plantuml = plantuml_path.decode("utf-8")
+    plantuml = plantuml.rstrip('\n\r')
+    plantuml = plantuml.replace('"', '')
+    plantuml = plantuml.replace('\\', '//')
+    plantuml = 'java -jar' + ' ' + plantuml
+else:
+    plantuml_path = subprocess.check_output(["whereis", "-u", "plantuml"])
+    if not plantuml_path :
+        print("Can't find 'plantuml.jar' file.")
+        print("You need to add path to 'plantuml.jar' file to your PATH variable.")
+        sys.exit(os.strerror(errno.EPERM))
 
 def setup(app):
 

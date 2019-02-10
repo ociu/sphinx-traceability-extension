@@ -16,6 +16,16 @@ Design for mlx.traceability
     Since the sphinx documentation system is python based, and it allows for plugin development in seperate
     python packages, python was chosen. No limit should exist on the version of python or sphinx.
 
+    .. uml::
+        :align: center
+
+        TraceableBaseClass <|-- TraceableItem
+        TraceableBaseClass <|-- TraceableAttribute
+        TraceableItem "1" *-- "N" TraceableAttribute
+        TraceableCollection "1" *-- "N" TraceableItem
+        Exception <|-- TraceabilityException
+        Exception <|-- MultipleTraceabilityExceptions
+
 .. item:: DESIGN-ITEMIZE Allow splitting the documentation in parts
     :depends_on: DESIGN-TRACEABILITY
     :fulfills: RQT-ITEMIZE
