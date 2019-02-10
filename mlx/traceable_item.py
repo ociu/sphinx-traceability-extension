@@ -4,10 +4,11 @@ Storage classes for traceable item
 
 import re
 from natsort import natsorted
+from mlx.traceable_base_class import TraceableBaseClass
 from mlx.traceability_exception import TraceabilityException
 
 
-class TraceableItem(object):
+class TraceableItem(TraceableBaseClass):
     '''
     Storage for a traceable documentation item
     '''
@@ -24,16 +25,11 @@ class TraceableItem(object):
             itemid (str): Item identification
             placeholder (bool): Internal use only
         '''
-        self.id = itemid
+        super(TraceableItem, self).__init__(itemid)
         self.explicit_relations = {}
         self.implicit_relations = {}
         self.attributes = {}
         self.placeholder = placeholder
-        self.docname = None
-        self.lineno = None
-        self.node = None
-        self.caption = None
-        self.content = None
 
     def update(self, other):
         '''
@@ -41,8 +37,7 @@ class TraceableItem(object):
 
         Store the sum of both objects
         '''
-        if self.id != other.id:
-            raise ValueError('Update error {old} vs {new}'.format(old=self.id, new=other.id))
+        super(TraceableItem, self).update(other)
         for relation in other.explicit_relations.keys():
             if relation not in self.explicit_relations:
                 self.explicit_relations[relation] = []
@@ -56,25 +51,6 @@ class TraceableItem(object):
             self.add_attribute(attr, other.attributes[attr], False)
         if not other.placeholder:
             self.placeholder = False
-        if other.docname is not None:
-            self.docname = other.docname
-        if other.lineno is not None:
-            self.lineno = other.lineno
-        if other.node is not None:
-            self.node = other.node
-        if other.caption is not None:
-            self.caption = other.caption
-        if other.content is not None:
-            self.content = other.content
-
-    def get_id(self):
-        '''
-        Getter for item identification
-
-        Returns:
-            str: item identification
-        '''
-        return self.id
 
     def is_placeholder(self):
         '''
@@ -84,89 +60,6 @@ class TraceableItem(object):
             bool: True if the item is a placeholder, false otherwise.
         '''
         return self.placeholder
-
-    def set_document(self, docname, lineno=0):
-        '''
-        Set location in document
-
-        Args:
-            docname (str): Path to docname
-            lineno (int): Line number in given document
-        '''
-        self.docname = docname
-        self.lineno = lineno
-
-    def get_document(self):
-        '''
-        Get location in document
-
-        Returns:
-            str: Path to docname
-        '''
-        return self.docname
-
-    def get_line_number(self):
-        '''
-        Get line number in document
-
-        Returns:
-            int: Line number in given document
-        '''
-        return self.lineno
-
-    def bind_node(self, node):
-        '''
-        Bind to node
-
-        Args:
-            node (node): Docutils node object
-        '''
-        self.node = node
-
-    def get_node(self):
-        '''
-        Get the node to which the object is bound
-
-        Returns:
-            node: Docutils node object
-        '''
-        return self.node
-
-    def set_caption(self, caption):
-        '''
-        Set short description of the item
-
-        Args:
-            caption (str): Short description of the item
-        '''
-        self.caption = caption
-
-    def get_caption(self):
-        '''
-        Get short description of the item
-
-        Returns:
-            str: Short description of the item
-        '''
-        return self.caption
-
-    def set_content(self, content):
-        '''
-        Set content of the item
-
-        Args:
-            content (str): Content of the item
-        '''
-        self.content = content
-
-    def get_content(self):
-        '''
-        Get content of the item
-
-        Returns:
-            str: Content of the item
-        '''
-        return self.content
 
     def _add_target(self, database, relation, target):
         '''
@@ -436,6 +329,7 @@ class TraceableItem(object):
         '''
         data = {}
         if not self.is_placeholder():
+            data = super(TraceableItem, self).to_dict()
             data['id'] = self.get_id()
             caption = self.get_caption()
             if caption:
@@ -454,12 +348,10 @@ class TraceableItem(object):
         '''
         Perform self test on collection content
         '''
+        super(TraceableItem, self).self_test()
         # Item should not be a placeholder
         if self.is_placeholder():
             raise TraceabilityException('item {item} is not defined'.format(item=self.get_id()), self.get_document())
-        # Item should hold a reference to a document
-        if self.get_document() is None:
-            raise TraceabilityException('item {item} has no reference to source document'.format(item=self.get_id()))
         # Item's attributes should be valid
         for attribute in self.iter_attributes():
             if not self.attributes[attribute]:

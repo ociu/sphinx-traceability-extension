@@ -21,7 +21,7 @@ matrix:
     - python: '3.6'
       env:
         - TOXENV=py36,sphinx1.6,sphinx1.7,sphinx1.8,sphinx-latest,codecov
-    - python: '3.7-dev
+    - python: '3.7-dev'
       env:
         - TOXENV=py37,sphinx1.6,sphinx1.7,sphinx1.8,sphinx-latest,codecov
 
