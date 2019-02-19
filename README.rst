@@ -507,6 +507,22 @@ This directive has no representation in the documentation build output. It will
 just add an additional relationship to the items mentioned in ``sources`` and
 ``targets``
 
+Adding description to attributes
+================================
+
+Section `traceability_config_attributes`_ explain how attributes can be added to the configuration. It is possible
+to add content to the attributes. A detailed description can be added to a attribute definition:
+
+- the name (id) of the attribute, needs to match the configured attribute. This name is not case sensitive.
+- caption or short description of the attribute
+- content of attribute including any rst content including text, images, formulas, code-blocks, etc.
+
+.. code-block:: rest
+
+    .. item-attribute:: status The status of a requirement
+
+        The status of the requirement explains whether it is *draft*, *under-review*, *approved* or *invalid*.
+
 .. _traceability_usage_item_linking:
 
 Manual link to documentation items

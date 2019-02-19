@@ -111,6 +111,20 @@ This text is not part of any item
 
     Ai caramba, this should report a warning as the relation kind or attribute does not exist.
 
+Attribute details
+=================
+
+.. item-attribute:: ASIL The level for ASIL
+
+    In ISO26262 ASIL is defined as Automotive Safety Integrety Level. The level can be
+    at A/B/C/D for increasing safety requirements.
+
+.. item-attribute:: ASPICE The level for A-SPICE
+
+    Similar to ASIL, ASPICE is an automitve safety standard. Levels are ASPICE 1/2/3.
+
+.. item-attribute:: non_existing_attribute This should trigger a warning
+
 Item list
 =========
 

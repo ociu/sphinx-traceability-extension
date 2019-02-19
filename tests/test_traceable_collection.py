@@ -5,6 +5,7 @@ except ImportError:
     from mock import MagicMock, patch, mock_open
 
 import mlx.traceable_item as item
+import mlx.traceable_attribute as attribute
 import mlx.traceability_exception as exception
 import mlx.traceable_collection as dut
 
@@ -23,7 +24,8 @@ class TestTraceableCollection(TestCase):
     mock_export_file = '/tmp/my/mocked_export_file.json'
 
     def setUp(self):
-        dut.TraceableItem.define_attribute(self.attribute_key, self.attribute_regex)
+        attr = attribute.TraceableAttribute(self.attribute_key, self.attribute_regex)
+        dut.TraceableItem.define_attribute(attr)
 
     def test_init(self):
         coll = dut.TraceableCollection()

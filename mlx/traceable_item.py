@@ -174,15 +174,14 @@ class TraceableItem(TraceableBaseClass):
         return natsorted(list(self.explicit_relations) + list(self.implicit_relations.keys()))
 
     @staticmethod
-    def define_attribute(key, value):
+    def define_attribute(attr):
         '''
-        Define a attribute key-value pair that can be assigned to TraceableItems
+        Define a attribute that can be assigned to TraceableItems
 
         Args:
-            key (str): Attribute key
-            value (str): Regex to which attribute values must match
+            attr (TraceableAttribute): Attribute
         '''
-        TraceableItem.defined_attributes[key] = value
+        TraceableItem.defined_attributes[attr.get_id()] = attr
 
     def add_attribute(self, attr, value, overwrite=True):
         '''
@@ -202,7 +201,7 @@ class TraceableItem(TraceableBaseClass):
                                                                                                     attr=attr,
                                                                                                     value=value),
                                         self.get_document())
-        if not re.match(TraceableItem.defined_attributes[attr], value):
+        if not TraceableItem.defined_attributes[attr].can_accept(value):
             raise TraceabilityException('item {item} attribute does not match defined attributes ({attr}={value})'
                                         .format(item=self.get_id(), attr=attr, value=value),
                                         self.get_document())

@@ -1,6 +1,7 @@
 from unittest import TestCase
 
 import mlx.traceability_exception as exception
+import mlx.traceable_attribute as attribute
 import mlx.traceable_item as dut
 
 
@@ -18,8 +19,10 @@ class TestTraceableItem(TestCase):
     identification_tgt = 'another-item-to-target'
 
     def setUp(self):
-        dut.TraceableItem.define_attribute(self.attribute_key1, self.attribute_regex)
-        dut.TraceableItem.define_attribute(self.attribute_key2, self.attribute_regex)
+        attr1 = attribute.TraceableAttribute(self.attribute_key1, self.attribute_regex)
+        dut.TraceableItem.define_attribute(attr1)
+        attr2 = attribute.TraceableAttribute(self.attribute_key2, self.attribute_regex)
+        dut.TraceableItem.define_attribute(attr2)
 
     def test_init(self):
         item = dut.TraceableItem(self.identification)
