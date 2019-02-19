@@ -513,7 +513,7 @@ Adding description to attributes
 Section `traceability_config_attributes`_ explain how attributes can be added to the configuration. It is possible
 to add content to the attributes. A detailed description can be added to a attribute definition:
 
-- the name (id) of the attribute, needs to match the configured attribute
+- the name (id) of the attribute, needs to match the configured attribute. This name is not case sensitive.
 - caption or short description of the attribute
 - content of attribute including any rst content including text, images, formulas, code-blocks, etc.
 

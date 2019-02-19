@@ -69,25 +69,24 @@ class TraceableCollection(object):
             olditem = self.items[itemid]
             # ... and it's not a placeholder, log an error
             if not olditem.placeholder:
-                raise TraceabilityException('duplicating {itemid}'.format(itemid=item.get_name()), item.get_document())
+                raise TraceabilityException('duplicating {itemid}'.format(itemid=itemid), item.get_document())
             # ... otherwise, update the item with new content
             else:
                 item.update(olditem)
         # add it
-        self.items[itemid] = item
+        self.items[item.get_id()] = item
 
-    def get_item(self, name):
+    def get_item(self, itemid):
         '''
         Get a TraceableItem from the list
 
         Args:
-            name (str): Name of traceable item to get
+            itemid (str): Identification of traceable item to get
         Returns:
             TraceableItem: Object for traceable item
         '''
-        identification = TraceableItem.to_id(name)
-        if self.has_item(identification):
-            return self.items[identification]
+        if self.has_item(itemid):
+            return self.items[itemid]
         return None
 
     def iter_items(self):
@@ -110,22 +109,20 @@ class TraceableCollection(object):
         '''
         return itemid in self.items
 
-    def add_relation(self, srcname, relation, tgtname):
+    def add_relation(self, sourceid, relation, targetid):
         '''
         Add relation between two items
 
         The function adds the forward and the automatic reverse relation.
 
         Args:
-            srcname (str): Name of the source item
+            sourceid (str): ID of the source item
             relation (str): Relation between source and target item
-            tgtname (str): Name of the target item
+            targetid (str): ID of the target item
         '''
-        sourceid = TraceableItem.to_id(srcname)
-        targetid = TraceableItem.to_id(tgtname)
         # Add placeholder if source item is unknown
         if sourceid not in self.items:
-            src = TraceableItem(srcname, True)
+            src = TraceableItem(sourceid, True)
             self.add_item(src)
         source = self.items[sourceid]
         # Error if relation is unknown
@@ -138,7 +135,7 @@ class TraceableCollection(object):
         if reverse_relation:
             # Add placeholder if target item is unknown
             if targetid not in self.items:
-                tgt = TraceableItem(tgtname, True)
+                tgt = TraceableItem(targetid, True)
                 self.add_item(tgt)
             # Add reverse relation to target-item
             self.items[targetid].add_target(reverse_relation, sourceid, implicit=True)
@@ -153,7 +150,7 @@ class TraceableCollection(object):
         with open(fname, 'w') as outfile:
             data = []
             for itemid in self.iter_items():
-                item = self.items[itemid]
+                item = self.get_item(itemid)
                 data.append(item.to_dict())
             json.dump(data, outfile, indent=4, sort_keys=True)
 
@@ -170,7 +167,7 @@ class TraceableCollection(object):
             raise TraceabilityException('No relations configured', 'configuration')
         # Validate each item
         for itemid in self.items:
-            item = self.items[itemid]
+            item = self.get_item(itemid)
             # Only for relevant items, filtered on document name
             if docname is not None and item.get_document() != docname and item.get_document() is not None:
                 continue
@@ -195,7 +192,7 @@ class TraceableCollection(object):
                                       item.get_document()))
                         continue
                     # Reverse relation exists?
-                    target = self.items[tgt]
+                    target = self.get_item(tgt)
                     if itemid not in target.iter_targets(rev_relation):
                         errors.append(TraceabilityException('''No automatic reverse relation:
                                       {source} {relation} {target}'''.format(source=tgt,
@@ -263,7 +260,7 @@ class TraceableCollection(object):
             if self.items[itemid].is_placeholder():
                 continue
             if self.items[itemid].is_match(regex) and self.items[itemid].attributes_match(attributes):
-                matches.append(self.items[itemid].get_name())
+                matches.append(itemid)
         if sortattributes:
             matches = natsorted(matches, key=lambda itemid: self.get_item(itemid).get_attributes(sortattributes),
                                 reverse=reverse)

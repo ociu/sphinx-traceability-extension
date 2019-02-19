@@ -154,6 +154,9 @@ class ItemDirective(Directive):
         targetid = self.arguments[0]
         targetnode = nodes.target('', '', ids=[targetid])
 
+        itemnode = Item('')
+        itemnode['id'] = targetid
+
         # Item caption is the text following the mandatory id argument.
         # Caption should be considered a line of text. Remove line breaks.
         if len(self.arguments) > 1:
@@ -199,9 +202,6 @@ class ItemDirective(Directive):
             template.append('    ' + line)
         self.state_machine.insert_input(template, self.state_machine.document.attributes['source'])
 
-        itemnode = Item('')
-        itemnode['id'] = item.get_name()
-
         # Check nocaptions flag
         if 'nocaptions' in self.options:
             itemnode['nocaptions'] = True
@@ -236,7 +236,7 @@ class ItemAttributeDirective(Directive):
         env = self.state.document.settings.env
 
         # Convert to lower-case as sphinx only allows lower case arguments (attribute to item directive)
-        attrid = self.arguments[0].lower()
+        attrid = self.arguments[0]
         targetnode = nodes.target('', '', ids=[attrid])
         attrnode = ItemAttribute('')
 
@@ -246,15 +246,16 @@ class ItemAttributeDirective(Directive):
         if len(self.arguments) > 1:
             caption = self.arguments[1].replace('\n', ' ')
 
-        if attrid not in TraceableItem.defined_attributes.keys():
-            report_warning(env, 'Found attribute description which is not defined in configuration',
+        stored_id = TraceableAttribute.to_id(attrid)
+        if stored_id not in TraceableItem.defined_attributes.keys():
+            report_warning(env, 'Found attribute description which is not defined in configuration ({attr})'.format(attr=attrid),
                            env.docname, self.lineno)
-            attrnode['id'] = attrid
+            attrnode['id'] = stored_id
         else:
-            attr = TraceableItem.defined_attributes[attrid]
+            attr = TraceableItem.defined_attributes[stored_id]
             attr.set_caption(caption)
             attr.set_document(env.docname, self.lineno)
-            attrnode['id'] = attr.get_name()
+            attrnode['id'] = attr.get_id()
 
         # Output content of attribute to document
         template = []
@@ -1009,7 +1010,7 @@ def process_item_nodes(app, doctree, fromdocname):
         if item_info:
             if item_info.is_placeholder():
                 docname, lineno = get_source_line(node)
-                report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_info.get_name(),
+                report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_info.get_id(),
                                docname, lineno)
             else:
                 try:
@@ -1052,7 +1053,7 @@ def process_item_nodes(app, doctree, fromdocname):
         docname, lineno = get_source_line(node)
         currentitem = env.traceability_collection.get_item(node['id'])
         showcaptions = not node['nocaptions']
-        header = currentitem.get_name()
+        header = currentitem.get_id()
         if currentitem.caption:
             header += ' : ' + currentitem.caption
         top_node = create_top_node(header)
@@ -1263,16 +1264,15 @@ def make_internal_item_ref(app, node, fromdocname, item_id, caption=True):
     """
     env = app.builder.env
     item_info = env.traceability_collection.get_item(item_id)
-    item_name = item_info.get_name()
 
     p_node = nodes.paragraph()
 
     # Only create link when target item exists, warn otherwise (in html and terminal)
     if item_info.is_placeholder():
         docname, lineno = get_source_line(node)
-        report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_name,
+        report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_id,
                        docname, lineno)
-        txt = nodes.Text('%s not defined, broken link' % item_name)
+        txt = nodes.Text('%s not defined, broken link' % item_id)
         p_node.append(txt)
     else:
         if item_info.caption != '' and caption:
@@ -1281,12 +1281,12 @@ def make_internal_item_ref(app, node, fromdocname, item_id, caption=True):
             caption = ''
 
         newnode = nodes.reference('', '')
-        innernode = nodes.emphasis(item_name + caption, item_name + caption)
+        innernode = nodes.emphasis(item_id + caption, item_id + caption)
         newnode['refdocname'] = item_info.docname
         try:
             newnode['refuri'] = app.builder.get_relative_uri(fromdocname,
                                                              item_info.docname)
-            newnode['refuri'] += '#' + item_info.get_id()
+            newnode['refuri'] += '#' + item_id
         except NoUri:
             # ignore if no URI can be determined, e.g. for LaTeX output :(
             pass
@@ -1315,7 +1315,7 @@ def make_attribute_ref(app, node, fromdocname, attr_id, value=''):
             try:
                 newnode['refuri'] = app.builder.get_relative_uri(fromdocname,
                                                                  attr_info.docname)
-                newnode['refuri'] += '#' + attr_info.get_id()
+                newnode['refuri'] += '#' + attr_info.get_name()
             except NoUri:
                 # ignore if no URI can be determined, e.g. for LaTeX output :(
                 pass

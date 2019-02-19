@@ -22,6 +22,18 @@ class TraceableAttribute(TraceableBaseClass):
         super(TraceableAttribute, self).__init__(attrid)
         self.value = value
 
+    @staticmethod
+    def to_id(id):
+        '''
+        Convert a given identification to a storable id
+
+        Args:
+            id (str): input identification
+        Returns:
+            str - Converted storable identification
+        '''
+        return id.lower()
+
     def update(self, other):
         '''
         Update with new object

@@ -35,7 +35,7 @@ class TraceableBaseClass(object):
         Returns:
             str - Converted storable identification
         '''
-        return id.lower()
+        return id
 
     def update(self, other):
         '''
