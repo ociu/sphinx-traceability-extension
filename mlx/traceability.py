@@ -37,10 +37,11 @@ def report_warning(env, msg, docname=None, lineno=None):
     '''Convenience function for logging a warning
 
     Args:
-        msg (str): Message of the warning
+        msg (any __str__): Message of the warning, gets converted to str
         docname (str): Name of the document on which the error occured
         lineno (str): Line number in the document on which the error occured
     '''
+    msg = str(msg)
     if sphinx_version >= '1.6.0':
         logger = getLogger(__name__)
         if lineno is not None:
