@@ -37,10 +37,11 @@ def report_warning(env, msg, docname=None, lineno=None):
     '''Convenience function for logging a warning
 
     Args:
-        msg (str): Message of the warning
+        msg (any __str__): Message of the warning, gets converted to str
         docname (str): Name of the document on which the error occured
         lineno (str): Line number in the document on which the error occured
     '''
+    msg = str(msg)
     if sphinx_version >= '1.6.0':
         logger = getLogger(__name__)
         if lineno is not None:
@@ -171,7 +172,7 @@ class ItemDirective(Directive):
         try:
             env.traceability_collection.add_item(item)
         except TraceabilityException as err:
-            report_warning(env, str(err), env.docname, self.lineno)
+            report_warning(env, err, env.docname, self.lineno)
 
         # Add found attributes to item. Attribute data is a single string.
         for attribute in TraceableItem.defined_attributes.keys():
@@ -179,7 +180,7 @@ class ItemDirective(Directive):
                 try:
                     item.add_attribute(attribute, self.options[attribute])
                 except TraceabilityException as err:
-                    report_warning(env, str(err), env.docname, self.lineno)
+                    report_warning(env, err, env.docname, self.lineno)
 
         # Add found relationships to item. All relationship data is a string of
         # item ids separated by space. It is splitted in a list of item ids
@@ -190,7 +191,7 @@ class ItemDirective(Directive):
                     try:
                         env.traceability_collection.add_relation(targetid, rel, related_id)
                     except TraceabilityException as err:
-                        report_warning(env, str(err), env.docname, self.lineno)
+                        report_warning(env, err, env.docname, self.lineno)
 
         # Custom callback for modifying items
         if app.config.traceability_callback_per_item:
@@ -376,7 +377,7 @@ class ItemLinkDirective(Directive):
                     env.traceability_collection.add_relation(source, node['type'], target)
                 except TraceabilityException as err:
                     docname, lineno = get_source_line(node)
-                    report_warning(env, str(err), docname, lineno)
+                    report_warning(env, err, docname, lineno)
 
         # The ItemLink node has no final representation, so is removed from the tree
         return [node]
@@ -772,10 +773,10 @@ def perform_consistency_check(app, doctree):
     try:
         env.traceability_collection.self_test()
     except TraceabilityException as err:
-        report_warning(env, str(err), err.get_document())
+        report_warning(env, err, err.get_document())
     except MultipleTraceabilityExceptions as errs:
         for err in errs.iter():
-            report_warning(env, str(err), err.get_document())
+            report_warning(env, err, err.get_document())
 
     if app.config.traceability_json_export_path:
         fname = app.config.traceability_json_export_path
@@ -796,10 +797,10 @@ def process_item_nodes(app, doctree, fromdocname):
         try:
             env.traceability_collection.self_test(fromdocname)
         except TraceabilityException as err:
-            report_warning(env, str(err), fromdocname)
+            report_warning(env, err, fromdocname)
         except MultipleTraceabilityExceptions as errs:
             for err in errs.iter():
-                report_warning(env, str(err), err.get_document())
+                report_warning(env, err, err.get_document())
 
     # Processing of the item-link items.
     for node in doctree.traverse(ItemLink):
