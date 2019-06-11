@@ -312,6 +312,26 @@ class TestTraceableCollection(TestCase):
         self.assertEqual(1, len(coll.get_items('', {self.attribute_key: self.attribute_value_src})))
         self.assertEqual(1, len(coll.get_items('', {self.attribute_key: self.attribute_value_tgt})))
 
+    def test_get_items_sortattributes(self):
+        name1 = 'z11'
+        name2 = 'z2'
+        coll = dut.TraceableCollection()
+        item1 = item.TraceableItem(name1)
+        coll.add_item(item1)
+        item2 = item.TraceableItem(name2)
+        coll.add_item(item2)
+        attribute_regex = '0x[0-9A-Z]+'
+        attr = attribute.TraceableAttribute(self.attribute_key, attribute_regex)
+        dut.TraceableItem.define_attribute(attr)
+        item1.add_attribute(self.attribute_key, '0x0029')
+        item2.add_attribute(self.attribute_key, '0x003A')
+        # Alphabetical sorting: 0x0029 before 0x003A
+        self.assertEqual(item1.get_id(), coll.get_items('', sortattributes=[self.attribute_key])[0])
+        self.assertEqual(item2.get_id(), coll.get_items('', sortattributes=[self.attribute_key])[1])
+        # Natural sorting: z2 before z11
+        self.assertEqual(item2.get_id(), coll.get_items('')[0])
+        self.assertEqual(item1.get_id(), coll.get_items('')[1])
+
     def test_related(self):
         coll = dut.TraceableCollection()
         coll.add_relation_pair(self.fwd_relation, self.rev_relation)
