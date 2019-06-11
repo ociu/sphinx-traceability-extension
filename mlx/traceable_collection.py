@@ -250,10 +250,11 @@ class TraceableCollection(object):
         Args:
             - regex (str): Regex to match the items in this collection against
             - attributes (dict): Dictionary with attribute-regex pairs to match the items in this collection against
-            - sortattributes (list): List of attributes on which to sort the items
+            - sortattributes (list): List of attributes on which to alphabetically sort the items
             - reverse (bool): True for reverse sorting
         Returns:
-            A naturally sorted list of item-id's matching the given regex
+            A sorted list of item-id's matching the given regex. Sorting is done naturally when sortattributes is
+            unused.
         '''
         matches = []
         for itemid in self.items:
@@ -262,8 +263,8 @@ class TraceableCollection(object):
             if self.items[itemid].is_match(regex) and self.items[itemid].attributes_match(attributes):
                 matches.append(itemid)
         if sortattributes:
-            matches = natsorted(matches, key=lambda itemid: self.get_item(itemid).get_attributes(sortattributes),
-                                reverse=reverse)
+            matches = sorted(matches, key=lambda itemid: self.get_item(itemid).get_attributes(sortattributes),
+                             reverse=reverse)
         else:
             matches = natsorted(matches, reverse=reverse)
         return matches
