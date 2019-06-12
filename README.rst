@@ -592,9 +592,9 @@ that don't have a value for a certain attribute will have an empty cell at the c
 By default the caption for every item in the table is shown. By providing the *nocaptions* flag, the
 caption can be omitted. This gives a smaller table, but also less details.
 
-By default items are sorted based on their name. With the *sort* argument it is possible to sort on one
-or more attribute values. When providing multiple attributes on which to sort, the attribute keys are
-space separated. The sorting is a natural sort. With the *reverse* argument, the sorting is reversed.
+By default items are sorted naturally based on their name. With the *sort* argument it is possible to sort on one
+or more attribute values alphabetically. When providing multiple attributes on which to sort, the attribute keys are
+space separated. With the *reverse* argument, the sorting is reversed.
 
 Optionally, the *class* attribute can be specified, to customize table output, especially useful when rendering to
 LaTeX.  Normally the *longtable* class is used when the number of rows is greater than 30 which allows long tables to
