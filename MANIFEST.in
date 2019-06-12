@@ -5,14 +5,16 @@ include README.rst
 include mlx/assets/*.js
 
 
+exclude mlx __traceability_version__.py
+
 # added by check_manifest.py
-include LICENSE
+include LICENSE.txt
 include NOTICE
 include tox.ini
-recursive-include example *.bat
-recursive-include example *.py
-recursive-include example *.rst
-recursive-include example Makefile
+recursive-include doc *.bat
+recursive-include doc *.py
+recursive-include doc *.rst
+recursive-include doc Makefile
 recursive-include tests *.py
 recursive-include tests *.rst
 recursive-include tests *.txt

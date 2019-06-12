@@ -1,12 +1,19 @@
+/doxygen
+/.idea
+/.eggs
 *.egg-info
 .*.swp
 *.pyc
 build/
 dist/
-example/_build
+doc/_build
 tests/docs/basic/_build
 tests/docs/autodoc/docs/_build
 .tox/
 .cache
+.pytest_cache
 .coverage
 coverage.xml
+
+# Offline version file
+mlx/__traceability_version__.py

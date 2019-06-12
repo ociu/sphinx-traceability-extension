@@ -1,247 +1,21 @@
 '''
-Storage classes for traceability plugin
+Storage classes for traceable item
 '''
 
-
-class MultipleTraceabilityExceptions(Exception):
-    '''
-    Multiple exceptions for traceability plugin
-    '''
-    def __init__(self, errors):
-        '''
-        Constructor for multiple traceability exceptions
-        '''
-        self.errors = errors
-
-    def iter(self):
-        '''Iterator for multiple exceptions'''
-        return self.errors
+import re
+from natsort import natsorted
+from mlx.traceable_base_class import TraceableBaseClass
+from mlx.traceability_exception import TraceabilityException
 
 
-class TraceabilityException(Exception):
-    '''
-    Exception for traceability plugin
-    '''
-    def __init__(self, message, docname=''):
-        '''
-        Constructor for traceability exception
-
-        Args:
-            message (str): Message for the exception
-            docname (str): Name of the document triggering the exception
-        '''
-        super(TraceabilityException, self).__init__(message)
-        self.docname = docname
-
-    def get_document(self):
-        '''
-        Get document in which error occured
-
-        Returns:
-            str: The name of the document in which the error occured
-        '''
-        return self.docname
-
-
-class TraceableCollection(object):
-    '''
-    Storage for a collection of TraceableItems
-    '''
-
-    NO_RELATION_STR = ''
-
-    def __init__(self):
-        '''Initializer for container of traceable items'''
-        self.relations = {}
-        self.items = {}
-
-    def add_relation_pair(self, forward, reverse=NO_RELATION_STR):
-        '''
-        Add a relation pair to the collection
-
-        Args:
-            forward (str): Keyword for the forward relation
-            reverse (str): Keyword for the reverse relation, or NO_RELATION_STR for external relations
-        '''
-        # Link forward to reverse relation
-        self.relations[forward] = reverse
-        # Link reverse to forward relation
-        if reverse != self.NO_RELATION_STR:
-            self.relations[reverse] = forward
-
-    def get_reverse_relation(self, forward):
-        '''
-        Get the matching reverse relation
-
-        Args:
-            forward (str): Keyword for the forward relation
-        Returns:
-            str: Keyword for the matching reverse relation, or None
-        '''
-        if forward in self.relations:
-            return self.relations[forward]
-        return None
-
-    def iter_relations(self):
-        '''
-        Iterate over available relations: sorted
-
-        Returns:
-            Sorted iterator over available relations in the collection
-        '''
-        return sorted(self.relations.keys())
-
-    def add_item(self, item):
-        '''
-        Add a TraceableItem to the list
-
-        Args:
-            item (TraceableItem): Traceable item to add
-        '''
-        itemid = item.get_id()
-        # If the item already exists ...
-        if itemid in self.items:
-            olditem = self.items[itemid]
-            # ... and it's not a placeholder, log an error
-            if not olditem.placeholder:
-                raise TraceabilityException('duplicating {itemid}'.format(itemid=itemid), item.get_document())
-            # ... otherwise, update the item with new content
-            else:
-                olditem.update(item)
-        # Otherwise (item doesn't exist), add it
-        else:
-            self.items[item.get_id()] = item
-
-    def get_item(self, itemid):
-        '''
-        Get a TraceableItem from the list
-
-        Args:
-            itemid (str): Identification of traceable item to get
-        Returns:
-            TraceableItem: Object for traceable item
-        '''
-        if self.has_item(itemid):
-            return self.items[itemid]
-        return None
-
-    def iter_items(self):
-        '''
-        Iterate over items: sorted identification
-
-        Returns:
-            Sorted iterator over identification of the items in the collection
-        '''
-        return sorted(self.items.keys())
-
-    def has_item(self, itemid):
-        '''
-        Verify if a item with given id is in the collection
-
-        Args:
-            itemid (str): Identification of item to look for
-        Returns:
-            bool: True if the given itemid is in the collection, false otherwise
-        '''
-        return itemid in self.items
-
-    def add_relation(self, sourceid, relation, targetid):
-        '''
-        Add relation between two items
-
-        The function adds the forward and the automatic reverse relation.
-
-        Args:
-            sourceid (str): ID of the source item
-            relation (str): Relation between source and target item
-            targetid (str): ID of the target item
-        '''
-        # Fail if source item is unknown
-        if sourceid not in self.items:
-            raise ValueError('Source item {name} not known'.format(name=sourceid))
-        source = self.items[sourceid]
-        # Error if relation is unknown
-        if relation not in self.relations:
-            raise TraceabilityException('Relation {name} not known'.format(name=relation), source.get_document())
-        # Add forward relation
-        source.add_target(relation, targetid)
-        # When reverse relation exists, continue to create/adapt target-item
-        reverse_relation = self.get_reverse_relation(relation)
-        if reverse_relation:
-            # Add placeholder if target item is unknown
-            if targetid not in self.items:
-                tgt = TraceableItem(targetid, True)
-                self.add_item(tgt)
-            # Add reverse relation to target-item
-            self.items[targetid].add_target(reverse_relation, sourceid, implicit=True)
-
-    def self_test(self, docname=None):
-        '''
-        Perform self test on collection content
-
-        Args:
-            docname (str): Document on which to run the self test, None for all.
-        '''
-        errors = []
-        # Having no valid relations, is invalid
-        if not self.relations:
-            raise TraceabilityException('No relations configured', 'configuration')
-        # Validate each item
-        for itemid in self.items:
-            item = self.get_item(itemid)
-            # Only for relevant items, filtered on document name
-            if docname is not None and item.get_document() != docname and item.get_document() is not None:
-                continue
-            # On item level
-            try:
-                item.self_test()
-            except TraceabilityException as e:
-                errors.append(e)
-            # targetted items shall exist, with automatic reverse relation
-            for relation in self.relations:
-                # Exception: no reverse relation (external links)
-                rev_relation = self.get_reverse_relation(relation)
-                if rev_relation == self.NO_RELATION_STR:
-                    continue
-                for tgt in item.iter_targets(relation):
-                    # Target item exists?
-                    if tgt not in self.items:
-                        errors.append(TraceabilityException('''{source} {relation} {target},
-                                      but {target} is not known'''.format(source=itemid,
-                                                                          relation=relation,
-                                                                          target=tgt),
-                                      item.get_document()))
-                        continue
-                    # Reverse relation exists?
-                    target = self.get_item(tgt)
-                    if itemid not in target.iter_targets(rev_relation):
-                        errors.append(TraceabilityException('''No automatic reverse relation:
-                                      {source} {relation} {target}'''.format(source=tgt,
-                                                                             relation=rev_relation,
-                                                                             target=itemid),
-                                      item.get_document()))
-        if errors:
-            raise MultipleTraceabilityExceptions(errors)
-
-    def __str__(self):
-        '''
-        Convert object to string
-        '''
-        retval = 'Available relations:'
-        for relation in self.relations:
-            reverse = self.get_reverse_relation(relation)
-            retval += '\t{forward}: {reverse}\n'.format(forward=relation, reverse=reverse)
-        for itemid in self.items:
-            retval += str(self.items[itemid])
-        return retval
-
-
-class TraceableItem(object):
+class TraceableItem(TraceableBaseClass):
     '''
     Storage for a traceable documentation item
     '''
 
     STRING_TEMPLATE = 'Item {identification}\n'
+
+    defined_attributes = {}
 
     def __init__(self, itemid, placeholder=False):
         '''
@@ -251,15 +25,11 @@ class TraceableItem(object):
             itemid (str): Item identification
             placeholder (bool): Internal use only
         '''
-        self.id = itemid
+        super(TraceableItem, self).__init__(itemid)
         self.explicit_relations = {}
         self.implicit_relations = {}
+        self.attributes = {}
         self.placeholder = placeholder
-        self.docname = None
-        self.lineno = None
-        self.node = None
-        self.caption = None
-        self.content = None
 
     def update(self, other):
         '''
@@ -267,8 +37,7 @@ class TraceableItem(object):
 
         Store the sum of both objects
         '''
-        if self.id != other.id:
-            raise ValueError('Update error {old} vs {new}'.format(old=self.id, new=other.id))
+        super(TraceableItem, self).update(other)
         for relation in other.explicit_relations.keys():
             if relation not in self.explicit_relations:
                 self.explicit_relations[relation] = []
@@ -278,27 +47,10 @@ class TraceableItem(object):
                 self.implicit_relations[relation] = []
             self.implicit_relations[relation].extend(other.implicit_relations[relation])
         # Remainder of fields: update if they improve quality of the item
+        for attr in other.attributes.keys():
+            self.add_attribute(attr, other.attributes[attr], False)
         if not other.placeholder:
             self.placeholder = False
-        if other.docname is not None:
-            self.docname = other.docname
-        if other.lineno is not None:
-            self.lineno = other.lineno
-        if other.node is not None:
-            self.node = other.node
-        if other.caption is not None:
-            self.caption = other.caption
-        if other.content is not None:
-            self.content = other.content
-
-    def get_id(self):
-        '''
-        Getter for item identification
-
-        Returns:
-            str: item identification
-        '''
-        return self.id
 
     def is_placeholder(self):
         '''
@@ -308,89 +60,6 @@ class TraceableItem(object):
             bool: True if the item is a placeholder, false otherwise.
         '''
         return self.placeholder
-
-    def set_document(self, docname, lineno=0):
-        '''
-        Set location in document
-
-        Args:
-            docname (str): Path to docname
-            lineno (int): Line number in given document
-        '''
-        self.docname = docname
-        self.lineno = lineno
-
-    def get_document(self):
-        '''
-        Get location in document
-
-        Returns:
-            str: Path to docname
-        '''
-        return self.docname
-
-    def get_line_number(self):
-        '''
-        Get line number in document
-
-        Returns:
-            int: Line number in given document
-        '''
-        return self.lineno
-
-    def bind_node(self, node):
-        '''
-        Bind to node
-
-        Args:
-            node (node): Docutils node object
-        '''
-        self.node = node
-
-    def get_node(self):
-        '''
-        Get the node to which the object is bound
-
-        Returns:
-            node: Docutils node object
-        '''
-        return self.node
-
-    def set_caption(self, caption):
-        '''
-        Set short description of the item
-
-        Args:
-            caption (str): Short description of the item
-        '''
-        self.caption = caption
-
-    def get_caption(self):
-        '''
-        Get short description of the item
-
-        Returns:
-            str: Short description of the item
-        '''
-        return self.caption
-
-    def set_content(self, content):
-        '''
-        Set content of the item
-
-        Args:
-            content (str): Content of the item
-        '''
-        self.content = content
-
-    def get_content(self):
-        '''
-        Get content of the item
-
-        Returns:
-            str: Content of the item
-        '''
-        return self.content
 
     def _add_target(self, database, relation, target):
         '''
@@ -479,7 +148,7 @@ class TraceableItem(object):
 
     def iter_targets(self, relation, explicit=True, implicit=True):
         '''
-        Get a sorted list of targets to other traceable item(s)
+        Get a naturally sorted list of targets to other traceable item(s)
 
         Args:
             relation (str): Name of the relation
@@ -493,24 +162,112 @@ class TraceableItem(object):
         if implicit is True:
             if relation in self.implicit_relations.keys():
                 relations.extend(self.implicit_relations[relation])
-        relations.sort()
-        return relations
+        return natsorted(relations)
 
     def iter_relations(self):
         '''
-        Iterate over available relations: sorted
+        Iterate over available relations: naturally sorted
 
         Returns:
             Sorted iterator over available relations in the item
         '''
-        return sorted(list(self.explicit_relations) + list(self.implicit_relations.keys()))
+        return natsorted(list(self.explicit_relations) + list(self.implicit_relations.keys()))
+
+    @staticmethod
+    def define_attribute(attr):
+        '''
+        Define a attribute that can be assigned to TraceableItems
+
+        Args:
+            attr (TraceableAttribute): Attribute
+        '''
+        TraceableItem.defined_attributes[attr.get_id()] = attr
+
+    def add_attribute(self, attr, value, overwrite=True):
+        '''
+        Add an attribute key-value pair to the traceable item
+
+        Note:
+            The given attribute value is compared against defined attribute possibilities. When the attribute
+            value doesn't match the defined regex, an exception is thrown.
+
+        Args:
+            attr (str): Name of the attribute
+            value (str): Value of the attribute
+            overwrite(boolean): Overwrite existing attribute value, if any
+        '''
+        if not attr or not value or attr not in TraceableItem.defined_attributes:
+            raise TraceabilityException('item {item} has invalid attribute ({attr}={value})'.format(item=self.get_id(),
+                                                                                                    attr=attr,
+                                                                                                    value=value),
+                                        self.get_document())
+        if not TraceableItem.defined_attributes[attr].can_accept(value):
+            raise TraceabilityException('item {item} attribute does not match defined attributes ({attr}={value})'
+                                        .format(item=self.get_id(), attr=attr, value=value),
+                                        self.get_document())
+        if overwrite or attr not in self.attributes:
+            self.attributes[attr] = value
+
+    def remove_attribute(self, attr):
+        '''
+        Removes an attribute key-value pair from the traceable item
+
+        Args:
+            attr (str): Name of the attribute
+        '''
+        if not attr:
+            raise TraceabilityException('item {item} cannot remove invalid attribute {attr}'.format(item=self.get_id(),
+                                                                                                    attr=attr),
+                                        self.get_document())
+        del self.attributes[attr]
+
+    def get_attribute(self, attr):
+        '''
+        Get the value of an attribute from the traceable item
+
+        Args:
+            attr (str): Name of the attribute
+        Returns:
+            Value matching the given attribute key, or '' if attribute does not exist
+        '''
+        value = ''
+        if attr in self.attributes:
+            value = self.attributes[attr]
+        return value
+
+    def get_attributes(self, attrs):
+        '''
+        Get the values of a list of attributes from the traceable item
+
+        Args:
+            attr (list): List of names of the attribute
+        Returns:
+            List of values matching the given attributes, or [] if attributes do not exist
+        '''
+        value = []
+        if attrs:
+            for attr in attrs:
+                value.append(self.get_attribute(attr))
+        return value
+
+    def iter_attributes(self):
+        '''
+        Iterate over available attributes: naturally sorted
+
+        Returns:
+            Sorted iterator over available attributes in the item
+        '''
+        return natsorted(list(self.attributes))
 
     def __str__(self, explicit=True, implicit=True):
         '''
         Convert object to string
         '''
-        retval = self.STRING_TEMPLATE.format(identification=self.get_id())
+        retval = TraceableItem.STRING_TEMPLATE.format(identification=self.get_id())
         retval += '\tPlaceholder: {placeholder}\n'.format(placeholder=self.is_placeholder())
+        for attribute in self.attributes:
+            retval += '\tAttribute {attribute} = {value}\n'.format(attribute=attribute,
+                                                                   value=self.attributes[attribute])
         for relation in self.explicit_relations:
             retval += '\tExplicit {relation}\n'.format(relation=relation)
             for tgtid in self.explicit_relations[relation]:
@@ -521,16 +278,84 @@ class TraceableItem(object):
                 retval += '\t\t{target}\n'.format(target=tgtid)
         return retval
 
+    def is_match(self, regex):
+        '''
+        Check if item matches a given regular expression
+
+        Args:
+            - regex (str): Regex to match the given item against
+        Returns:
+            (boolean) True if the given regex matches the item identification
+        '''
+        return re.match(regex, self.get_id())
+
+    def attributes_match(self, attributes):
+        '''
+        Check if item matches a given set of attributes
+
+        Args:
+            - attributes (dict): Dictionary with attribute-regex pairs to match the given item against
+        Returns:
+            (boolean) True if the given attributes match the item attributes
+        '''
+        for attr in attributes.keys():
+            if not re.match(attributes[attr], self.get_attribute(attr)):
+                return False
+        return True
+
+    def is_related(self, relations, targetid):
+        '''
+        Check if a given item is related using a list of relationships
+
+        Args:
+            - relations (list): list of relations
+            - targetid (str): id of the target item
+        Returns:
+            (boolean) True if given item is related through the given relationships, false otherwise
+        '''
+        related = False
+        for relation in relations:
+            if targetid in self.iter_targets(relation, explicit=True, implicit=True):
+                related = True
+        return related
+
+    def to_dict(self):
+        '''
+        Export to dictionary
+
+        Returns:
+            (dict) Dictionary representation of the object
+        '''
+        data = {}
+        if not self.is_placeholder():
+            data = super(TraceableItem, self).to_dict()
+            data['id'] = self.get_id()
+            caption = self.get_caption()
+            if caption:
+                data['caption'] = caption
+            data['document'] = self.docname
+            data['line'] = self.lineno
+            data['attributes'] = self.attributes
+            data['targets'] = {}
+            for relation in self.iter_relations():
+                tgts = self.iter_targets(relation)
+                if tgts:
+                    data['targets'][relation] = tgts
+        return data
+
     def self_test(self):
         '''
         Perform self test on collection content
         '''
+        super(TraceableItem, self).self_test()
         # Item should not be a placeholder
         if self.is_placeholder():
             raise TraceabilityException('item {item} is not defined'.format(item=self.get_id()), self.get_document())
-        # Item should hold a reference to a document
-        if self.get_document() is None:
-            raise TraceabilityException('item {item} has no reference to source document'.format(item=self.get_id()))
+        # Item's attributes should be valid
+        for attribute in self.iter_attributes():
+            if not self.attributes[attribute]:
+                raise TraceabilityException('item {item} has invalid attribute value for {attribute}'
+                                            .format(item=self.get_id(), attribute=attribute))
         # Targets should have no duplicates
         for relation in self.iter_relations():
             tgts = self.iter_targets(relation)

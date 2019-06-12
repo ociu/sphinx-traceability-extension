@@ -20,6 +20,7 @@ Saying hello
 Saying goodbye
 --------------
 .. item:: SRS_0002 Software saying goodbye
+   :fulfills: SYS_0002
 
    The systems will say goodbye
 

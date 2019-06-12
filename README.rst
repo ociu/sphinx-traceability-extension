@@ -1,38 +1,38 @@
-.. image:: https://img.shields.io/badge/License-GPL%20v3-blue.svg
+.. image:: https://img.shields.io/badge/License-GPL%20v3-blue.png
     :target: https://www.gnu.org/licenses/gpl-3.0
     :alt: GPL3 License
 
-.. image:: https://badge.fury.io/py/mlx.traceability.svg
+.. image:: https://badge.fury.io/py/mlx.traceability.png
     :target: https://badge.fury.io/py/mlx.traceability
     :alt: Pypi packaged release
 
-.. image:: https://travis-ci.org/melexis/sphinx-traceability-extension.svg?branch=master
+.. image:: https://travis-ci.org/melexis/sphinx-traceability-extension.png?branch=master
     :target: https://travis-ci.org/melexis/sphinx-traceability-extension
     :alt: Build status
 
-.. image:: https://codecov.io/gh/melexis/sphinx-traceability-extension/branch/master/graph/badge.svg
+.. image:: https://img.shields.io/badge/Documentation-published-brightgreen.png
+    :target: https://melexis.github.io/sphinx-traceability-extension/
+    :alt: Documentation
+
+.. image:: https://codecov.io/gh/melexis/sphinx-traceability-extension/coverage.png
     :target: https://codecov.io/gh/melexis/sphinx-traceability-extension
     :alt: Code Coverage
 
-.. image:: https://codeclimate.com/github/melexis/sphinx-traceability-extension/badges/gpa.svg
+.. image:: https://codeclimate.com/github/melexis/sphinx-traceability-extension/badges/gpa.png
     :target: https://codeclimate.com/github/melexis/sphinx-traceability-extension
     :alt: Code Climate Status
 
-.. image:: https://codeclimate.com/github/melexis/sphinx-traceability-extension/badges/issue_count.svg
-    :target: https://codeclimate.com/github/melexis/sphinx-traceability-extension
-    :alt: Issue Count
-
-.. image:: https://requires.io/github/melexis/sphinx-traceability-extension/requirements.svg?branch=master
+.. image:: https://requires.io/github/melexis/sphinx-traceability-extension/requirements.png?branch=master
     :target: https://requires.io/github/melexis/sphinx-traceability-extension/requirements/?branch=master
     :alt: Requirements Status
 
-.. image:: https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat
+.. image:: https://img.shields.io/badge/contributions-welcome-brightgreen.png?style=flat
     :target: https://github.com/melexis/sphinx-traceability-extension/issues
     :alt: Contributions welcome
 
-==========================
-Sphinx Traceability plugin
-==========================
+===================================
+Sphinx Traceability plugin - README
+===================================
 
 Sphinx plugin that allows defining documentation items and relations between those items. Can be used
 as a requirements management tool for e.g. ISO26262 projects.
@@ -72,7 +72,7 @@ The plugin can generate
 Installing
 ----------
 
-.. code-block::
+.. code-block:: bash
 
     pip3 install mlx.traceability
 
@@ -87,7 +87,7 @@ to configure the traceability plugin.
 
 First the plugin needs to be enabled in the *extensions* variable:
 
-.. code-block::
+.. code-block:: bash
 
     extensions = [
         'mlx.traceability.traceability',
@@ -97,13 +97,50 @@ First the plugin needs to be enabled in the *extensions* variable:
 Second the path to the static javascript assets needs to be added to the sphinx ``html_static_path``
 variable.
 
-.. code-block::
+.. code-block:: bash
 
     import os
     import mlx.traceability
 
     html_static_path = [os.path.join(os.path.dirname(mlx.traceability.__file__), 'assets')]
 
+.. _traceability_config_attributes:
+
+Valid attributes
+================
+
+Python variable *traceability_attributes* can be defined in order to override the
+default configuration of the traceability plugin.
+It is a *set* of attribute pairs: the *key* is the name of the attribute (can only be lowercase),
+while the *value* holds the regular expression to which the attribute-value should comply.
+
+Example of attributes and their regular expression:
+
+.. code-block:: python
+
+    traceability_attributes = {
+        'value': '^.*$',
+        'asil': '^(QM|[ABCD])$',
+    }
+
+.. _traceability_config_attribute2string:
+
+Stringification of attributes
+================================
+
+Python variable *traceability_attribute_to_string* can be defined in order to override the
+default configuration of the traceability plugin.
+It is a *set* of attribute stringifications: the *key* is the name of the attribute, while
+the *value* holds the string representation (as to be rendered in html) of the attribute name.
+
+Example of attribute stringification:
+
+.. code-block:: python
+
+    traceability_relationship_to_string = {
+        'value': 'Value',
+        'asil': 'ASIL',
+    }
 
 .. _traceability_config_relations:
 
@@ -113,7 +150,7 @@ Valid relationships
 Python variable *traceability_relationsips* can be defined in order to override the
 default configuration of the traceability plugin.
 It is a *set* of relationship pairs: the *key* is the name of the forward relationship, while the *value* holds the
-name of the corresponding reverse relationship.
+name of the corresponding reverse relationship. Both can only be lowercase.
 
 Relationships with prefix *ext_* are threated in a different way: they are handled as external relationships and don't
 need a reverse relationship.
@@ -181,6 +218,102 @@ Example configuration of enable rendering relationships per item:
 
     traceability_render_relationship_per_item = True
 
+Rendering of attributes per documentation object
+================================================
+
+The rendering of attributes of documentation objects can be controlled through the *boolean* variable
+*traceability_render_attributes_per_item*: rendering of attributes is enabled by setting it to 'True' (the default)
+while a value of 'False' will prevent the attribute list from being rendered.
+
+Example configuration of disabling per item attribute rendering:
+
+.. code-block:: python
+
+    traceability_render_attributes_per_item = False
+
+.. _traceability_config_no_captions:
+
+No captions
+===========
+
+By default, the output will contain hyperlinks to all related items. By default the caption for the target
+item is displayed for each of the related items. The captions can be omitted at configuration level (see
+this section) and at directive level (see e.g. `traceability_usage_item_matrix`_).
+
+No captions for item
+--------------------
+
+Example configuration of disabling the rendering of captions on item:
+
+.. code-block:: python
+
+    traceability_item_no_captions = True
+
+No captions for item-list
+-------------------------
+
+Example configuration of disabling the rendering of captions on item-list:
+
+.. code-block:: python
+
+    traceability_list_no_captions = True
+
+No captions for item-matrix
+---------------------------
+
+Example configuration of disabling the rendering of captions on item-matrix:
+
+.. code-block:: python
+
+    traceability_matrix_no_captions = True
+
+No captions for item-attributes-matrix
+--------------------------------------
+
+Example configuration of disabling the rendering of captions on item-attributes-matrix:
+
+.. code-block:: python
+
+    traceability_attributes_matrix_no_captions = True
+
+No captions for item-tree
+-------------------------
+
+Example configuration of disabling the rendering of captions on item-tree:
+
+.. code-block:: python
+
+    traceability_tree_no_captions = True
+
+.. _traceability_config_export:
+
+Export
+======
+
+The plugin allows exporting the documentation items.
+
+Export to JSON
+--------------
+
+As a preliminary test feature, the plugin allows to export the documentation items to a JSON database. The feature
+can be enabled by setting the configuration to your JSON-file to export to. Note, the JSON-file is overwritten
+(not appended) on every build of the documentation.
+
+.. code-block:: python
+
+    traceability_json_export_path = '/path/to/your/database.json'
+
+As a preliminary feature, the database only contains per documentation item:
+
+- the id,
+- the caption,
+- the document name and line number,
+- the relations to other items.
+
+The actual content (RST content with images, formulas, etc) of the item is currently not stored.
+
+.. note:: Requires sphinx >= 1.6.0
+
 .. _traceability_config_callback:
 
 Callback per item (advanced)
@@ -203,9 +336,6 @@ has this prototype:
 The callback is executed while parsing the documentation item from your rst-file. Note that not all items are
 available at the time this callback executes, the *all_items* parameter is a growing set of documentation objects.
 
-In some project this callback is used to assign a relation to an ASIL attribute (also a documentation
-object) to all of the requirements.
-
 Example of no callback per item:
 
 .. code-block:: python
@@ -222,6 +352,18 @@ The plugin itself holds a default config that can be used for any traceability d
 .. code-block:: python
 
     traceability_callback_per_item = None
+    traceability_attributes = {
+        'value': '^.*$',
+        'asil': '^(QM|[ABCD])$',
+        'aspice': '^[123]$',
+        'status': '^.*$'
+    }
+    traceability_attribute_to_string = {
+        'value': 'Value',
+        'asil': 'ASIL',
+        'aspice': 'ASPICE',
+        'status': 'Status'
+    }
     traceability_relationships = {
         'fulfills': 'fulfilled_by',
         'depends_on': 'impacts_on',
@@ -265,9 +407,11 @@ per documentation object:
 
     sys.path.insert(0, os.path.abspath('<path_to_process_submodule>/config'))
 
+    from traceability_config import swcc_traceability_attributes
     from traceability_config import swcc_traceability_relationships
     from traceability_config import swcc_traceability_relationship_to_string
 
+    traceability_attributes = swcc_traceability_attributes
     traceability_relationships = swcc_traceability_relationships
     traceability_relationship_to_string = swcc_traceability_relationship_to_string
     traceability_render_relationship_per_item = False
@@ -287,7 +431,7 @@ By default sphinx (*sphinx-build*) performs an incremental build: it only parses
 new output for changed files. As this plugin generates automatic reverse relations, the incremental build option
 of sphinx needs to be disabled. This can be done using the *-E* option:
 
-.. code-block::
+.. code-block:: bash
 
     sphinx-build -E <other_options>
 
@@ -308,18 +452,26 @@ Defining documentation items
 
 Documentation items can be defined using the *item* directive, specifying:
 
-- the name (id) of the documenation item
+- the name (id) of the documentation item
 - caption or short description of the documentation item
+- attributes for the documentation item
 - internal/external relationships to other documentation items (details in next paragraph)
 - content of documentation item including any rst content including text, images, formulas, code-blocks, etc.
 
 .. code-block:: rest
 
     .. item:: SWRQT-MY_FIRST_REQUIREMENT Caption of my first requirement
+        :value: 400
+        :status: Approved
         :validated_by: ITEST-MY_FIRST_INTEGRATION_TEST
         :ext_polarion_reference: project_x:workitem_y
+        :nocaptions:
 
         According to the Polarion reference, the software **shall** implement my first requirement.
+
+Attributes can be added to the item, using the `configured attribute keys <traceability_default_config>`_
+(e.g. *value* in the above example). The content of the attribute is threated as a single string and should
+match the regular expression in configuration.
 
 The relations to other documentation items can be specified as:
 
@@ -332,6 +484,44 @@ The relations to other documentation items can be specified as:
         :validated_by:
             ITEST-MY_FIRST_INTEGRATION_TEST
             ITEST-MY_SECOND_INTEGRATION_TEST
+
+The output will contain hyperlinks to all related items. By default the caption for the target item is displayed for
+each of these related items. With the option *nocaptions* these captions can be omited.
+
+.. _adding_relations:
+
+Adding relations outside of the item definitions
+================================================
+
+In some cases, it's useful to add relations outside of the definition of the items
+involved. In that case, you can use the ``item-link`` directive as follows
+
+.. code-block:: rest
+
+    .. item-link::
+        :sources: RQT1 RQT2
+        :targets: TST3 TST4 TST5
+        :type: validates
+
+This directive has no representation in the documentation build output. It will
+just add an additional relationship to the items mentioned in ``sources`` and
+``targets``
+
+Adding description to attributes
+================================
+
+Section `traceability_config_attributes`_ explain how attributes can be added to the configuration. It is possible
+to add content to the attributes. A detailed description can be added to a attribute definition:
+
+- the name (id) of the attribute, needs to match the configured attribute. This name is not case sensitive.
+- caption or short description of the attribute
+- content of attribute including any rst content including text, images, formulas, code-blocks, etc.
+
+.. code-block:: rest
+
+    .. item-attribute:: status The status of a requirement
+
+        The status of the requirement explains whether it is *draft*, *under-review*, *approved* or *invalid*.
 
 .. _traceability_usage_item_linking:
 
@@ -355,9 +545,60 @@ A flat list of documentation items can be generated using a python regular expre
 
     .. item-list:: All software requirements
         :filter: SWRQT
+        :status: Appr
+        :nocaptions:
 
-where *SWRQT* (*filter* argument) can be replace by any python regular expression. Documentation items matching
+where *SWRQT* (*filter* argument) can be replaced by any python regular expression. Documentation items matching
 their ID to the given regular expression end up in the list.
+
+where *status* can be replaced by any configured attribute, and *Appr* can be replaced by any python regular
+expression. Documentation items where the *status* attribute matches the given regular expression end up in the list.
+
+By default the caption for every item in the list is shown. By providing the *nocaptions* flag, the
+caption can be omitted. This gives a smaller list, but also less details.
+
+.. _traceability_usage_item_attributes_matrix:
+
+Matrix with attributes of documentation items
+=============================================
+
+A matrix listing the attributes of documentation items can be generated using:
+
+.. code-block:: rest
+
+    .. item-attributes-matrix:: Attributes for requirements
+        :filter: SWRQT
+        :status: Appr
+        :attributes: status
+        :sort: status
+        :reverse:
+        :nocaptions:
+
+where the *filter* argument can be replaced by any python regular expression. Documentation items matching
+their ID to the given regular expression end up in the list.
+
+where *status* can be replaced by any configured attribute, and *Appr* can be replaced by any python regular
+expression. Documentation items where the *status* attribute matches the given regular expression end up in the list.
+
+where *attributes* argument is a space-separated list of attributes that should be matched in the matrix.
+
+Above arguments can be avoided, or left empty, in which case the table will contain all attributes for all
+documentation items.
+
+Documentation items matching their ID to the given *filter* regular expression end up in as rows in the
+generated table. The matching attribute values end up as columns in the generated table. Documentation items
+that don't have a value for a certain attribute will have an empty cell at the corresponding location.
+
+By default the caption for every item in the table is shown. By providing the *nocaptions* flag, the
+caption can be omitted. This gives a smaller table, but also less details.
+
+By default items are sorted naturally based on their name. With the *sort* argument it is possible to sort on one
+or more attribute values alphabetically. When providing multiple attributes on which to sort, the attribute keys are
+space separated. With the *reverse* argument, the sorting is reversed.
+
+Optionally, the *class* attribute can be specified, to customize table output, especially useful when rendering to
+LaTeX.  Normally the *longtable* class is used when the number of rows is greater than 30 which allows long tables to
+span multiple pages. By setting *class* to *longtable* manually you can force the use of this environment.
 
 .. _traceability_usage_item_matrix:
 
@@ -371,12 +612,20 @@ A traceability matrix of documentation items can be generated using:
     .. item-matrix:: Requirements to test case description traceability
         :source: SWRQT
         :target: [IU]TEST
+        :status: Appr
         :sourcetitle: Software requirements
         :targettitle: Integration and unit test cases
         :type: validated_by
+        :nocaptions:
         :stats:
 
-where the *source* and *target* arguments can be replaced by any python regular expression. The *type* argument
+where the *source* and *target* arguments can be replaced by any python regular expression.
+
+where *status* can be replaced by any configured attribute, and *Appr* can be replaced by any python regular
+expression. Only documentation items where the *status* attribute matches the given regular expression end up in
+the *source* part of the matrix. The attribute value is **not** used as a filter on the *target* part.
+
+The *type* argument
 is a space-separated list of relationships that should be matched in the matrix. The *sourcetitle* and *targettitle*
 arguments are the titles of the columns in the generated matrix.
 
@@ -384,16 +633,61 @@ Documentation items matching their ID to the given *source* regular expression e
 generated table. Documentation items matching their ID to the given *target* regular expression with a matching
 relationship (see *type* argument) will end up in the right column of the generated table.
 
+By default the caption for every item in the table is shown. By providing the *nocaptions* flag, the
+caption can be omitted. This gives a smaller table, but also less details.
+
 By providing the *stats* flag, some statistics (coverage percentage) are calculated and displayed above the
 matrix. The plugin counts the number of items having a target item in the target-column (=covered or allocated),
 and the number of items having no target in the target-column (=not covered or allocated). And calculates a
 coverage/allocation percentage from these counts. If the *stats* flag is not given, this percentage is not
 displayed.
 
+Optionally, the *class* attribute can be specified, to customize table output, especially useful when rendering to
+LaTeX.  Normally the *longtable* class is used when the number of rows is greater than 30 which allows long tables to
+span multiple pages. By setting *class* to *longtable* manually you can force the use of this environment.
+
+.. _traceability_usage_2d_matrix:
+
+2D-matrix of documentation items
+================================
+
+A 2D-matrix of documentation items can be generated using:
+
+.. code-block:: rest
+
+    .. item-2d-matrix:: Requirements to test case description traceability
+        :source: SWRQT
+        :target: [IU]TEST
+        :status: Appr
+        :hit: x
+        :miss:
+        :type: validated_by
+
+where the *source* and *target* arguments can be replaced by any python regular expression.
+
+where *status* can be replaced by any configured attribute, and *Appr* can be replaced by any python regular
+expression. Only documentation items where the *status* attribute matches the given regular expression end up in
+the *source* part of the matrix. The attribute value is **not** used as a filter on the *target* part.
+
+The *type* argument is a space-separated list of relationships that should be matched in the matrix.
+
+Documentation items matching their ID to the given *source* regular expression end up as columns of the
+generated table. Documentation items matching their ID to the given *target* regular expression end up as
+rows of the generated table. Where source and target items have a matching relationship (see *type* argument)
+an 'x' will be placed in the cell at co-ordinates of source/target.
+
+Captions for items in the 2D table are never shown, as it would give a too heavy loaded table.
+
+Optionally, the *class* attribute can be specified, to customize table output, especially useful when rendering to
+LaTeX.  Normally the *longtable* class is used when the number of rows is greater than 30 which allows long tables to
+span multiple pages. By setting *class* to *longtable* manually you can force the use of this environment.
+
 .. _traceability_usage_item_tree:
 
 Documentation items tree-view
 =============================
+
+Note: this feature is not supported when building for latex/pdf.
 
 A tree-view of documentation items can be generated using:
 
@@ -402,7 +696,9 @@ A tree-view of documentation items can be generated using:
     .. item-tree:: Requirements tree view
         :top: SWRQT
         :top_relation_filter: depends_on
+        :status: Appr
         :type: impacts_on validated_by
+        :nocaptions:
 
 where the *top* argument can be replaced by any python regular expression. The *top_relation_filter* and *type* arguments
 are space-separated lists of relationships.
@@ -411,6 +707,10 @@ The directive generates an expandable tree of links to documentation items. A ne
 with at the top level, the top level documentation items. These are the ones matching their ID to the *top*
 regular expression, and not having any relation of *top_relation_filter* kind to a documentation item matching the same
 *top* regular expression against its ID.
+
+The *status* can be replaced by any configured attribute, and *Appr* can be replaced by any python regular
+expression. Only documentation items where the *status* attribute matches the given regular expression end up in
+the tree.
 
 Going deeper down this nested bullet list, the items relationships are checked: if there is a *type*
 relationship (*type* is a space seperated list of relationships) it gets added as a one-level-deeper item in
@@ -421,6 +721,9 @@ the nested bullet list. This action is repeated recursively.
     The *type* is a list of relationships, which cannot hold the forward and reverse relationship of a pair.
     This would give endless repetition of the same nesting, and an endless recursion in python. The plugin
     checks the *item-tree* directives for this mistake!
+
+By default the caption for every item in the tree is shown. By providing the *nocaptions* flag, the
+caption can be omitted. This gives a smaller tree, but also less details.
 
 .. _traceability_process:
 
