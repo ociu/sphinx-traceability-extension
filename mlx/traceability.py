@@ -9,11 +9,12 @@ See readme for more details.
 
 from __future__ import print_function
 import re
-from docutils.parsers.rst import Directive
+import matplotlib.pyplot as plt
 from sphinx.roles import XRefRole
 from sphinx.util.nodes import make_refnode
 from sphinx.environment import NoUri
 from sphinx.builders.latex import LaTeXBuilder
+from docutils.parsers.rst import Directive
 from docutils import nodes
 from docutils.parsers.rst import directives
 from docutils.utils import get_source_line
@@ -939,7 +940,7 @@ def process_item_nodes(app, doctree, fromdocname):
         node.replace_self(top_node)
 
     # Item piechart:
-    # Very similar to item-matrix: but in stead of creating a table, count the empty cells in the right column,
+    # Very similar to item-matrix: but instead of creating a table, count the empty cells in the right column,
     # and generate piechart with coverage percentages.
     # Only source and target items matching respective regexp shall be included
     for node in doctree.traverse(ItemPieChart):
@@ -954,6 +955,7 @@ def process_item_nodes(app, doctree, fromdocname):
         relationships = node['type']
         if not relationships:
             relationships = env.traceability_collection.iter_relations()
+        all_item_ids = env.traceability_collection.get_items('')
         for source_id in all_item_ids:
             source_item = env.traceability_collection.get_item(source_id)
             # placeholders don't end up in any item-piechart (less duplicate warnings for missing items)
@@ -974,13 +976,27 @@ def process_item_nodes(app, doctree, fromdocname):
                     count_covered += 1
                 count_total += 1
 
-        percentage = int(100 * count_covered / count_total)
+        percentage = round(100 * count_covered / count_total)
         disp = 'Statistics: {cover} out of {total} covered: {pct}%'.format(cover=count_covered,
                                                                            total=count_total,
                                                                            pct=percentage)
         # TODO: generate and include a pie-chart
+        # https://stackoverflow.com/questions/6170246/how-do-i-use-matplotlib-autopct
+        labels = 'Covered', 'Not covered'
+        sizes = [count_covered, count_total - count_covered]
+        explode = (0.1, 0)
+        fig, axes = plt.subplots()  # 3x2 inches
+        axes.pie(sizes, explode=explode, labels=labels, autopct='%.0f%%', shadow=False, startangle=90)
+        axes.axis('equal')
+        fig.savefig("doc/piechart.png", format='png')
+        env.images['piechart.png'] = ['doc', 'piechart.png']  # set path in build env
+
         p_node = nodes.paragraph()
         p_node += nodes.Text(disp)
+        image_node = nodes.image()
+        image_node['uri'] = 'piechart.png'
+        image_node['candidates'] = '*'  # look at uri key for source path
+        p_node += image_node
         top_node += p_node
         node.replace_self(top_node)
 
