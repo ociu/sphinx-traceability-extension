@@ -1391,7 +1391,7 @@ def setup(app):
                           'validated_by': 'Validated by',
                           'trace': 'Traces',
                           'backtrace': 'Back traces',
-                          'ext_toolname': 'Referento to toolname'},
+                          'ext_toolname': 'Reference to toolname'},
                          'env')
 
     # Configuration for translating external relationship to url

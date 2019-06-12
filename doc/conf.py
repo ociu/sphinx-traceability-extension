@@ -11,10 +11,14 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys, os, subprocess
-import mlx.traceability
+import errno
+import os
+import subprocess
+import sys
 
+import mlx.traceability
 from pkg_resources import get_distribution
+
 pkg_version = get_distribution('mlx.traceability').version
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -200,8 +204,8 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'traceability.tex', u'Traceability sphinx plugin documentation',
-   u'Stein Heselmans', 'manual'),
+    ('index', 'traceability.tex', u'Traceability sphinx plugin documentation',
+     u'Stein Heselmans', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -244,9 +248,9 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'traceability', u'Traceability for sphinx documentation',
-   u'Stein Heselmans', 'traceability', 'One line description of project.',
-   'Miscellaneous'),
+    ('index', 'traceability', u'Traceability for sphinx documentation',
+     u'Stein Heselmans', 'traceability', 'One line description of project.',
+     'Miscellaneous'),
 ]
 
 # Documents to append as an appendix to all manuals.
@@ -351,7 +355,7 @@ traceability_json_export_path = '_build/exported_items.json'
 # confirm we have plantuml in the path
 if 'nt' in os.name:
     plantuml_path = subprocess.check_output(["where", "/F", "plantuml.jar"])
-    if not plantuml_path :
+    if not plantuml_path:
         print("Can't find 'plantuml.jar' file.")
         print("You need to add path to 'plantuml.jar' file to your PATH variable.")
         sys.exit(os.strerror(errno.EPERM))
@@ -362,7 +366,7 @@ if 'nt' in os.name:
     plantuml = 'java -jar' + ' ' + plantuml
 else:
     plantuml_path = subprocess.check_output(["whereis", "-u", "plantuml"])
-    if not plantuml_path :
+    if not plantuml_path:
         print("Can't find 'plantuml.jar' file.")
         print("You need to add path to 'plantuml.jar' file to your PATH variable.")
         sys.exit(os.strerror(errno.EPERM))
