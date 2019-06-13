@@ -152,7 +152,7 @@ default configuration of the traceability plugin.
 It is a *set* of relationship pairs: the *key* is the name of the forward relationship, while the *value* holds the
 name of the corresponding reverse relationship. Both can only be lowercase.
 
-Relationships with prefix *ext_* are threated in a different way: they are handled as external relationships and don't
+Relationships with prefix *ext_* are treated in a different way: they are handled as external relationships and don't
 need a reverse relationship.
 
 Example of internal and external relationship pairs:
@@ -236,7 +236,7 @@ Example configuration of disabling per item attribute rendering:
 No captions
 ===========
 
-By default, the output will contain hyperlinks to all related items. By default the caption for the target
+By default, the output will contain hyperlinks to all related items. By default, the caption for the target
 item is displayed for each of the related items. The captions can be omitted at configuration level (see
 this section) and at directive level (see e.g. `traceability_usage_item_matrix`_).
 
@@ -395,9 +395,9 @@ The plugin itself holds a default config that can be used for any traceability d
 
 This default configuration build into the plugin, can be overriden through the conf.py of your project.
 
-For Melexis.SWCC silicon projects, the SWCC process holds a default configuration in the *config/traceability_config.py* file.
-For each of the above configuration variables, the default configuration file holds a variable with *swcc_* prefix.
-Taking the default configuration is as easy as assiging the above configuration value with the *swcc_* variable.
+For Melexis.SWCC silicon projects, the SWCC process holds a default configuration in the *config/traceability_config.py*
+file. For each of the above configuration variables, the default configuration file holds a variable with *swcc_*
+prefix. Taking the default configuration is as easy as assiging the above configuration value with the *swcc_* variable.
 Overriding a configuration is as easy as assigning your own values to a configuration value.
 
 Example of accepting default configuration for relationships, while disabling (override) rendering of relationships
@@ -427,7 +427,7 @@ Usage
 Required sphinx options
 =======================
 
-By default sphinx (*sphinx-build*) performs an incremental build: it only parses the changed files, and generates
+By default, sphinx (*sphinx-build*) performs an incremental build: it only parses the changed files and generates
 new output for changed files. As this plugin generates automatic reverse relations, the incremental build option
 of sphinx needs to be disabled. This can be done using the *-E* option:
 
@@ -470,12 +470,12 @@ Documentation items can be defined using the *item* directive, specifying:
         According to the Polarion reference, the software **shall** implement my first requirement.
 
 Attributes can be added to the item, using the `configured attribute keys <traceability_default_config>`_
-(e.g. *value* in the above example). The content of the attribute is threated as a single string and should
+(e.g. *value* in the above example). The content of the attribute is treated as a single string and should
 match the regular expression in configuration.
 
 The relations to other documentation items can be specified as:
 
-- a space seperated list of item ID's, or
+- a space-separated list of item ID's, or
 - items can be linked to on a newline (tabulated)
 
 .. code-block:: rest
@@ -485,8 +485,8 @@ The relations to other documentation items can be specified as:
             ITEST-MY_FIRST_INTEGRATION_TEST
             ITEST-MY_SECOND_INTEGRATION_TEST
 
-The output will contain hyperlinks to all related items. By default the caption for the target item is displayed for
-each of these related items. With the option *nocaptions* these captions can be omited.
+The output will contain hyperlinks to all related items. By default, the caption for the target item is displayed for
+each of these related items. With the option *nocaptions* these captions can be omitted.
 
 .. _adding_relations:
 
@@ -494,7 +494,7 @@ Adding relations outside of the item definitions
 ================================================
 
 In some cases, it's useful to add relations outside of the definition of the items
-involved. In that case, you can use the ``item-link`` directive as follows
+involved. In that case, you can use the ``item-link`` directive as follows:
 
 .. code-block:: rest
 
@@ -505,17 +505,17 @@ involved. In that case, you can use the ``item-link`` directive as follows
 
 This directive has no representation in the documentation build output. It will
 just add an additional relationship to the items mentioned in ``sources`` and
-``targets``
+``targets``.
 
 Adding description to attributes
 ================================
 
 Section `traceability_config_attributes`_ explain how attributes can be added to the configuration. It is possible
-to add content to the attributes. A detailed description can be added to a attribute definition:
+to add content to the attributes. A detailed description can be added to an attribute definition:
 
-- the name (id) of the attribute, needs to match the configured attribute. This name is not case sensitive.
-- caption or short description of the attribute
-- content of attribute including any rst content including text, images, formulas, code-blocks, etc.
+- The name (id) of the attribute needs to match the configured attribute. This name is not case sensitive.
+- Caption or short description of the attribute.
+- Content of attribute including any rst content including text, images, formulas, code-blocks, etc.
 
 .. code-block:: rest
 
@@ -539,7 +539,7 @@ Manual links in RST documentation to any of the documentation items is possible 
 Flat list of documentation items
 ================================
 
-A flat list of documentation items can be generated using a python regular expression filter:
+A flat list of documentation items can be generated using a Python regular expression filter:
 
 .. code-block:: rest
 
@@ -548,13 +548,13 @@ A flat list of documentation items can be generated using a python regular expre
         :status: Appr
         :nocaptions:
 
-where *SWRQT* (*filter* argument) can be replaced by any python regular expression. Documentation items matching
+where *SWRQT* (*filter* argument) can be replaced by any Python regular expression. Documentation items matching
 their ID to the given regular expression end up in the list.
 
-where *status* can be replaced by any configured attribute, and *Appr* can be replaced by any python regular
+where *status* can be replaced by any configured attribute, and *Appr* can be replaced by any Python regular
 expression. Documentation items where the *status* attribute matches the given regular expression end up in the list.
 
-By default the caption for every item in the list is shown. By providing the *nocaptions* flag, the
+By default, the caption for every item in the list is shown. By providing the *nocaptions* flag, the
 caption can be omitted. This gives a smaller list, but also less details.
 
 .. _traceability_usage_item_attributes_matrix:
@@ -574,10 +574,10 @@ A matrix listing the attributes of documentation items can be generated using:
         :reverse:
         :nocaptions:
 
-where the *filter* argument can be replaced by any python regular expression. Documentation items matching
+where the *filter* argument can be replaced by any Python regular expression. Documentation items matching
 their ID to the given regular expression end up in the list.
 
-where *status* can be replaced by any configured attribute, and *Appr* can be replaced by any python regular
+where *status* can be replaced by any configured attribute, and *Appr* can be replaced by any Python regular
 expression. Documentation items where the *status* attribute matches the given regular expression end up in the list.
 
 where *attributes* argument is a space-separated list of attributes that should be matched in the matrix.
@@ -585,20 +585,20 @@ where *attributes* argument is a space-separated list of attributes that should 
 Above arguments can be avoided, or left empty, in which case the table will contain all attributes for all
 documentation items.
 
-Documentation items matching their ID to the given *filter* regular expression end up in as rows in the
-generated table. The matching attribute values end up as columns in the generated table. Documentation items
+Documentation items matching their ID to the given *filter* regular expression end up as rows in the generated table.
+The matching attribute values end up as columns in the generated table. Documentation items
 that don't have a value for a certain attribute will have an empty cell at the corresponding location.
 
-By default the caption for every item in the table is shown. By providing the *nocaptions* flag, the
+By default, the caption for every item in the table is shown. By providing the *nocaptions* flag, the
 caption can be omitted. This gives a smaller table, but also less details.
 
-By default items are sorted naturally based on their name. With the *sort* argument it is possible to sort on one
-or more attribute values alphabetically. When providing multiple attributes on which to sort, the attribute keys are
-space separated. With the *reverse* argument, the sorting is reversed.
+By default, items are sorted naturally based on their name. With the *sort* argument it is possible to sort on one
+or more attribute values alphabetically. When providing multiple attributes to sort on, the attribute keys are
+space-separated. With the *reverse* argument, the sorting is reversed.
 
-Optionally, the *class* attribute can be specified, to customize table output, especially useful when rendering to
-LaTeX.  Normally the *longtable* class is used when the number of rows is greater than 30 which allows long tables to
-span multiple pages. By setting *class* to *longtable* manually you can force the use of this environment.
+Optionally, the *class* attribute can be specified to customize table output, especially useful when rendering to
+LaTeX. Normally the *longtable* class is used when the number of rows is greater than 30 which allows long tables to
+span multiple pages. By setting *class* to *longtable* manually, you can force the use of this environment.
 
 .. _traceability_usage_item_matrix:
 
@@ -619,9 +619,9 @@ A traceability matrix of documentation items can be generated using:
         :nocaptions:
         :stats:
 
-where the *source* and *target* arguments can be replaced by any python regular expression.
+where the *source* and *target* arguments can be replaced by any Python regular expression.
 
-where *status* can be replaced by any configured attribute, and *Appr* can be replaced by any python regular
+where *status* can be replaced by any configured attribute, and *Appr* can be replaced by any Python regular
 expression. Only documentation items where the *status* attribute matches the given regular expression end up in
 the *source* part of the matrix. The attribute value is **not** used as a filter on the *target* part.
 
@@ -633,7 +633,7 @@ Documentation items matching their ID to the given *source* regular expression e
 generated table. Documentation items matching their ID to the given *target* regular expression with a matching
 relationship (see *type* argument) will end up in the right column of the generated table.
 
-By default the caption for every item in the table is shown. By providing the *nocaptions* flag, the
+By default, the caption for every item in the table is shown. By providing the *nocaptions* flag, the
 caption can be omitted. This gives a smaller table, but also less details.
 
 By providing the *stats* flag, some statistics (coverage percentage) are calculated and displayed above the
@@ -642,9 +642,9 @@ and the number of items having no target in the target-column (=not covered or a
 coverage/allocation percentage from these counts. If the *stats* flag is not given, this percentage is not
 displayed.
 
-Optionally, the *class* attribute can be specified, to customize table output, especially useful when rendering to
-LaTeX.  Normally the *longtable* class is used when the number of rows is greater than 30 which allows long tables to
-span multiple pages. By setting *class* to *longtable* manually you can force the use of this environment.
+Optionally, the *class* attribute can be specified to customize table output, especially useful when rendering to
+LaTeX. Normally the *longtable* class is used when the number of rows is greater than 30 which allows long tables to
+span multiple pages. By setting *class* to *longtable* manually, you can force the use of this environment.
 
 .. _traceability_usage_2d_matrix:
 
@@ -663,9 +663,9 @@ A 2D-matrix of documentation items can be generated using:
         :miss:
         :type: validated_by
 
-where the *source* and *target* arguments can be replaced by any python regular expression.
+where the *source* and *target* arguments can be replaced by any Python regular expression.
 
-where *status* can be replaced by any configured attribute, and *Appr* can be replaced by any python regular
+where *status* can be replaced by any configured attribute, and *Appr* can be replaced by any Python regular
 expression. Only documentation items where the *status* attribute matches the given regular expression end up in
 the *source* part of the matrix. The attribute value is **not** used as a filter on the *target* part.
 
@@ -678,9 +678,9 @@ an 'x' will be placed in the cell at co-ordinates of source/target.
 
 Captions for items in the 2D table are never shown, as it would give a too heavy loaded table.
 
-Optionally, the *class* attribute can be specified, to customize table output, especially useful when rendering to
-LaTeX.  Normally the *longtable* class is used when the number of rows is greater than 30 which allows long tables to
-span multiple pages. By setting *class* to *longtable* manually you can force the use of this environment.
+Optionally, the *class* attribute can be specified to customize table output, especially useful when rendering to
+LaTeX. Normally the *longtable* class is used when the number of rows is greater than 30 which allows long tables to
+span multiple pages. By setting *class* to *longtable* manually, you can force the use of this environment.
 
 .. _traceability_usage_item_tree:
 
@@ -700,29 +700,29 @@ A tree-view of documentation items can be generated using:
         :type: impacts_on validated_by
         :nocaptions:
 
-where the *top* argument can be replaced by any python regular expression. The *top_relation_filter* and *type* arguments
-are space-separated lists of relationships.
+where the *top* argument can be replaced by any Python regular expression. The *top_relation_filter* and *type*
+arguments are space-separated lists of relationships.
 
 The directive generates an expandable tree of links to documentation items. A nested bullet list is generated
-with at the top level, the top level documentation items. These are the ones matching their ID to the *top*
-regular expression, and not having any relation of *top_relation_filter* kind to a documentation item matching the same
+with, at the top level, the top level documentation items. These are the ones matching their ID to the *top*
+regular expression and not having any relation of *top_relation_filter* kind to a documentation item matching the same
 *top* regular expression against its ID.
 
-The *status* can be replaced by any configured attribute, and *Appr* can be replaced by any python regular
+The *status* can be replaced by any configured attribute, and *Appr* can be replaced by any Python regular
 expression. Only documentation items where the *status* attribute matches the given regular expression end up in
 the tree.
 
-Going deeper down this nested bullet list, the items relationships are checked: if there is a *type*
-relationship (*type* is a space seperated list of relationships) it gets added as a one-level-deeper item in
+Going deeper down this nested bullet list, the item's relationships are checked: if there is a *type*
+relationship (*type* is a space-separated list of relationships), it gets added as a one-level-deeper item in
 the nested bullet list. This action is repeated recursively.
 
 .. warning::
 
     The *type* is a list of relationships, which cannot hold the forward and reverse relationship of a pair.
-    This would give endless repetition of the same nesting, and an endless recursion in python. The plugin
+    This would give endless repetition of the same nesting and endless recursion in Python. The plugin
     checks the *item-tree* directives for this mistake!
 
-By default the caption for every item in the tree is shown. By providing the *nocaptions* flag, the
+By default, the caption for every item in the tree is shown. By providing the *nocaptions* flag, the
 caption can be omitted. This gives a smaller tree, but also less details.
 
 .. _traceability_process:
