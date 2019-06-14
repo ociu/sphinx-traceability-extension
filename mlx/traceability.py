@@ -986,8 +986,6 @@ def process_item_nodes(app, doctree, fromdocname):
         title_node += nodes.Text(node['title'])
         admon_node += title_node
         top_node += admon_node
-        count_uncovered = 0
-        count_total = 0
         relationships = env.traceability_collection.iter_relations()
         all_item_ids = env.traceability_collection.get_items('')
 
@@ -1027,11 +1025,8 @@ def process_item_nodes(app, doctree, fromdocname):
                             test_items.append(target_item)
                             linked_attributes[source_id] = list(priorities.keys())[1]  # default is "covered"
                             covered = True
-                if not covered:
-                    count_uncovered += 1
-                elif attribute_id:
+                if covered and attribute_id:
                     covered_items[source_id] = test_items
-                count_total += 1
 
         # link highest priority attribute value of nested relations to source id
         for source_id, test_items in covered_items.items():
@@ -1064,18 +1059,20 @@ def process_item_nodes(app, doctree, fromdocname):
             all_states[priority] = 0
         for attribute in linked_attributes.values():
             all_states[attribute] += 1
-        all_states = {k: v for k, v in all_states.items() if v}  # remove items with count value equal to 0
 
-
+        count_total = len(linked_attributes)
+        count_uncovered = all_states[node['label_set'][0]]
+        count_covered = count_total - count_uncovered
         try:
-            count_covered = count_total - count_uncovered
             percentage = int(100 * count_covered / count_total)
         except ZeroDivisionError:
             percentage = 0
         disp = 'Statistics: {cover} out of {total} covered: {pct}%'.format(cover=count_covered,
                                                                            total=count_total,
-                                                                           pct=percentage)
+                                                                           pct=percentage,)
 
+        # remove items with count value equal to 0
+        all_states = {k: v for k, v in all_states.items() if v}
         # keep case-sensitivity of :priority: arguments in labels of pie chart
         case_sensitive_priorities = node['priority']
         for priority in case_sensitive_priorities:
@@ -1100,7 +1097,7 @@ def process_item_nodes(app, doctree, fromdocname):
         folder_name = path.join('doc', 'images')
         if not path.exists(folder_name):
             mkdir(folder_name)
-        hash_value = str(hash(str(axes.__dict__))).lstrip('-')
+        hash_value = str(hash(str(axes.__dict__))).lstrip('-')  # create hash value based on chart parameters
         file_name = path.join('images', 'piechart' + hash_value + '.png')
         fig.savefig(path.join('doc', file_name), format='png')
         env.images[file_name] = ['_images', path.split(file_name)[-1]]  # store file name in sphinx build env
