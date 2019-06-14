@@ -1599,7 +1599,8 @@ def setup(app):
                          {'value': 'Value',
                           'asil': 'ASIL',
                           'aspice': 'ASPICE',
-                          'status': 'Status',},
+                          'status': 'Status',
+                          'result': 'Result',},
                          'env')
 
     # Create default relationships dictionary. Can be customized in conf.py
