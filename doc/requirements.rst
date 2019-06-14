@@ -30,7 +30,7 @@ Requirements for mlx.traceability
 
     A documentation part shall have a optional brief description.
 
-.. item:: RQT-CONTENT Conten of documentation part
+.. item:: RQT-CONTENT Content of documentation part
     :depends_on: RQT-ITEMIZE
 
     A documentation part shall have optional content. The content shall be parseable reStructured
@@ -106,6 +106,10 @@ Design coverage
     :nocaptions:
     :stats:
 
+.. item-piechart:: Design coverage chart
+    :id_set: RQT DESIGN
+    :label_set: uncovered, covered
+
 Test coverage
 =============
 
@@ -117,3 +121,7 @@ Test coverage
     :nocaptions:
     :stats:
 
+.. item-piechart:: Test coverage chart with test results
+    :id_set: RQT [IU]TEST [IU]TEST_REP
+    :attribute: result
+    :priority: error, FAIL, pass

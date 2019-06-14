@@ -111,6 +111,72 @@ This text is not part of any item
 
     Ai caramba, this should report a warning as the relation kind or attribute does not exist.
 
+Integration tests
+=================
+
+.. item:: ITEST-CAPTION Tests caption
+    :validates: RQT-CAPTION
+
+.. item:: ITEST-AUTO_REVERSE Tests automatic creation of reverse relations
+    :validates: RQT-AUTO_REVERSE
+
+.. item:: ITEST-COVERAGE Tests calculation of coverage for relations between documentation parts.
+    :validates: RQT-COVERAGE
+
+.. item:: ITEST-MATRIX Tests auto-generation of traceability matrix.
+    :validates: RQT-MATRIX
+
+.. item:: ITEST-MATRIX Tests auto-generation of traceability matrix.
+    :validates: RQT-MATRIX
+
+.. item:: ITEST-TREE Tests auto-generation of a traceability tree.
+    :validates: RQT-TREE
+
+.. item:: ITEST-TREE_SCOPE Tests scope of a traceability tree.
+    :validates: RQT-TREE
+
+.. item:: ITEST-ATTRIBUTES_MATRIX Tests overview of attributes on documentation parts
+    :validates: RQT-ATTRIBUTES_MATRIX
+
+.. item:: ITEST-LIST Tests listing of documentation parts
+    :validates: RQT-LIST
+
+.. item:: ITEST-r100 Test a requirement using the ``requirement`` type
+    :validates: r100
+
+Integration test reports
+========================
+
+.. item:: ITEST_REP-CAPTION
+    :depends_on: ITEST-CAPTION
+    :result: fail
+
+.. item:: ITEST_REP-AUTO_REVERSE
+    :depends_on: ITEST-AUTO_REVERSE
+    :result: FAIL
+
+.. item:: ITEST_REP-COVERAGE
+    :depends_on: ITEST-COVERAGE
+    :result: fail
+
+.. item:: ITEST_REP-MATRIX
+    :depends_on: ITEST-MATRIX
+    :result: pass
+
+.. item:: ITEST_REP-TREE
+    :depends_on: ITEST-TREE
+    :result: PASS
+
+.. item:: ITEST_REP-TREE_SCOPE
+    :depends_on: ITEST-TREE_SCOPE
+    :result: ERROR
+
+.. item:: ITEST_REP-ATTRIBUTES_MATRIX
+    :depends_on: ITEST-ATTRIBUTES_MATRIX
+
+.. item:: ITEST_REP-r100
+    :depends_on: ITEST-r100
+
 Attribute details
 =================
 
