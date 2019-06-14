@@ -393,7 +393,7 @@ The plugin itself holds a default config that can be used for any traceability d
     }
     traceability_render_relationship_per_item = False
 
-This default configuration build into the plugin, can be overriden through the conf.py of your project.
+This default configuration built into the plugin, can be overridden through the conf.py of your project.
 
 For Melexis.SWCC silicon projects, the SWCC process holds a default configuration in the *config/traceability_config.py*
 file. For each of the above configuration variables, the default configuration file holds a variable with *swcc_*
