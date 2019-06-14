@@ -9,6 +9,7 @@ See readme for more details.
 
 from __future__ import print_function
 import re
+from os import path, mkdir
 import matplotlib.pyplot as plt
 from sphinx.roles import XRefRole
 from sphinx.util.nodes import make_refnode
@@ -242,7 +243,7 @@ class ItemAttributeDirective(Directive):
     def run(self):
         env = self.state.document.settings.env
 
-        # Convert to lower-case as sphinx only allows lower case arguments (attribute to item directive)
+        # Convert to lower-case as sphinx only allows lowercase arguments (attribute to item directive)
         attrid = self.arguments[0]
         targetnode = nodes.target('', '', ids=[attrid])
         attrnode = ItemAttribute('')
@@ -494,14 +495,24 @@ class ItemMatrixDirective(Directive):
 class ItemPieChartDirective(Directive):
     """
     Directive to generate a piechart for coverage of item cross-references, based on
-    a given set of relationship types.
+    a given set of relationship types. Add a third id to the id_set to label the covered items with an attribute value
+    of this id if there is a relationship between target and nested_target.
+    Use the label_set option to label the existence/absence of a relationship between items of consecutive ids.
+    The first label is used for items of id1 without a relationship to an item of id2. The second label for items with
+    an existing relationship to an item of id2, but not to an item of id3, when used.
+    The third label should only be specified when id3 is specified. This label is used for items with a relationship
+    between all ids, but when the nested target item does not have an attribute value in the priority list, when used.
+    All labels must be comma-separated.
+    The optional attribute option should be used in combination with the priority option, which assigns  a priority to
+    each attribute value you want to see labeled in the chart, high to low. These values must be comma-separated.
 
     Syntax::
 
       .. item-piechart:: title
-         :target: regexp
-         :source: regexp
-         :type: <<relationship>> ...
+         :id_set: source_regexp target_regexp (nested_target_regexp)
+         :label_set: uncovered, covered(, executed)
+         :attribute: <<attribute>>
+         :priority: error, fail, pass ...
 
     """
     # Optional argument: title (whitespace allowed)
@@ -509,9 +520,10 @@ class ItemPieChartDirective(Directive):
     final_argument_whitespace = True
     # Options
     option_spec = {'class': directives.class_option,
-                   'target': directives.unchanged,
-                   'source': directives.unchanged,
-                   'type': directives.unchanged}
+                   'id_set': directives.unchanged,
+                   'label_set': directives.unchanged,
+                   'attribute': directives.unchanged,
+                   'priority': directives.unchanged,}
     # Content disallowed
     has_content = False
 
@@ -524,25 +536,49 @@ class ItemPieChartDirective(Directive):
         if len(self.arguments) > 0:
             item_piechart_node['title'] = self.arguments[0]
 
-        # Process ``target`` & ``source`` options
-        for option in ('target', 'source'):
-            if option in self.options:
-                item_piechart_node[option] = self.options[option]
-            else:
-                item_piechart_node[option] = ''
-
-        # Process ``type`` option, given as a string with relationship types
-        # separated by space. It is converted to a list.
-        if 'type' in self.options:
-            item_piechart_node['type'] = self.options['type'].split()
+        # Process ``id_set`` option
+        if 'id_set' in self.options and len(self.options['id_set']) >= 2:
+            item_piechart_node['id_set'] = self.options['id_set'].split()
         else:
-            item_piechart_node['type'] = []
+            item_piechart_node['id_set'] = []
+            report_warning(env, 'Traceability: Expected at least two arguments in id_set.', env.docname, self.lineno)
 
-        # Check if given relationships are in configuration
-        for rel in item_piechart_node['type']:
-            if rel not in env.traceability_collection.iter_relations():
-                report_warning(env, 'Traceability: unknown relation for item-piechart: %s' % rel,
+        # Process ``label_set`` option
+        default_labels = ['uncovered', 'covered', 'executed']
+        if 'label_set' in self.options:
+            item_piechart_node['label_set'] = self.options['label_set'].split(',')
+            map(lambda x: x.lstrip(), item_piechart_node['label_set'])  # strip whitespace for comma-space-separation
+            if len(item_piechart_node['label_set']) != len(item_piechart_node['id_set']):
+                report_warning(env, 'Traceability: Expected as many labels as ids; resorting to default labels.',
                                env.docname, self.lineno)
+                item_piechart_node['label_set'].extend(
+                    default_labels[len(item_piechart_node['label_set']):len(item_piechart_node['id_set'])])
+        else:
+            id_amount = len(item_piechart_node['id_set'])
+            item_piechart_node['label_set'] = default_labels[:id_amount]  # default labels
+
+        # Process ``attribute`` option
+        if 'attribute' in self.options:
+            if len(item_piechart_node['id_set']) == 3:
+                item_piechart_node['attribute'] = self.options['attribute']
+            else:
+                report_warning(env, 'Traceability: The attribute option is only viable with an id_set with length 3.',
+                               env.docname, self.lineno)
+        else:
+            item_piechart_node['attribute'] = ''
+
+        # Process ``priority`` option
+        if 'priority' in self.options:
+            if not item_piechart_node['attribute']:
+                report_warning(env,
+                               'Traceability: The priority option is only viable in combination with the attribute '
+                               'option.',
+                               env.docname,
+                               self.lineno,)
+            item_piechart_node['priority'] = self.options['priority'].split(', ')
+            map(lambda x: x.lstrip(), item_piechart_node['priority'])  # strip whitespace for comma-space-separation
+        else:
+            item_piechart_node['priority'] = []
 
         return [item_piechart_node]
 
@@ -950,52 +986,130 @@ def process_item_nodes(app, doctree, fromdocname):
         title_node += nodes.Text(node['title'])
         admon_node += title_node
         top_node += admon_node
-        count_covered = 0
+        count_uncovered = 0
         count_total = 0
-        relationships = node['type']
-        if not relationships:
-            relationships = env.traceability_collection.iter_relations()
+        relationships = env.traceability_collection.iter_relations()
         all_item_ids = env.traceability_collection.get_items('')
+
+        # default priority order is 'uncovered', 'covered', 'executed', 'pass', 'fail', 'error'
+        priorities = {}
+        for idx, label in enumerate(node['label_set']):
+            priorities[label] = idx
+        # store priority arguments in reverse order in lowercase for case-insensitivity
+        for idx, attr in enumerate(map(lambda x: x.lower(), node['priority'][::-1]), start=len(node['label_set'])):
+            priorities[attr] = idx
+
+        attribute_name = node['attribute']
+        attribute_id = ''
+        if len(node['id_set']) > 2:
+            attribute_id = node['id_set'][2]
+
+        linked_attributes = {}  # source_id (str): attr_value (str)
+        covered_items = {}  # source_id (str): test_items (list)
+
         for source_id in all_item_ids:
             source_item = env.traceability_collection.get_item(source_id)
             # placeholders don't end up in any item-piechart (less duplicate warnings for missing items)
-            if source_item.is_placeholder() is True:
+            if source_item.is_placeholder():
                 continue
-            if re.match(node['source'], source_id):
+            if re.match(node['id_set'][0], source_id):
                 covered = False
+                test_items = []
+                linked_attributes[source_id] = list(priorities.keys())[0]  # default is "uncovered"
                 for relationship in relationships:
                     tgts = source_item.iter_targets(relationship, True, True)
                     for target_id in tgts:
                         target_item = env.traceability_collection.get_item(target_id)
                         # placeholders don't end up in any item-matrix (less duplicate warnings for missing items)
-                        if not target_item or target_item.is_placeholder() is True:
+                        if not target_item or target_item.is_placeholder():
                             continue
-                        if re.match(node['target'], target_id):
+                        if re.match(node['id_set'][1], target_id):
+                            test_items.append(target_item)
+                            linked_attributes[source_id] = list(priorities.keys())[1]  # default is "covered"
                             covered = True
-                if covered:
-                    count_covered += 1
+                if not covered:
+                    count_uncovered += 1
+                elif attribute_id:
+                    covered_items[source_id] = test_items
                 count_total += 1
 
-        percentage = round(100 * count_covered / count_total)
+        # link highest priority attribute value of nested relations to source id
+        for source_id, test_items in covered_items.items():
+            for covering_item in test_items:
+                for relationship in relationships:
+                    tgts = covering_item.iter_targets(relationship, True, True)
+                    for target_id in tgts:
+                        target_item = env.traceability_collection.get_item(target_id)
+                        # placeholders don't end up in any item-matrix (less duplicate warnings for missing items)
+                        if not target_item or target_item.is_placeholder():
+                            continue
+                        if re.match(attribute_id, target_id):
+                            # case-insensitivity
+                            attribute_value = target_item.get_attribute(attribute_name).lower()
+                            if attribute_value not in priorities.keys():
+                                attribute_value = list(priorities.keys())[2]  # default is "executed"
+
+                            if source_id not in linked_attributes.keys():
+                                linked_attributes[source_id] = attribute_value
+                            else:
+                                # store newly encountered attribute value if it has a higher priority
+                                stored_attribute_priority = priorities[linked_attributes[source_id]]
+                                latest_attribute_priority = priorities[attribute_value]
+                                if latest_attribute_priority > stored_attribute_priority:
+                                    linked_attributes[source_id] = attribute_value
+
+        # initialize dictionary and increment counters for each possible value
+        all_states = {}
+        for priority in priorities.keys():
+            all_states[priority] = 0
+        for attribute in linked_attributes.values():
+            all_states[attribute] += 1
+        all_states = {k: v for k, v in all_states.items() if v}  # remove items with count value equal to 0
+
+
+        try:
+            count_covered = count_total - count_uncovered
+            percentage = int(100 * count_covered / count_total)
+        except ZeroDivisionError:
+            percentage = 0
         disp = 'Statistics: {cover} out of {total} covered: {pct}%'.format(cover=count_covered,
                                                                            total=count_total,
                                                                            pct=percentage)
-        # TODO: generate and include a pie-chart
-        # https://stackoverflow.com/questions/6170246/how-do-i-use-matplotlib-autopct
-        labels = 'Covered', 'Not covered'
-        sizes = [count_covered, count_total - count_covered]
-        explode = (0.1, 0)
-        fig, axes = plt.subplots()  # 3x2 inches
-        axes.pie(sizes, explode=explode, labels=labels, autopct='%.0f%%', shadow=False, startangle=90)
+
+        # keep case-sensitivity of :priority: arguments in labels of pie chart
+        case_sensitive_priorities = node['priority']
+        for priority in case_sensitive_priorities:
+            if priority.lower() in all_states.keys():
+                value = all_states.pop(priority.lower())
+                all_states[priority] = value
+        labels = list(all_states.keys())
+
+        sizes = all_states.values()
+        explode = [0.05]  # slichtly detaches slice of first state, default is "uncovered"
+        explode.extend([0] * (len(all_states.values()) - 1))
+
+        def pct_wrapper(sizes):
+            def make_pct(pct):
+                absolute = int(round(pct / 100 * sum(sizes)))
+                return "{:.0f}%\n({:d})".format(pct, absolute)
+            return make_pct
+
+        fig, axes = plt.subplots()
+        axes.pie(sizes, explode=explode, labels=labels, autopct=pct_wrapper(sizes), startangle=90)
         axes.axis('equal')
-        fig.savefig("doc/piechart.png", format='png')
-        env.images['piechart.png'] = ['doc', 'piechart.png']  # set path in build env
+        folder_name = path.join('doc', 'images')
+        if not path.exists(folder_name):
+            mkdir(folder_name)
+        hash_value = str(hash(str(axes.__dict__))).lstrip('-')
+        file_name = path.join('images', 'piechart' + hash_value + '.png')
+        fig.savefig(path.join('doc', file_name), format='png')
+        env.images[file_name] = ['_images', path.split(file_name)[-1]]  # store file name in sphinx build env
 
         p_node = nodes.paragraph()
         p_node += nodes.Text(disp)
         image_node = nodes.image()
-        image_node['uri'] = 'piechart.png'
-        image_node['candidates'] = '*'  # look at uri key for source path
+        image_node['uri'] = file_name
+        image_node['candidates'] = '*'  # look at uri value for source path, relative to the 'doc' folder
         p_node += image_node
         top_node += p_node
         node.replace_self(top_node)
@@ -1479,7 +1593,8 @@ def setup(app):
                          {'value': '^.*$',
                           'asil': '^(QM|[ABCD])$',
                           'aspice': '^[123]$',
-                          'status': '^.*$'},
+                          'status': '^.*$',
+                          'result': '(?i)^(pass|fail|error)$',},
                          'env')
 
     # Configuration for translating the attribute keywords to rendered text
@@ -1487,7 +1602,7 @@ def setup(app):
                          {'value': 'Value',
                           'asil': 'ASIL',
                           'aspice': 'ASPICE',
-                          'status': 'Status'},
+                          'status': 'Status',},
                          'env')
 
     # Create default relationships dictionary. Can be customized in conf.py
@@ -1498,7 +1613,7 @@ def setup(app):
                           'realizes': 'realized_by',
                           'validates': 'validated_by',
                           'trace': 'backtrace',
-                          'ext_toolname': ''},
+                          'ext_toolname': '',},
                          'env')
 
     # Configuration for translating the relationship keywords to rendered text
@@ -1515,7 +1630,7 @@ def setup(app):
                           'validated_by': 'Validated by',
                           'trace': 'Traces',
                           'backtrace': 'Back traces',
-                          'ext_toolname': 'Reference to toolname'},
+                          'ext_toolname': 'Reference to toolname',},
                          'env')
 
     # Configuration for translating external relationship to url
