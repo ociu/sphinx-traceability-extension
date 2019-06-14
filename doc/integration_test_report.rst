@@ -147,9 +147,9 @@ Integration tests
 Integration test reports
 ========================
 
-.. item:: ITEST_REP-CAPTION
+.. item:: ITEST_REP-CAPTION Report with attribute missing from priority list
     :depends_on: ITEST-CAPTION
-    :result: fail
+    :result: RUNNING
 
 .. item:: ITEST_REP-AUTO_REVERSE
     :depends_on: ITEST-AUTO_REVERSE
@@ -157,7 +157,7 @@ Integration test reports
 
 .. item:: ITEST_REP-COVERAGE
     :depends_on: ITEST-COVERAGE
-    :result: fail
+    :result: error
 
 .. item:: ITEST_REP-MATRIX
     :depends_on: ITEST-MATRIX
