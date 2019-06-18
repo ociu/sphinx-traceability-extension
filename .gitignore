@@ -17,3 +17,6 @@ coverage.xml
 
 # Offline version file
 mlx/__traceability_version__.py
+
+# Pie chart images
+doc/_images
