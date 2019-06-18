@@ -10,6 +10,7 @@ See readme for more details.
 from __future__ import print_function
 import re
 from os import path, mkdir
+from hashlib import sha256
 import matplotlib.pyplot as plt
 from sphinx.roles import XRefRole
 from sphinx.util.nodes import make_refnode
@@ -1074,10 +1075,14 @@ def process_item_nodes(app, doctree, fromdocname):
         folder_name = path.join(env.app.srcdir, '_images')
         if not path.exists(folder_name):
             mkdir(folder_name)
-        hash_value = str(hash(str(axes.__dict__))).lstrip('-')  # create hash value based on chart parameters
-        rel_file_path = path.join('_images', 'piechart' + hash_value + '.png')
-        fig.savefig(path.join(env.app.srcdir, rel_file_path), format='png')
-        env.images[rel_file_path] = ['_images', path.split(rel_file_path)[-1]]  # store file name in sphinx build env
+        hash_string = ''
+        for pie_slice in axes.__dict__['texts']:
+            hash_string += str(pie_slice)
+        hash_value = sha256(hash_string.encode()).hexdigest()  # create hash value based on chart parameters
+        rel_file_path = path.join('_images', 'piechart-{}.png'.format(hash_value))
+        if rel_file_path not in env.images.keys():
+            fig.savefig(path.join(env.app.srcdir, rel_file_path), format='png')
+            env.images[rel_file_path] = ['_images', path.split(rel_file_path)[-1]]  # store file name in build env
 
         p_node = nodes.paragraph()
         p_node += nodes.Text(disp)
