@@ -510,9 +510,7 @@ class ItemPieChartDirective(Directive):
     # Options
     option_spec = {'class': directives.class_option,
                    'id_set': directives.unchanged,
-                   'label_set': directives.unchanged,
-                   'attribute': directives.unchanged,
-                   'priority': directives.unchanged,}
+                   'label_set': directives.unchanged}
     # Content disallowed
     has_content = False
 
@@ -535,42 +533,31 @@ class ItemPieChartDirective(Directive):
         # Process ``label_set`` option
         default_labels = ['uncovered', 'covered', 'executed']
         if 'label_set' in self.options:
-            item_piechart_node['label_set'] = self.options['label_set'].split(',')
-            map(lambda x: x.lstrip(), item_piechart_node['label_set'])  # strip whitespace for comma-space-separation
+            item_piechart_node['label_set'] = [x.strip(' ') for x in self.options['label_set'].split(',')]
             if len(item_piechart_node['label_set']) != len(item_piechart_node['id_set']):
-                report_warning(env, 'Traceability: Expected as many labels as ids; resorting to default labels.',
-                               env.docname, self.lineno)
                 item_piechart_node['label_set'].extend(
                     default_labels[len(item_piechart_node['label_set']):len(item_piechart_node['id_set'])])
         else:
             id_amount = len(item_piechart_node['id_set'])
             item_piechart_node['label_set'] = default_labels[:id_amount]  # default labels
 
-        # Process ``attribute`` option
-        if 'attribute' in self.options:
-            if len(item_piechart_node['id_set']) == 3:
-                item_piechart_node['attribute'] = self.options['attribute']
-            else:
-                report_warning(env, 'Traceability: The attribute option is only viable with an id_set with length 3.',
-                               env.docname, self.lineno)
-        else:
-            item_piechart_node['attribute'] = ''
-
-        # Process ``priority`` option
-        if 'priority' in self.options:
-            if not item_piechart_node['attribute']:
-                report_warning(env,
-                               'Traceability: The priority option is only viable in combination with the attribute '
-                               'option.',
-                               env.docname,
-                               self.lineno,)
-            item_piechart_node['priority'] = self.options['priority'].split(', ')
-            map(lambda x: x.lstrip(), item_piechart_node['priority'])  # strip whitespace for comma-space-separation
-        else:
-            item_piechart_node['priority'] = []
+        # Add found attribute to item. Attribute data is a comma-separated list of strings
+        item_piechart_node['attribute'] = ''
+        item_piechart_node['priorities'] = []
+        for attr in TraceableItem.defined_attributes.keys():
+            if attr in self.options:
+                if len(item_piechart_node['id_set']) == 3:
+                    item_piechart_node['attribute'] = attr
+                    item_piechart_node['priorities'] = [x.strip(' ') for x in self.options[attr].split(',')]
+                else:
+                    report_warning(env,
+                                   'Traceability: The <<attribute>> option is only viable with an id_set with 3 '
+                                   'arguments.',
+                                   env.docname,
+                                   self.lineno,)
+                break
 
         return [item_piechart_node]
-
 
 
 class ItemAttributesMatrixDirective(Directive):
@@ -982,11 +969,12 @@ def process_item_nodes(app, doctree, fromdocname):
         priorities = {}
         for idx, label in enumerate(node['label_set']):
             priorities[label] = idx
-        # store priority arguments in reverse order in lowercase for case-insensitivity
-        for idx, attr in enumerate(map(lambda x: x.lower(), node['priority'][::-1]), start=len(node['label_set'])):
-            priorities[attr] = idx
+        # store :<<attribute>>: arguments in reverse order in lowercase for case-insensitivity
+        if node['priorities']:
+            for idx, attr in enumerate(map(lambda x: x.lower(), node['priorities'][::-1]),
+                                       start=len(node['label_set'])):
+                priorities[attr] = idx
 
-        attribute_name = node['attribute']
         attribute_id = ''
         if len(node['id_set']) > 2:
             attribute_id = node['id_set'][2]
@@ -1029,7 +1017,7 @@ def process_item_nodes(app, doctree, fromdocname):
                             continue
                         if re.match(attribute_id, target_id):
                             # case-insensitivity
-                            attribute_value = target_item.get_attribute(attribute_name).lower()
+                            attribute_value = target_item.get_attribute(node['attribute']).lower()
                             if attribute_value not in priorities.keys():
                                 attribute_value = list(priorities.keys())[2]  # default is "executed"
 
@@ -1063,7 +1051,7 @@ def process_item_nodes(app, doctree, fromdocname):
         # remove items with count value equal to 0
         all_states = {k: v for k, v in all_states.items() if v}
         # keep case-sensitivity of :priority: arguments in labels of pie chart
-        case_sensitive_priorities = node['priority']
+        case_sensitive_priorities = node['priorities']
         for priority in case_sensitive_priorities:
             if priority.lower() in all_states.keys():
                 value = all_states.pop(priority.lower())
@@ -1361,6 +1349,7 @@ def init_available_relationships(app):
         ItemDirective.option_spec[attr] = directives.unchanged
         ItemListDirective.option_spec[attr] = directives.unchanged
         ItemMatrixDirective.option_spec[attr] = directives.unchanged
+        ItemPieChartDirective.option_spec[attr] = directives.unchanged
         ItemAttributesMatrixDirective.option_spec[attr] = directives.unchanged
         Item2DMatrixDirective.option_spec[attr] = directives.unchanged
         ItemTreeDirective.option_spec[attr] = directives.unchanged
