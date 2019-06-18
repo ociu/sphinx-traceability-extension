@@ -121,6 +121,9 @@ Test coverage
     :nocaptions:
     :stats:
 
+.. item-piechart:: Basic coverage chart
+    :id_set: RQT [IU]TEST
+
 .. item-piechart:: Chart fetching third label from defaults
     :id_set: RQT [IU]TEST [IU]TEST_REP
     :label_set: not covered, covered
