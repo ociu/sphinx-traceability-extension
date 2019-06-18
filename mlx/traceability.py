@@ -1071,19 +1071,19 @@ def process_item_nodes(app, doctree, fromdocname):
         fig, axes = plt.subplots()
         axes.pie(sizes, explode=explode, labels=labels, autopct=pct_wrapper(sizes), startangle=90)
         axes.axis('equal')
-        folder_name = path.join('doc', 'images')
+        folder_name = path.join(env.app.srcdir, '_images')
         if not path.exists(folder_name):
             mkdir(folder_name)
         hash_value = str(hash(str(axes.__dict__))).lstrip('-')  # create hash value based on chart parameters
-        file_name = path.join('images', 'piechart' + hash_value + '.png')
-        fig.savefig(path.join('doc', file_name), format='png')
-        env.images[file_name] = ['_images', path.split(file_name)[-1]]  # store file name in sphinx build env
+        rel_file_path = path.join('_images', 'piechart' + hash_value + '.png')
+        fig.savefig(path.join(env.app.srcdir, rel_file_path), format='png')
+        env.images[rel_file_path] = ['_images', path.split(rel_file_path)[-1]]  # store file name in sphinx build env
 
         p_node = nodes.paragraph()
         p_node += nodes.Text(disp)
         image_node = nodes.image()
-        image_node['uri'] = file_name
-        image_node['candidates'] = '*'  # look at uri value for source path, relative to the 'doc' folder
+        image_node['uri'] = rel_file_path
+        image_node['candidates'] = '*'  # look at uri value for source path, relative to the srcdir folder
         p_node += image_node
         top_node += p_node
         node.replace_self(top_node)
