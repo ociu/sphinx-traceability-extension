@@ -356,7 +356,8 @@ The plugin itself holds a default config that can be used for any traceability d
         'value': '^.*$',
         'asil': '^(QM|[ABCD])$',
         'aspice': '^[123]$',
-        'status': '^.*$'
+        'status': '^.*$',
+        'result': '(?i)^(pass|fail|error)$'
     }
     traceability_attribute_to_string = {
         'value': 'Value',
@@ -386,7 +387,7 @@ The plugin itself holds a default config that can be used for any traceability d
         'validated_by': 'Validated by',
         'trace': 'Traces',
         'backtrace': 'Back traces',
-        'ext_toolname': 'Referento to toolname'
+        'ext_toolname': 'Reference to toolname'
     }
     traceability_external_relationship_to_url = {
         'ext_toolname': 'http://toolname.company.com/field1/workitem?field2'
@@ -724,6 +725,37 @@ the nested bullet list. This action is repeated recursively.
 
 By default, the caption for every item in the tree is shown. By providing the *nocaptions* flag, the
 caption can be omitted. This gives a smaller tree, but also less details.
+
+.. _traceability_usage_piechart:
+
+Pie chart of documentation items
+================================
+
+A pie chart of documentation items can be generated using:
+
+.. code-block:: rest
+
+    .. item-piechart:: Test coverage of requirements with report results
+        :id_set: RQT TEST TEST_REP
+        :label_set: uncovered, covered, executed
+        :result: error, fail, pass
+
+where the *id_set* arguments can be replaced by any Python regular expression. The *label_set* and *result* arguments
+are comma-separated lists.
+
+The *id_set* is a list of item IDs with at least two and at most three item IDs. The first item ID is the source, the
+second item ID is the target, and the optional third item ID is the target of the second. Adding a third item ID splits
+up the items with an existing relationship between the first and second ID.
+
+The optional *label_set* holds the string labels for the pie chart. For source items without a relationship to a target
+item, the first label is used. For those with a relationship, but without a relationship between the second and third
+ID, the second label is used. The third label is used for items with both relationships covered. This attribute is
+optional. The labels in the example are the default values.
+
+The optional *result* can be replaced by any configured attribute of the third item ID. Its arguments are possible
+values of this attribute, ordered in priority from high to low. Using this option splits up the slice with the third
+label. In this example an RQT item with multiple TEST items, one with a *fail* and others a *pass* as *result* value in
+the TEST_REP item, will be added to the *fail* slice of the pie chart.
 
 .. _traceability_process:
 

@@ -128,5 +128,4 @@ Test coverage
 .. item-piechart:: Test coverage chart with test results
     :id_set: RQT [IU]TEST [IU]TEST_REP
     :label_set: uncovered, covered, ran test
-    :attribute: result
-    :priority: ERROR, fail, pass
+    :result: ERROR, fail, pass

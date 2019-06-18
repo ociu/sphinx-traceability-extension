@@ -494,25 +494,14 @@ class ItemMatrixDirective(Directive):
 
 class ItemPieChartDirective(Directive):
     """
-    Directive to generate a piechart for coverage of item cross-references, based on
-    a given set of relationship types. Add a third id to the id_set to label the covered items with an attribute value
-    of this id if there is a relationship between target and nested_target.
-    Use the label_set option to label the existence/absence of a relationship between items of consecutive ids.
-    The first label is used for items of id1 without a relationship to an item of id2. The second label for items with
-    an existing relationship to an item of id2, but not to an item of id3, when used.
-    The third label should only be specified when id3 is specified. This label is used for items with a relationship
-    between all ids, but when the nested target item does not have an attribute value in the priority list, when used.
-    All labels must be comma-separated.
-    The optional attribute option should be used in combination with the priority option, which assigns  a priority to
-    each attribute value you want to see labeled in the chart, high to low. These values must be comma-separated.
+    Directive to generate a pie chart for coverage of item cross-references.
 
     Syntax::
 
       .. item-piechart:: title
          :id_set: source_regexp target_regexp (nested_target_regexp)
          :label_set: uncovered, covered(, executed)
-         :attribute: <<attribute>>
-         :priority: error, fail, pass ...
+         :<<attribute>>: error, fail, pass ...
 
     """
     # Optional argument: title (whitespace allowed)
