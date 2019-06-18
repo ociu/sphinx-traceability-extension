@@ -971,7 +971,7 @@ def process_item_nodes(app, doctree, fromdocname):
             priorities[label] = idx
         # store :<<attribute>>: arguments in reverse order in lowercase for case-insensitivity
         if node['priorities']:
-            for idx, attr in enumerate(map(lambda x: x.lower(), node['priorities'][::-1]),
+            for idx, attr in enumerate([value.lower() for value in node['priorities'][::-1]],
                                        start=len(node['label_set'])):
                 priorities[attr] = idx
 
