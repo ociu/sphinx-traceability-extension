@@ -126,9 +126,6 @@ Integration tests
 .. item:: ITEST-MATRIX Tests auto-generation of traceability matrix.
     :validates: RQT-MATRIX
 
-.. item:: ITEST-MATRIX Tests auto-generation of traceability matrix.
-    :validates: RQT-MATRIX
-
 .. item:: ITEST-TREE Tests auto-generation of a traceability tree.
     :validates: RQT-TREE
 
