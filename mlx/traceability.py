@@ -9,8 +9,11 @@ See readme for more details.
 
 from __future__ import print_function
 import re
-from os import path, mkdir
+from os import path, mkdir, environ
 from hashlib import sha256
+import matplotlib as mpl
+if not environ.get('DISPLAY'):
+    mpl.use('Agg')
 import matplotlib.pyplot as plt
 from sphinx.roles import XRefRole
 from sphinx.util.nodes import make_refnode
