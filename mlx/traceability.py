@@ -9,11 +9,17 @@ See readme for more details.
 
 from __future__ import print_function
 import re
-from docutils.parsers.rst import Directive
+from os import path, mkdir, environ
+from hashlib import sha256
+import matplotlib as mpl
+if not environ.get('DISPLAY'):
+    mpl.use('Agg')
+import matplotlib.pyplot as plt
 from sphinx.roles import XRefRole
 from sphinx.util.nodes import make_refnode
 from sphinx.environment import NoUri
 from sphinx.builders.latex import LaTeXBuilder
+from docutils.parsers.rst import Directive
 from docutils import nodes
 from docutils.parsers.rst import directives
 from docutils.utils import get_source_line
@@ -51,6 +57,18 @@ def report_warning(env, msg, docname=None, lineno=None):
     else:
         env.warn(docname, msg, lineno=lineno)
 
+
+def pct_wrapper(sizes):
+    """ Helper function for matplotlib which returns the percentage and the absolute size of the slice.
+
+    Args:
+        sizes (list): List containing the amount of elements per slice.
+    """
+    def make_pct(pct):
+        absolute = int(round(pct / 100 * sum(sizes)))
+        return "{:.0f}%\n({:d})".format(pct, absolute)
+    return make_pct
+
 # -----------------------------------------------------------------------------
 # Declare new node types
 
@@ -72,6 +90,11 @@ class ItemList(nodes.General, nodes.Element):
 
 class ItemMatrix(nodes.General, nodes.Element):
     '''Matrix for cross referencing documentation items'''
+    pass
+
+
+class ItemPieChart(nodes.General, nodes.Element):
+    '''Pie chart on documentation items'''
     pass
 
 
@@ -236,7 +259,7 @@ class ItemAttributeDirective(Directive):
     def run(self):
         env = self.state.document.settings.env
 
-        # Convert to lower-case as sphinx only allows lower case arguments (attribute to item directive)
+        # Convert to lower-case as sphinx only allows lowercase arguments (attribute to item directive)
         attrid = self.arguments[0]
         targetnode = nodes.target('', '', ids=[attrid])
         attrnode = ItemAttribute('')
@@ -483,6 +506,74 @@ class ItemMatrixDirective(Directive):
             item_matrix_node['targettitle'] = 'Target'
 
         return [item_matrix_node]
+
+
+class ItemPieChartDirective(Directive):
+    """
+    Directive to generate a pie chart for coverage of item cross-references.
+
+    Syntax::
+
+      .. item-piechart:: title
+         :id_set: source_regexp target_regexp (nested_target_regexp)
+         :label_set: uncovered, covered(, executed)
+         :<<attribute>>: error, fail, pass ...
+
+    """
+    # Optional argument: title (whitespace allowed)
+    optional_arguments = 1
+    final_argument_whitespace = True
+    # Options
+    option_spec = {'class': directives.class_option,
+                   'id_set': directives.unchanged,
+                   'label_set': directives.unchanged}
+    # Content disallowed
+    has_content = False
+
+    def run(self):
+        env = self.state.document.settings.env
+
+        item_piechart_node = ItemPieChart('')
+
+        # Process title (optional argument)
+        if len(self.arguments) > 0:
+            item_piechart_node['title'] = self.arguments[0]
+
+        # Process ``id_set`` option
+        if 'id_set' in self.options and len(self.options['id_set']) >= 2:
+            item_piechart_node['id_set'] = self.options['id_set'].split()
+        else:
+            item_piechart_node['id_set'] = []
+            report_warning(env, 'Traceability: Expected at least two arguments in id_set.', env.docname, self.lineno)
+
+        # Process ``label_set`` option
+        default_labels = ['uncovered', 'covered', 'executed']
+        if 'label_set' in self.options:
+            item_piechart_node['label_set'] = [x.strip(' ') for x in self.options['label_set'].split(',')]
+            if len(item_piechart_node['label_set']) != len(item_piechart_node['id_set']):
+                item_piechart_node['label_set'].extend(
+                    default_labels[len(item_piechart_node['label_set']):len(item_piechart_node['id_set'])])
+        else:
+            id_amount = len(item_piechart_node['id_set'])
+            item_piechart_node['label_set'] = default_labels[:id_amount]  # default labels
+
+        # Add found attribute to item. Attribute data is a comma-separated list of strings
+        item_piechart_node['attribute'] = ''
+        item_piechart_node['priorities'] = []
+        for attr in TraceableItem.defined_attributes.keys():
+            if attr in self.options:
+                if len(item_piechart_node['id_set']) == 3:
+                    item_piechart_node['attribute'] = attr
+                    item_piechart_node['priorities'] = [x.strip(' ') for x in self.options[attr].split(',')]
+                else:
+                    report_warning(env,
+                                   'Traceability: The <<attribute>> option is only viable with an id_set with 3 '
+                                   'arguments.',
+                                   env.docname,
+                                   self.lineno,)
+                break
+
+        return [item_piechart_node]
 
 
 class ItemAttributesMatrixDirective(Directive):
@@ -876,6 +967,141 @@ def process_item_nodes(app, doctree, fromdocname):
         top_node += table
         node.replace_self(top_node)
 
+    # Item pie chart:
+    # Very similar to item-matrix: but instead of creating a table, count the empty cells in the right column,
+    # and generate pie chart with coverage percentages.
+    # Only items matching regexp in ``id_set`` option shall be included
+    for node in doctree.traverse(ItemPieChart):
+        top_node = nodes.container()
+        admon_node = nodes.admonition()
+        title_node = nodes.title()
+        title_node += nodes.Text(node['title'])
+        admon_node += title_node
+        top_node += admon_node
+        relationships = env.traceability_collection.iter_relations()
+        all_item_ids = env.traceability_collection.get_items('')
+
+        # default priority order is 'uncovered', 'covered', 'executed', 'pass', 'fail', 'error'
+        priorities = {}
+        for idx, label in enumerate(node['label_set']):
+            priorities[label] = idx
+        # store :<<attribute>>: arguments in reverse order in lowercase for case-insensitivity
+        if node['priorities']:
+            for idx, attr in enumerate([value.lower() for value in node['priorities'][::-1]],
+                                       start=len(node['label_set'])):
+                priorities[attr] = idx
+
+        attribute_id = ''
+        if len(node['id_set']) > 2:
+            attribute_id = node['id_set'][2]
+
+        linked_attributes = {}  # source_id (str): attr_value (str)
+        covered_items = {}  # source_id (str): test_items (list)
+
+        for source_id in all_item_ids:
+            source_item = env.traceability_collection.get_item(source_id)
+            # placeholders don't end up in any item-piechart (less duplicate warnings for missing items)
+            if source_item.is_placeholder():
+                continue
+            if re.match(node['id_set'][0], source_id):
+                covered = False
+                test_items = []
+                linked_attributes[source_id] = list(priorities.keys())[0]  # default is "uncovered"
+                for relationship in relationships:
+                    tgts = source_item.iter_targets(relationship, True, True)
+                    for target_id in tgts:
+                        target_item = env.traceability_collection.get_item(target_id)
+                        # placeholders don't end up in any item-matrix (less duplicate warnings for missing items)
+                        if not target_item or target_item.is_placeholder():
+                            continue
+                        if re.match(node['id_set'][1], target_id):
+                            test_items.append(target_item)
+                            linked_attributes[source_id] = list(priorities.keys())[1]  # default is "covered"
+                            covered = True
+                if covered and attribute_id:
+                    covered_items[source_id] = test_items
+
+        # link highest priority attribute value of nested relations to source id
+        for source_id, test_items in covered_items.items():
+            for covering_item in test_items:
+                for relationship in relationships:
+                    tgts = covering_item.iter_targets(relationship, True, True)
+                    for target_id in tgts:
+                        target_item = env.traceability_collection.get_item(target_id)
+                        # placeholders don't end up in any item-matrix (less duplicate warnings for missing items)
+                        if not target_item or target_item.is_placeholder():
+                            continue
+                        if re.match(attribute_id, target_id):
+                            # case-insensitivity
+                            attribute_value = target_item.get_attribute(node['attribute']).lower()
+                            if attribute_value not in priorities.keys():
+                                attribute_value = list(priorities.keys())[2]  # default is "executed"
+
+                            if source_id not in linked_attributes.keys():
+                                linked_attributes[source_id] = attribute_value
+                            else:
+                                # store newly encountered attribute value if it has a higher priority
+                                stored_attribute_priority = priorities[linked_attributes[source_id]]
+                                latest_attribute_priority = priorities[attribute_value]
+                                if latest_attribute_priority > stored_attribute_priority:
+                                    linked_attributes[source_id] = attribute_value
+
+        # initialize dictionary and increment counters for each possible value
+        all_states = {}
+        for priority in priorities.keys():
+            all_states[priority] = 0
+        for attribute in linked_attributes.values():
+            all_states[attribute] += 1
+
+        count_total = len(linked_attributes)
+        count_uncovered = all_states[node['label_set'][0]]
+        count_covered = count_total - count_uncovered
+        try:
+            percentage = int(100 * count_covered / count_total)
+        except ZeroDivisionError:
+            percentage = 0
+        disp = 'Statistics: {cover} out of {total} covered: {pct}%'.format(cover=count_covered,
+                                                                           total=count_total,
+                                                                           pct=percentage,)
+
+        # remove items with count value equal to 0
+        all_states = {k: v for k, v in all_states.items() if v}
+        # keep case-sensitivity of :<<attribute>>: arguments in labels of pie chart
+        case_sensitive_priorities = node['priorities']
+        for priority in case_sensitive_priorities:
+            if priority.lower() in all_states.keys():
+                value = all_states.pop(priority.lower())
+                all_states[priority] = value
+        labels = list(all_states.keys())
+
+        sizes = all_states.values()
+        explode = [0.05]  # slichtly detaches slice of first state, default is "uncovered"
+        explode.extend([0] * (len(all_states.values()) - 1))
+
+        fig, axes = plt.subplots()
+        axes.pie(sizes, explode=explode, labels=labels, autopct=pct_wrapper(sizes), startangle=90)
+        axes.axis('equal')
+        folder_name = path.join(env.app.srcdir, '_images')
+        if not path.exists(folder_name):
+            mkdir(folder_name)
+        hash_string = ''
+        for pie_slice in axes.__dict__['texts']:
+            hash_string += str(pie_slice)
+        hash_value = sha256(hash_string.encode()).hexdigest()  # create hash value based on chart parameters
+        rel_file_path = path.join('_images', 'piechart-{}.png'.format(hash_value))
+        if rel_file_path not in env.images.keys():
+            fig.savefig(path.join(env.app.srcdir, rel_file_path), format='png')
+            env.images[rel_file_path] = ['_images', path.split(rel_file_path)[-1]]  # store file name in build env
+
+        p_node = nodes.paragraph()
+        p_node += nodes.Text(disp)
+        image_node = nodes.image()
+        image_node['uri'] = rel_file_path
+        image_node['candidates'] = '*'  # look at uri value for source path, relative to the srcdir folder
+        p_node += image_node
+        top_node += p_node
+        node.replace_self(top_node)
+
     # Item attribute matrix:
     # Create table with items, printing their attribute values.
     for node in doctree.traverse(ItemAttributesMatrix):
@@ -1137,6 +1363,7 @@ def init_available_relationships(app):
         ItemDirective.option_spec[attr] = directives.unchanged
         ItemListDirective.option_spec[attr] = directives.unchanged
         ItemMatrixDirective.option_spec[attr] = directives.unchanged
+        ItemPieChartDirective.option_spec[attr] = directives.unchanged
         ItemAttributesMatrixDirective.option_spec[attr] = directives.unchanged
         Item2DMatrixDirective.option_spec[attr] = directives.unchanged
         ItemTreeDirective.option_spec[attr] = directives.unchanged
@@ -1355,7 +1582,8 @@ def setup(app):
                          {'value': '^.*$',
                           'asil': '^(QM|[ABCD])$',
                           'aspice': '^[123]$',
-                          'status': '^.*$'},
+                          'status': '^.*$',
+                          'result': '(?i)^(pass|fail|error)$',},
                          'env')
 
     # Configuration for translating the attribute keywords to rendered text
@@ -1363,7 +1591,8 @@ def setup(app):
                          {'value': 'Value',
                           'asil': 'ASIL',
                           'aspice': 'ASPICE',
-                          'status': 'Status'},
+                          'status': 'Status',
+                          'result': 'Result',},
                          'env')
 
     # Create default relationships dictionary. Can be customized in conf.py
@@ -1374,7 +1603,7 @@ def setup(app):
                           'realizes': 'realized_by',
                           'validates': 'validated_by',
                           'trace': 'backtrace',
-                          'ext_toolname': ''},
+                          'ext_toolname': '',},
                          'env')
 
     # Configuration for translating the relationship keywords to rendered text
@@ -1391,7 +1620,7 @@ def setup(app):
                           'validated_by': 'Validated by',
                           'trace': 'Traces',
                           'backtrace': 'Back traces',
-                          'ext_toolname': 'Reference to toolname'},
+                          'ext_toolname': 'Reference to toolname',},
                          'env')
 
     # Configuration for translating external relationship to url
@@ -1429,6 +1658,7 @@ def setup(app):
 
     app.add_node(ItemTree)
     app.add_node(ItemMatrix)
+    app.add_node(ItemPieChart)
     app.add_node(ItemAttributesMatrix)
     app.add_node(Item2DMatrix)
     app.add_node(ItemList)
@@ -1439,6 +1669,7 @@ def setup(app):
     app.add_directive('item-attribute', ItemAttributeDirective)
     app.add_directive('item-list', ItemListDirective)
     app.add_directive('item-matrix', ItemMatrixDirective)
+    app.add_directive('item-piechart', ItemPieChartDirective)
     app.add_directive('item-attributes-matrix', ItemAttributesMatrixDirective)
     app.add_directive('item-2d-matrix', Item2DMatrixDirective)
     app.add_directive('item-tree', ItemTreeDirective)
