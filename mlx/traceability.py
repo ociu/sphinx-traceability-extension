@@ -57,6 +57,18 @@ def report_warning(env, msg, docname=None, lineno=None):
     else:
         env.warn(docname, msg, lineno=lineno)
 
+
+def pct_wrapper(sizes):
+    """ Helper function for matplotlib which returns the percentage and the absolute size of the slice.
+
+    Args:
+        sizes (list): List containing the amount of elements per slice.
+    """
+    def make_pct(pct):
+        absolute = int(round(pct / 100 * sum(sizes)))
+        return "{:.0f}%\n({:d})".format(pct, absolute)
+    return make_pct
+
 # -----------------------------------------------------------------------------
 # Declare new node types
 
@@ -1065,12 +1077,6 @@ def process_item_nodes(app, doctree, fromdocname):
         sizes = all_states.values()
         explode = [0.05]  # slichtly detaches slice of first state, default is "uncovered"
         explode.extend([0] * (len(all_states.values()) - 1))
-
-        def pct_wrapper(sizes):
-            def make_pct(pct):
-                absolute = int(round(pct / 100 * sum(sizes)))
-                return "{:.0f}%\n({:d})".format(pct, absolute)
-            return make_pct
 
         fig, axes = plt.subplots()
         axes.pie(sizes, explode=explode, labels=labels, autopct=pct_wrapper(sizes), startangle=90)
