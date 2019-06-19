@@ -79,7 +79,7 @@ class ItemMatrix(nodes.General, nodes.Element):
 
 
 class ItemPieChart(nodes.General, nodes.Element):
-    '''Pie-chart on documentation items'''
+    '''Pie chart on documentation items'''
     pass
 
 
@@ -952,10 +952,10 @@ def process_item_nodes(app, doctree, fromdocname):
         top_node += table
         node.replace_self(top_node)
 
-    # Item piechart:
+    # Item pie chart:
     # Very similar to item-matrix: but instead of creating a table, count the empty cells in the right column,
-    # and generate piechart with coverage percentages.
-    # Only source and target items matching respective regexp shall be included
+    # and generate pie chart with coverage percentages.
+    # Only items matching regexp in ``id_set`` option shall be included
     for node in doctree.traverse(ItemPieChart):
         top_node = nodes.container()
         admon_node = nodes.admonition()
@@ -1051,7 +1051,7 @@ def process_item_nodes(app, doctree, fromdocname):
 
         # remove items with count value equal to 0
         all_states = {k: v for k, v in all_states.items() if v}
-        # keep case-sensitivity of :priority: arguments in labels of pie chart
+        # keep case-sensitivity of :<<attribute>>: arguments in labels of pie chart
         case_sensitive_priorities = node['priorities']
         for priority in case_sensitive_priorities:
             if priority.lower() in all_states.keys():
