@@ -1075,7 +1075,7 @@ def process_item_nodes(app, doctree, fromdocname):
         labels = list(all_states.keys())
 
         sizes = all_states.values()
-        explode = [0.05]  # slichtly detaches slice of first state, default is "uncovered"
+        explode = [0.05]  # slightly detaches slice of first state, default is "uncovered"
         explode.extend([0] * (len(all_states.values()) - 1))
 
         fig, axes = plt.subplots()
