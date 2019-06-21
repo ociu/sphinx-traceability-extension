@@ -336,7 +336,7 @@ traceability_relationship_to_string = {
     'implemented_by': 'Implemented by',
     'validates': 'Validates',
     'validated_by': 'Validated by',
-    'ext_toolname': 'Referento to toolname'
+    'ext_toolname': 'Reference to toolname'
 }
 
 traceability_external_relationship_to_url = {
