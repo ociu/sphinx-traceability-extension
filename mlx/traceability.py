@@ -85,18 +85,33 @@ def generate_color_css(env, hyperlink_colors):
                 report_warning(env,
                                "Regex '%s' can take a maximum of 3 colors in traceability_hyperlink_colors." % regex)
                 continue
+
             build_class_name(colors)
-            class_name = class_names[colors]
-            for idx, color in enumerate(colors):
-                if not color:
-                    continue
-                if idx == 0:
-                    selectors = ".{0}".format(class_name)
-                elif idx == 1:
-                    selectors = ".{0}:active,\n.{0}:hover".format(class_name)
-                else:
-                    selectors = ".{0}:visited".format(class_name)
-                css_file.write("%s {\n\tcolor: %s;\n}\n" % (selectors, color))
+            write_color_commands(css_file, colors)
+
+
+def write_color_commands(css_file, colors):
+    """
+    Write a color command in the file for each color in the given tuple. The CSS identifier is fetched from the global
+    `class_names` dictionary. The first color is used for the default hyperlink state, the second color for the active
+    and the hover state, and the third color for the visited state. No CSS code is written when the color is an empty
+    string.
+
+    Args:
+        css_file (file): Open writeable file object.
+        colors (tuple): Tuple of strings representing colors.
+    """
+    class_name = class_names[colors]
+    for idx, color in enumerate(colors):
+        if not color:
+            continue
+        if idx == 0:
+            selectors = ".{0}".format(class_name)
+        elif idx == 1:
+            selectors = ".{0}:active,\n.{0}:hover".format(class_name)
+        else:
+            selectors = ".{0}:visited".format(class_name)
+        css_file.write("%s {\n\tcolor: %s;\n}\n" % (selectors, color))
 
 
 def find_color_class(hyperlink_colors, item_id):
