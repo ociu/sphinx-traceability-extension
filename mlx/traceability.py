@@ -71,16 +71,30 @@ def pct_wrapper(sizes):
     return make_pct
 
 
-def add_color_class(app, node, item_id):
-    for regex, colors in app.config.traceability_hyperlink_colors.items():
+def find_color_class(hyperlink_colors, item_id):
+    """ Returns CSS class identifier to change a node's text color if the item ID matches a regex in hyperlink_colors.
+
+    Args:
+        hyperlink_colors (dict): Dict with regex strings as keys and list/tuple of strings as values.
+        item_id (str): A traceability item ID.
+    Returns:
+        (str) CSS identifier that exists as a value in `class_names`
+    """
+    for regex, colors in hyperlink_colors.items():
         colors = tuple(colors)
         if re.search(regex, item_id):
-            class_name = class_names[colors]
-            node.set_class(class_name)
-            continue
+            return class_names[colors]
+    return ''
 
 
 def build_class_name(inputs):
+    """
+    Builds class name based on a tuple of strings that represent a color in CSS. Adds this name as value to the global
+    dictionary `class_names` with the input tuple as key.
+
+    Args:
+        inputs (tuple): Tuple of strings.
+    """
     name = '_'.join(inputs)
     trans_table = str.maketrans("#,.%", "h-dp", " ()")
     name = name.translate(trans_table)
@@ -1547,7 +1561,8 @@ def make_internal_item_ref(app, node, fromdocname, item_id, caption=True):
 
         newnode = nodes.reference('', '')
         if app.config.traceability_hyperlink_colors:
-            add_color_class(app, newnode, item_id)
+            class_name = find_color_class(app.config.traceability_hyperlink_colors, item_id)
+            newnode['classes'].append(class_name)
         innernode = nodes.emphasis(item_id + caption, item_id + caption)
         newnode['refdocname'] = item_info.docname
         try:
