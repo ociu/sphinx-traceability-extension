@@ -71,6 +71,34 @@ def pct_wrapper(sizes):
     return make_pct
 
 
+def generate_color_css(env, hyperlink_colors):
+    """ Generates CSS file that defines the colors for each hyperlink state for each configured regex.
+
+    Args:
+        env (sphinx.environment.BuildEnvironment): The build environment.
+        hyperlink_colors (dict): Dict with regex strings as keys and list/tuple of strings as values.
+    """
+    with open(path.join(path.dirname(__file__), 'assets', 'hyperlink_colors.css'), 'w') as css_file:
+        for regex, colors in hyperlink_colors.items():
+            colors = tuple(colors)
+            if len(colors) > 3:
+                report_warning(env,
+                               "Regex '%s' can take a maximum of 3 colors in traceability_hyperlink_colors." % regex)
+                continue
+            build_class_name(colors)
+            class_name = class_names[colors]
+            for idx, color in enumerate(colors):
+                if not color:
+                    continue
+                if idx == 0:
+                    selectors = ".{0}".format(class_name)
+                elif idx == 1:
+                    selectors = ".{0}:active,\n.{0}:hover".format(class_name)
+                else:
+                    selectors = ".{0}:visited".format(class_name)
+                css_file.write("%s {\n\tcolor: %s;\n}\n" % (selectors, color))
+
+
 def find_color_class(hyperlink_colors, item_id):
     """ Returns CSS class identifier to change a node's text color if the item ID matches a regex in hyperlink_colors.
 
@@ -891,6 +919,7 @@ def perform_consistency_check(app, doctree):
     Used to perform the self-test on the collection of items
     '''
     env = app.builder.env
+    print(type(env))
 
     try:
         env.traceability_collection.self_test()
@@ -904,25 +933,8 @@ def perform_consistency_check(app, doctree):
         fname = app.config.traceability_json_export_path
         env.traceability_collection.export(fname)
 
-    with open(path.join(path.dirname(__file__), 'assets', 'hyperlink_colors.css'), 'w') as css_file:
-        for regex, colors in app.config.traceability_hyperlink_colors.items():
-            colors = tuple(colors)
-            if len(colors) > 3:
-                report_warning(env,
-                               "Regex '%s' can take a maximum of 3 colors in traceability_hyperlink_colors." % regex)
-                continue
-            build_class_name(colors)
-            class_name = class_names[colors]
-            for idx, color in enumerate(colors):
-                if not color:
-                    continue
-                if idx == 0:
-                    selectors = ".{0}".format(class_name)
-                elif idx == 1:
-                    selectors = ".{0}:active,\n.{0}:hover".format(class_name)
-                else:
-                    selectors = ".{0}:visited".format(class_name)
-                css_file.write("%s {\n\tcolor: %s;\n}\n" % (selectors, color))
+    if app.config.traceability_hyperlink_colors:
+        generate_color_css(env, app.config.traceability_hyperlink_colors)
 
 
 def process_item_nodes(app, doctree, fromdocname):
