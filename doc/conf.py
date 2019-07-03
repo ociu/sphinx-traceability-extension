@@ -345,6 +345,16 @@ traceability_external_relationship_to_url = {
 
 traceability_json_export_path = '_build/exported_items.json'
 
+# {regex: (default, :hover+:active, :visited)}
+# css-file will be built in the same order, which means that the bottom regex has highest priority
+traceability_hyperlink_colors = {
+    r'^(RQT|r[\d]+)': ('#7F00FF', '#b369ff'),
+    r'^[IU]TEST': ('goldenrod', 'hsl(43, 62%, 58%)', 'darkgoldenrod'),
+    r'^[IU]TEST_REP': ('rgba(255, 0, 0, 1)', 'rgba(255, 0, 0, 0.7)', 'rgb(200, 0, 0)'),
+    r'^SYS_': ('', 'springgreen', ''),
+    r'^SRS_': ('', 'orange', ''),
+}
+
 # traceability_item_no_captions = True
 # traceability_list_no_captions = True
 # traceability_matrix_no_captions = True

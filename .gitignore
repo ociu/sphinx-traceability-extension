@@ -6,6 +6,7 @@
 *.pyc
 build/
 dist/
+_build/
 doc/_build
 tests/docs/basic/_build
 tests/docs/autodoc/docs/_build
@@ -20,3 +21,6 @@ mlx/__traceability_version__.py
 
 # Pie chart images
 doc/_images
+
+# Custom hyperlink colors
+mlx/assets/hyperlink_colors.css

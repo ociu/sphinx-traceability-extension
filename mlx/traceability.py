@@ -37,6 +37,7 @@ if sphinx_version >= '1.6.0':
 # hyperlink is done through the config traceability_external_relationship_to_url.
 REGEXP_EXTERNAL_RELATIONSHIP = re.compile('^ext_.*')
 EXTERNAL_LINK_FIELDNAME = 'field'
+class_names = {}
 
 
 def report_warning(env, msg, docname=None, lineno=None):
@@ -68,6 +69,22 @@ def pct_wrapper(sizes):
         absolute = int(round(pct / 100 * sum(sizes)))
         return "{:.0f}%\n({:d})".format(pct, absolute)
     return make_pct
+
+
+def add_color_class(app, node, item_id):
+    for regex, colors in app.config.traceability_hyperlink_colors.items():
+        colors = tuple(colors)
+        if re.search(regex, item_id):
+            class_name = class_names[colors]
+            node.set_class(class_name)
+            continue
+
+
+def build_class_name(inputs):
+    name = '_'.join(inputs)
+    trans_table = str.maketrans("#,.%", "h-dp", " ()")
+    name = name.translate(trans_table)
+    class_names[inputs] = name.lower()
 
 # -----------------------------------------------------------------------------
 # Declare new node types
@@ -873,6 +890,26 @@ def perform_consistency_check(app, doctree):
         fname = app.config.traceability_json_export_path
         env.traceability_collection.export(fname)
 
+    with open(path.join(path.dirname(__file__), 'assets', 'hyperlink_colors.css'), 'w') as css_file:
+        for regex, colors in app.config.traceability_hyperlink_colors.items():
+            colors = tuple(colors)
+            if len(colors) > 3:
+                report_warning(env,
+                               "Regex '%s' can take a maximum of 3 colors in traceability_hyperlink_colors." % regex)
+                continue
+            build_class_name(colors)
+            class_name = class_names[colors]
+            for idx, color in enumerate(colors):
+                if not color:
+                    continue
+                if idx == 0:
+                    selectors = ".{0}".format(class_name)
+                elif idx == 1:
+                    selectors = ".{0}:active,\n.{0}:hover".format(class_name)
+                else:
+                    selectors = ".{0}:visited".format(class_name)
+                css_file.write("%s {\n\tcolor: %s;\n}\n" % (selectors, color))
+
 
 def process_item_nodes(app, doctree, fromdocname):
     """
@@ -1120,7 +1157,7 @@ def process_item_nodes(app, doctree, fromdocname):
         for attr in node['attributes']:
             colspecs.append(nodes.colspec(colwidth=5))
             p_node = nodes.paragraph()
-            p_node += make_attribute_ref(app, node, fromdocname, attr)
+            p_node += make_attribute_ref(app, fromdocname, attr)
             hrow.append(nodes.entry('', p_node))
         tgroup += colspecs
         tgroup += nodes.thead('', hrow)
@@ -1296,7 +1333,7 @@ def process_item_nodes(app, doctree, fromdocname):
                 for attr in currentitem.iter_attributes():
                     dd_node = nodes.definition()
                     p_node = nodes.paragraph()
-                    link = make_attribute_ref(app, node, fromdocname, attr, currentitem.get_attribute(attr))
+                    link = make_attribute_ref(app, fromdocname, attr, currentitem.get_attribute(attr))
                     p_node.append(link)
                     dd_node.append(p_node)
                     li_node.append(dd_node)
@@ -1509,6 +1546,8 @@ def make_internal_item_ref(app, node, fromdocname, item_id, caption=True):
             caption = ''
 
         newnode = nodes.reference('', '')
+        if app.config.traceability_hyperlink_colors:
+            add_color_class(app, newnode, item_id)
         innernode = nodes.emphasis(item_id + caption, item_id + caption)
         newnode['refdocname'] = item_info.docname
         try:
@@ -1524,7 +1563,7 @@ def make_internal_item_ref(app, node, fromdocname, item_id, caption=True):
     return p_node
 
 
-def make_attribute_ref(app, node, fromdocname, attr_id, value=''):
+def make_attribute_ref(app, fromdocname, attr_id, value=''):
     """
     Creates a reference node for an attribute, embedded in a paragraph.
     """
@@ -1568,6 +1607,7 @@ def setup(app):
     app.add_javascript('https://cdn.rawgit.com/aexmachina/jquery-bonsai/master/jquery.bonsai.js')
     app.add_stylesheet('https://cdn.rawgit.com/aexmachina/jquery-bonsai/master/jquery.bonsai.css')
     app.add_javascript('traceability.js')
+    app.add_stylesheet('hyperlink_colors.css')
 
     # Configuration for exporting collection to json
     app.add_config_value('traceability_json_export_path',
@@ -1655,6 +1695,9 @@ def setup(app):
     # Configuration for disabling the rendering of the captions for item-tree
     app.add_config_value('traceability_tree_no_captions',
                          False, 'env')
+
+    # Configuration for customizing the color of hyperlinked items
+    app.add_config_value('traceability_hyperlink_colors', {}, 'env')
 
     app.add_node(ItemTree)
     app.add_node(ItemMatrix)
