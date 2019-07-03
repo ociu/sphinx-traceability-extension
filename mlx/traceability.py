@@ -1560,9 +1560,6 @@ def make_internal_item_ref(app, node, fromdocname, item_id, caption=True):
             caption = ''
 
         newnode = nodes.reference('', '')
-        if app.config.traceability_hyperlink_colors:
-            class_name = find_color_class(app.config.traceability_hyperlink_colors, item_id)
-            newnode['classes'].append(class_name)
         innernode = nodes.emphasis(item_id + caption, item_id + caption)
         newnode['refdocname'] = item_info.docname
         try:
@@ -1572,6 +1569,9 @@ def make_internal_item_ref(app, node, fromdocname, item_id, caption=True):
         except NoUri:
             # ignore if no URI can be determined, e.g. for LaTeX output :(
             pass
+        # change text color if item_id matches a regex in traceability_hyperlink_colors
+        class_name = find_color_class(app.config.traceability_hyperlink_colors, item_id)
+        newnode['classes'].append(class_name)
         newnode.append(innernode)
         p_node += newnode
 
