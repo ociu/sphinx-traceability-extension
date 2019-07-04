@@ -9,7 +9,7 @@
 
 # Add files or directories to the blacklist. They should be base names, not
 # paths.
-ignore=CVS, conf.py
+ignore=CVS, conf.py, __init__.py, setup.py
 
 # Pickle collected data for later comparisons.
 persistent=yes
@@ -44,7 +44,7 @@ extension-pkg-whitelist=
 # --enable=similarities". If you want to run only the classes checker, but have
 # no Warning level messages displayed, use"--disable=all --enable=classes
 # --disable=W"
-disable=C0301, C0325, W0403, C0201, R0913, R0911, R0904
+disable=C0301, C0325, W0403, C0201, R0913, R0911, R0904, E0401, R0205
 #C0325 - disabled because we want to use print with parenthesis
 #C0301 - because line limit is checked by pep8 plugin
 #W0403 - because relative-imports are key inside unit-tests
@@ -52,6 +52,8 @@ disable=C0301, C0325, W0403, C0201, R0913, R0911, R0904
 #R0913 - because the amount of arguments is checked by code climate
 #R0911 - because the amount of return statements is checked by code climate
 #R0904 - because the amount of methods is checked by code climate
+#E0401 - ignore import error because in code climate dependencies aren't installed
+#R0205 - ignore inheritance from object for py2 compatibility
 
 [REPORTS]
 
@@ -296,7 +298,7 @@ max-parents=7
 max-attributes=7
 
 # Minimum number of public methods for a class (see R0903).
-min-public-methods=2
+min-public-methods=0
 
 # Maximum number of public methods for a class (see R0904).
 max-public-methods=20
