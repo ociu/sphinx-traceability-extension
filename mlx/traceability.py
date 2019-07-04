@@ -102,13 +102,13 @@ def write_color_commands(css_file, colors):
     """
     class_name = class_names[colors]
     for idx, color in enumerate(colors):
+        if idx == 0:
+            selectors = ".{0}".format(class_name)
+        elif idx == 1:
+            selectors = ".{0}:active,\n.{0}:hover".format(class_name)
+        else:
+            selectors = ".{0}:visited".format(class_name)
         if color:
-            if idx == 0:
-                selectors = ".{0}".format(class_name)
-            elif idx == 1:
-                selectors = ".{0}:active,\n.{0}:hover".format(class_name)
-            else:
-                selectors = ".{0}:visited".format(class_name)
             css_file.write("%s {\n\tcolor: %s;\n}\n" % (selectors, color))
 
 
