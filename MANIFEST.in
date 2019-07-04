@@ -6,6 +6,7 @@ include mlx/assets/*.js
 
 
 exclude mlx __traceability_version__.py
+exclude .pylintrc
 
 # added by check_manifest.py
 include LICENSE.txt
