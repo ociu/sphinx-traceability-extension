@@ -55,7 +55,5 @@ plugins:
     config:
       tests_patterns:
         - tests/**
-  pep8:
-    enabled: true
 exclude_patterns:
 - tests/
