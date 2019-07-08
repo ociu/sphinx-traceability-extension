@@ -348,10 +348,10 @@ Custom colors for linked items
 ==============================
 
 The plugin allows customization of the colors of traceable items in order to easily recognize the type of item which is
-linked to. A dictionary in the configuration file defines the regexm, which is used to match item IDs, as key and a
+linked to. A dictionary in the configuration file defines the regexp, which is used to match item IDs, as key and a
 tuple of 1-3 color defining strings as value. The first color is used for the default hyperlink state, the second color
 is used for the hover and active states, and the third color is used to override the default color of the visted state.
-Leaving a color empty results in the use of the default html style. The top regex has the highest priority. To supported
+Leaving a color empty results in the use of the default html style. The top regexp has the highest priority. To support
 Python versions lower than 3.7, we use an :code:`OrderedDict` to have a deterministic order for prioritizing regexes.
 
 .. code-block:: python
