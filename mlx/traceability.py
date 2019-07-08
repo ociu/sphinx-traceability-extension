@@ -932,7 +932,6 @@ def perform_consistency_check(app, doctree):
     Used to perform the self-test on the collection of items
     '''
     env = app.builder.env
-    print(type(env))
 
     try:
         env.traceability_collection.self_test()
