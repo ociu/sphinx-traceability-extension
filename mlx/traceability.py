@@ -37,6 +37,7 @@ if sphinx_version >= '1.6.0':
 # hyperlink is done through the config traceability_external_relationship_to_url.
 REGEXP_EXTERNAL_RELATIONSHIP = re.compile('^ext_.*')
 EXTERNAL_LINK_FIELDNAME = 'field'
+class_names = {}
 
 
 def report_warning(env, msg, docname=None, lineno=None):
@@ -68,6 +69,79 @@ def pct_wrapper(sizes):
         absolute = int(round(pct / 100 * sum(sizes)))
         return "{:.0f}%\n({:d})".format(pct, absolute)
     return make_pct
+
+
+def generate_color_css(env, hyperlink_colors):
+    """ Generates CSS file that defines the colors for each hyperlink state for each configured regex.
+
+    Args:
+        env (sphinx.environment.BuildEnvironment): The build environment.
+        hyperlink_colors (OrderedDict): Ordered dict with regex strings as keys and list/tuple of strings as values.
+    """
+    with open(path.join(path.dirname(__file__), 'assets', 'hyperlink_colors.css'), 'w') as css_file:
+        for regex, colors in hyperlink_colors.items():
+            colors = tuple(colors)
+            if len(colors) > 3:
+                report_warning(env,
+                               "Regex '%s' can take a maximum of 3 colors in traceability_hyperlink_colors." % regex)
+            else:
+                build_class_name(colors)
+                write_color_commands(css_file, colors)
+
+
+def write_color_commands(css_file, colors):
+    """
+    Write a color command in the file for each color in the given tuple. The CSS identifier is fetched from the global
+    `class_names` dictionary. The first color is used for the default hyperlink state, the second color for the active
+    and the hover state, and the third color for the visited state. No CSS code is written when the color is an empty
+    string.
+
+    Args:
+        css_file (file): Open writeable file object.
+        colors (tuple): Tuple of strings representing colors.
+    """
+    class_name = class_names[colors]
+    for idx, color in enumerate(colors):
+        if idx == 0:
+            selectors = ".{0}".format(class_name)
+        elif idx == 1:
+            selectors = ".{0}:active,\n.{0}:hover".format(class_name)
+        else:
+            selectors = ".{0}:visited".format(class_name)
+        if color:
+            css_file.write("%s {\n\tcolor: %s;\n}\n" % (selectors, color))
+
+
+def find_color_class(hyperlink_colors, item_id):
+    """
+    Returns CSS class identifier to change a node's text color if the item ID matches a regex in hyperlink_colors. The
+    regex of the first item in the ordered dictionary has the highest priority.
+
+    Args:
+        hyperlink_colors (OrderedDict): Ordered dict with regex strings as keys and list/tuple of strings as values.
+        item_id (str): A traceability item ID.
+    Returns:
+        (str) CSS identifier that exists as a value in `class_names`
+    """
+    for regex, colors in hyperlink_colors.items():
+        colors = tuple(colors)
+        if re.search(regex, item_id):
+            return class_names[colors]
+    return ''
+
+
+def build_class_name(inputs):
+    """
+    Builds class name based on a tuple of strings that represent a color in CSS. Adds this name as value to the global
+    dictionary `class_names` with the input tuple as key.
+
+    Args:
+        inputs (tuple): Tuple of strings.
+    """
+    name = '_'.join(inputs)
+    trans_table = str.maketrans("#,.%", "h-dp", " ()")
+    name = name.translate(trans_table)
+    class_names[inputs] = name.lower()
 
 # -----------------------------------------------------------------------------
 # Declare new node types
@@ -873,6 +947,9 @@ def perform_consistency_check(app, doctree):
         fname = app.config.traceability_json_export_path
         env.traceability_collection.export(fname)
 
+    if app.config.traceability_hyperlink_colors:
+        generate_color_css(env, app.config.traceability_hyperlink_colors)
+
 
 def process_item_nodes(app, doctree, fromdocname):
     """
@@ -1120,7 +1197,7 @@ def process_item_nodes(app, doctree, fromdocname):
         for attr in node['attributes']:
             colspecs.append(nodes.colspec(colwidth=5))
             p_node = nodes.paragraph()
-            p_node += make_attribute_ref(app, node, fromdocname, attr)
+            p_node += make_attribute_ref(app, fromdocname, attr)
             hrow.append(nodes.entry('', p_node))
         tgroup += colspecs
         tgroup += nodes.thead('', hrow)
@@ -1296,7 +1373,7 @@ def process_item_nodes(app, doctree, fromdocname):
                 for attr in currentitem.iter_attributes():
                     dd_node = nodes.definition()
                     p_node = nodes.paragraph()
-                    link = make_attribute_ref(app, node, fromdocname, attr, currentitem.get_attribute(attr))
+                    link = make_attribute_ref(app, fromdocname, attr, currentitem.get_attribute(attr))
                     p_node.append(link)
                     dd_node.append(p_node)
                     li_node.append(dd_node)
@@ -1518,13 +1595,16 @@ def make_internal_item_ref(app, node, fromdocname, item_id, caption=True):
         except NoUri:
             # ignore if no URI can be determined, e.g. for LaTeX output :(
             pass
+        # change text color if item_id matches a regex in traceability_hyperlink_colors
+        class_name = find_color_class(app.config.traceability_hyperlink_colors, item_id)
+        newnode['classes'].append(class_name)
         newnode.append(innernode)
         p_node += newnode
 
     return p_node
 
 
-def make_attribute_ref(app, node, fromdocname, attr_id, value=''):
+def make_attribute_ref(app, fromdocname, attr_id, value=''):
     """
     Creates a reference node for an attribute, embedded in a paragraph.
     """
@@ -1568,6 +1648,7 @@ def setup(app):
     app.add_javascript('https://cdn.rawgit.com/aexmachina/jquery-bonsai/master/jquery.bonsai.js')
     app.add_stylesheet('https://cdn.rawgit.com/aexmachina/jquery-bonsai/master/jquery.bonsai.css')
     app.add_javascript('traceability.js')
+    app.add_stylesheet('hyperlink_colors.css')
 
     # Configuration for exporting collection to json
     app.add_config_value('traceability_json_export_path',
@@ -1655,6 +1736,9 @@ def setup(app):
     # Configuration for disabling the rendering of the captions for item-tree
     app.add_config_value('traceability_tree_no_captions',
                          False, 'env')
+
+    # Configuration for customizing the color of hyperlinked items
+    app.add_config_value('traceability_hyperlink_colors', {}, 'env')
 
     app.add_node(ItemTree)
     app.add_node(ItemMatrix)
