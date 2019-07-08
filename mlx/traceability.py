@@ -76,7 +76,7 @@ def generate_color_css(env, hyperlink_colors):
 
     Args:
         env (sphinx.environment.BuildEnvironment): The build environment.
-        hyperlink_colors (dict): Dict with regex strings as keys and list/tuple of strings as values.
+        hyperlink_colors (OrderedDict): Ordered dict with regex strings as keys and list/tuple of strings as values.
     """
     with open(path.join(path.dirname(__file__), 'assets', 'hyperlink_colors.css'), 'w') as css_file:
         for regex, colors in hyperlink_colors.items():
@@ -113,10 +113,12 @@ def write_color_commands(css_file, colors):
 
 
 def find_color_class(hyperlink_colors, item_id):
-    """ Returns CSS class identifier to change a node's text color if the item ID matches a regex in hyperlink_colors.
+    """
+    Returns CSS class identifier to change a node's text color if the item ID matches a regex in hyperlink_colors. The
+    regex of the first item in the ordered dictionary has the highest priority.
 
     Args:
-        hyperlink_colors (dict): Dict with regex strings as keys and list/tuple of strings as values.
+        hyperlink_colors (OrderedDict): Ordered dict with regex strings as keys and list/tuple of strings as values.
         item_id (str): A traceability item ID.
     Returns:
         (str) CSS identifier that exists as a value in `class_names`
