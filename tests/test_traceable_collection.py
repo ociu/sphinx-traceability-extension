@@ -281,18 +281,18 @@ class TestTraceableCollection(TestCase):
     def test_get_items(self):
         coll = dut.TraceableCollection()
         coll.add_relation_pair(self.fwd_relation, self.rev_relation)
-        self.assertEqual(0, len(coll.get_items('\w*')))
+        self.assertEqual(0, len(coll.get_items(r'\w*')))
         item1 = item.TraceableItem(self.identification_src)
         coll.add_item(item1)
         coll.add_relation(self.identification_src,
                           self.fwd_relation,
                           self.identification_tgt)
         # placeholder should be excluded
-        self.assertEqual(1, len(coll.get_items('\w*')))
+        self.assertEqual(1, len(coll.get_items(r'\w*')))
         item2 = item.TraceableItem(self.identification_tgt)
         # placeholder is replaced by actual item
         coll.add_item(item2)
-        self.assertEqual(2, len(coll.get_items('\w*')))
+        self.assertEqual(2, len(coll.get_items(r'\w*')))
         # Empty filter should match all items
         self.assertEqual(2, len(coll.get_items('')))
 

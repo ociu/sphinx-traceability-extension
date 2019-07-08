@@ -342,8 +342,8 @@ class TestTraceableItem(TestCase):
         self.assertFalse(item.is_match('some-name-that(will-definitely)not-match'))
         self.assertTrue(item.is_match('some'))
         self.assertTrue(item.is_match('some-random'))
-        self.assertTrue(item.is_match('\w+'))
-        self.assertTrue(item.is_match('[\w-]+andom'))
+        self.assertTrue(item.is_match(r'\w+'))
+        self.assertTrue(item.is_match(r'[\w-]+andom'))
 
     def test_attributes_match(self):
         item = dut.TraceableItem(self.identification)
