@@ -8,76 +8,39 @@ See readme for more details.
 '''
 
 from __future__ import print_function
-import re
-from os import path, mkdir, environ
-from hashlib import sha256
-import matplotlib as mpl
-if not environ.get('DISPLAY'):
-    mpl.use('Agg')
-import matplotlib.pyplot as plt
+from collections import OrderedDict
+from os import path
 from sphinx.roles import XRefRole
 from sphinx.util.nodes import make_refnode
 from sphinx.environment import NoUri
-from sphinx.builders.latex import LaTeXBuilder
-from docutils.parsers.rst import Directive
 from docutils import nodes
 from docutils.parsers.rst import directives
 from docutils.utils import get_source_line
 from mlx.traceable_attribute import TraceableAttribute
 from mlx.traceable_item import TraceableItem
 from mlx.traceable_collection import TraceableCollection
-from mlx.traceability_exception import TraceabilityException, MultipleTraceabilityExceptions
+from mlx.traceability_exception import TraceabilityException, MultipleTraceabilityExceptions, report_warning
+from mlx.directives.item_directive import Item, ItemDirective
+from mlx.directives.item_2d_matrix_directive import Item2DMatrix, Item2DMatrixDirective
+from mlx.directives.item_attribute_directive import ItemAttribute, ItemAttributeDirective
+from mlx.directives.item_attributes_matrix_directive import ItemAttributesMatrix, ItemAttributesMatrixDirective
+from mlx.directives.item_link_directive import ItemLink, ItemLinkDirective
+from mlx.directives.item_list_directive import ItemList, ItemListDirective
+from mlx.directives.item_matrix_directive import ItemMatrix, ItemMatrixDirective
+from mlx.directives.item_pie_chart_directive import ItemPieChart, ItemPieChartDirective
+from mlx.directives.item_tree_directive import ItemTree, ItemTreeDirective
 from sphinx import __version__ as sphinx_version
-if sphinx_version >= '1.6.0':
-    from sphinx.util.logging import getLogger
-
-# External relationship: starts with ext_
-# An external relationship is a relationship where the item to link to is not in the
-# traceability system, but on an external tool. Translating the link to a clickable
-# hyperlink is done through the config traceability_external_relationship_to_url.
-REGEXP_EXTERNAL_RELATIONSHIP = re.compile('^ext_.*')
-EXTERNAL_LINK_FIELDNAME = 'field'
-class_names = {}
 
 
-def report_warning(env, msg, docname=None, lineno=None):
-    '''Convenience function for logging a warning
-
-    Args:
-        msg (any __str__): Message of the warning, gets converted to str
-        docname (str): Name of the document on which the error occured
-        lineno (str): Line number in the document on which the error occured
-    '''
-    msg = str(msg)
-    if sphinx_version >= '1.6.0':
-        logger = getLogger(__name__)
-        if lineno is not None:
-            logger.warning(msg, location=(docname, lineno))
-        else:
-            logger.warning(msg, location=docname)
-    else:
-        env.warn(docname, msg, lineno=lineno)
-
-
-def pct_wrapper(sizes):
-    """ Helper function for matplotlib which returns the percentage and the absolute size of the slice.
-
-    Args:
-        sizes (list): List containing the amount of elements per slice.
-    """
-    def make_pct(pct):
-        absolute = int(round(pct / 100 * sum(sizes)))
-        return "{:.0f}%\n({:d})".format(pct, absolute)
-    return make_pct
-
-
-def generate_color_css(env, hyperlink_colors):
+def generate_color_css(app, hyperlink_colors):
     """ Generates CSS file that defines the colors for each hyperlink state for each configured regex.
 
     Args:
-        env (sphinx.environment.BuildEnvironment): The build environment.
+        app: Sphinx application object to use.
         hyperlink_colors (OrderedDict): Ordered dict with regex strings as keys and list/tuple of strings as values.
     """
+    env = app.builder.env
+    class_names = app.config.class_names
     with open(path.join(path.dirname(__file__), 'assets', 'hyperlink_colors.css'), 'w') as css_file:
         for regex, colors in hyperlink_colors.items():
             colors = tuple(colors)
@@ -85,11 +48,11 @@ def generate_color_css(env, hyperlink_colors):
                 report_warning(env,
                                "Regex '%s' can take a maximum of 3 colors in traceability_hyperlink_colors." % regex)
             else:
-                build_class_name(colors)
-                write_color_commands(css_file, colors)
+                build_class_name(colors, class_names)
+                write_color_commands(css_file, colors, class_names[colors])
 
 
-def write_color_commands(css_file, colors):
+def write_color_commands(css_file, colors, class_name):
     """
     Write a color command in the file for each color in the given tuple. The CSS identifier is fetched from the global
     `class_names` dictionary. The first color is used for the default hyperlink state, the second color for the active
@@ -99,8 +62,8 @@ def write_color_commands(css_file, colors):
     Args:
         css_file (file): Open writeable file object.
         colors (tuple): Tuple of strings representing colors.
+        class_name (str): CSS class identifier to use.
     """
-    class_name = class_names[colors]
     for idx, color in enumerate(colors):
         if idx == 0:
             selectors = ".{0}".format(class_name)
@@ -112,84 +75,19 @@ def write_color_commands(css_file, colors):
             css_file.write("%s {\n\tcolor: %s;\n}\n" % (selectors, color))
 
 
-def find_color_class(hyperlink_colors, item_id):
+def build_class_name(inputs, class_names):
     """
-    Returns CSS class identifier to change a node's text color if the item ID matches a regex in hyperlink_colors. The
-    regex of the first item in the ordered dictionary has the highest priority.
-
-    Args:
-        hyperlink_colors (OrderedDict): Ordered dict with regex strings as keys and list/tuple of strings as values.
-        item_id (str): A traceability item ID.
-    Returns:
-        (str) CSS identifier that exists as a value in `class_names`
-    """
-    for regex, colors in hyperlink_colors.items():
-        colors = tuple(colors)
-        if re.search(regex, item_id):
-            return class_names[colors]
-    return ''
-
-
-def build_class_name(inputs):
-    """
-    Builds class name based on a tuple of strings that represent a color in CSS. Adds this name as value to the global
+    Builds class name based on a tuple of strings that represent a color in CSS. Adds this name as value to the
     dictionary `class_names` with the input tuple as key.
 
     Args:
         inputs (tuple): Tuple of strings.
+        class_names (dict): Dictionary with tuple of color strings as key and corresponding class_name string as value.
     """
     name = '_'.join(inputs)
     trans_table = str.maketrans("#,.%", "h-dp", " ()")
     name = name.translate(trans_table)
     class_names[inputs] = name.lower()
-
-# -----------------------------------------------------------------------------
-# Declare new node types
-
-
-class Item(nodes.General, nodes.Element):
-    '''Documentation item'''
-    pass
-
-
-class ItemAttribute(nodes.General, nodes.Element):
-    '''Attribute to documentation item'''
-    pass
-
-
-class ItemList(nodes.General, nodes.Element):
-    '''List of documentation items'''
-    pass
-
-
-class ItemMatrix(nodes.General, nodes.Element):
-    '''Matrix for cross referencing documentation items'''
-    pass
-
-
-class ItemPieChart(nodes.General, nodes.Element):
-    '''Pie chart on documentation items'''
-    pass
-
-
-class ItemAttributesMatrix(nodes.General, nodes.Element):
-    '''Matrix for referencing documentation items with their attributes'''
-    pass
-
-
-class Item2DMatrix(nodes.General, nodes.Element):
-    '''Matrix for cross referencing documentation items in 2 dimensions'''
-    pass
-
-
-class ItemTree(nodes.General, nodes.Element):
-    '''Tree-view on documentation items'''
-    pass
-
-
-class ItemLink(nodes.General, nodes.Element):
-    '''List of documentation items'''
-    pass
 
 
 # -----------------------------------------------------------------------------
@@ -197,730 +95,46 @@ class ItemLink(nodes.General, nodes.Element):
 
 
 class PendingItemXref(nodes.Inline, nodes.Element):
-    """
-    Node for item cross-references that cannot be resolved without
-    complete information about all documents.
-
-    """
-    pass
-
-
-# -----------------------------------------------------------------------------
-# Directives
-
-
-class ItemDirective(Directive):
-    """
-    Directive to declare items and their traceability relationships.
-
-    Syntax::
-
-      .. item:: item_id [item_caption]
-         :<<relationship>>:  other_item_id ...
-         :<<attribute>>: attribute_value
-         ...
-         :nocaptions:
-
-         [item_content]
-
-    When run, for each item, two nodes will be returned:
-
-    * A target node
-    * A custom node with id + caption, to be replaced with relationship links
-    * A node containing the content of the item
-
-    Also ``traceability_collection`` storage is filled with item information
-
-    """
-    # Required argument: id
-    required_arguments = 1
-    # Optional argument: caption (whitespace allowed)
-    optional_arguments = 1
-    final_argument_whitespace = True
-    # Options: the typical ones plus every relationship (and reverse)
-    # defined in env.config.traceability_relationships
-    option_spec = {'class': directives.class_option,
-                   'nocaptions': directives.flag}
-    # Content allowed
-    has_content = True
-
-    def run(self):
-        env = self.state.document.settings.env
-        app = env.app
-        caption = ''
-
-        targetid = self.arguments[0]
-        targetnode = nodes.target('', '', ids=[targetid])
-
-        itemnode = Item('')
-        itemnode['id'] = targetid
-
-        # Item caption is the text following the mandatory id argument.
-        # Caption should be considered a line of text. Remove line breaks.
-        if len(self.arguments) > 1:
-            caption = self.arguments[1].replace('\n', ' ')
-
-        # Store item info
-        item = TraceableItem(targetid)
-        item.set_document(env.docname, self.lineno)
-        item.bind_node(targetnode)
-        item.set_caption(caption)
-        item.set_content('\n'.join(self.content))
-        try:
-            env.traceability_collection.add_item(item)
-        except TraceabilityException as err:
-            report_warning(env, err, env.docname, self.lineno)
-
-        # Add found attributes to item. Attribute data is a single string.
-        for attribute in TraceableItem.defined_attributes.keys():
-            if attribute in self.options:
-                try:
-                    item.add_attribute(attribute, self.options[attribute])
-                except TraceabilityException as err:
-                    report_warning(env, err, env.docname, self.lineno)
-
-        # Add found relationships to item. All relationship data is a string of
-        # item ids separated by space. It is splitted in a list of item ids
-        for rel in env.traceability_collection.iter_relations():
-            if rel in self.options:
-                related_ids = self.options[rel].split()
-                for related_id in related_ids:
-                    try:
-                        env.traceability_collection.add_relation(targetid, rel, related_id)
-                    except TraceabilityException as err:
-                        report_warning(env, err, env.docname, self.lineno)
-
-        # Custom callback for modifying items
-        if app.config.traceability_callback_per_item:
-            app.config.traceability_callback_per_item(targetid, env.traceability_collection)
-
-        # Output content of item to document
-        template = []
-        for line in self.content:
-            template.append('    ' + line)
-        self.state_machine.insert_input(template, self.state_machine.document.attributes['source'])
-
-        # Check nocaptions flag
-        if 'nocaptions' in self.options:
-            itemnode['nocaptions'] = True
-        elif app.config.traceability_item_no_captions:
-            itemnode['nocaptions'] = True
-        else:
-            itemnode['nocaptions'] = False
-
-        return [targetnode, itemnode]
-
-
-class ItemAttributeDirective(Directive):
-    """
-    Directive to declare attribute for items
-
-    Syntax::
-
-      .. item-attribute:: attribute_id [attribute_caption]
-
-         [attribute_content]
-
-    """
-    # Required argument: id
-    required_arguments = 1
-    # Optional argument: caption (whitespace allowed)
-    optional_arguments = 1
-    final_argument_whitespace = True
-    # Content allowed
-    has_content = True
-
-    def run(self):
-        env = self.state.document.settings.env
-
-        # Convert to lower-case as sphinx only allows lowercase arguments (attribute to item directive)
-        attrid = self.arguments[0]
-        targetnode = nodes.target('', '', ids=[attrid])
-        attrnode = ItemAttribute('')
-
-        # Item caption is the text following the mandatory id argument.
-        # Caption should be considered a line of text. Remove line breaks.
-        caption = ''
-        if len(self.arguments) > 1:
-            caption = self.arguments[1].replace('\n', ' ')
-
-        stored_id = TraceableAttribute.to_id(attrid)
-        if stored_id not in TraceableItem.defined_attributes.keys():
-            report_warning(env, 'Found attribute description which is not defined in configuration ({attr})'.format(attr=attrid),
-                           env.docname, self.lineno)
-            attrnode['id'] = stored_id
-        else:
-            attr = TraceableItem.defined_attributes[stored_id]
-            attr.set_caption(caption)
-            attr.set_document(env.docname, self.lineno)
-            attrnode['id'] = attr.get_id()
-
-        # Output content of attribute to document
-        template = []
-        for line in self.content:
-            template.append('    ' + line)
-        self.state_machine.insert_input(template, self.state_machine.document.attributes['source'])
-
-
-        return [targetnode, attrnode]
-
-
-class ItemListDirective(Directive):
-    """
-    Directive to generate a list of items.
-
-    Syntax::
-
-      .. item-list:: title
-         :filter: regexp
-         :<<attribute>>: regexp
-         :nocaptions:
-
-    """
-    # Optional argument: title (whitespace allowed)
-    optional_arguments = 1
-    final_argument_whitespace = True
-    # Options
-    option_spec = {'class': directives.class_option,
-                   'filter': directives.unchanged,
-                   'nocaptions': directives.flag}
-    # Content disallowed
-    has_content = False
-
-    def run(self):
-        env = self.state.document.settings.env
-        app = env.app
-
-        item_list_node = ItemList('')
-
-        # Process title (optional argument)
-        if len(self.arguments) > 0:
-            item_list_node['title'] = self.arguments[0]
-        else:
-            item_list_node['title'] = 'List of items'
-
-        # Process ``filter`` option
-        if 'filter' in self.options:
-            item_list_node['filter'] = self.options['filter']
-        else:
-            item_list_node['filter'] = ''
-
-        # Add found attributes to item. Attribute data is a single string.
-        item_list_node['filter-attributes'] = {}
-        for attr in TraceableItem.defined_attributes.keys():
-            if attr in self.options:
-                item_list_node['filter-attributes'][attr] = self.options[attr]
-
-        # Check nocaptions flag
-        if 'nocaptions' in self.options:
-            item_list_node['nocaptions'] = True
-        elif app.config.traceability_list_no_captions:
-            item_list_node['nocaptions'] = True
-        else:
-            item_list_node['nocaptions'] = False
-
-        return [item_list_node]
-
-
-class ItemLinkDirective(Directive):
-    """
-    Directive to add additional relations between lists of items.
-
-    Syntax::
-
-      .. item-link::
-         :sources: list_of_items
-         :targets: list_of_items
-         :type: relationship_type
-
-    """
-    final_argument_whitespace = True
-    # Options
-    option_spec = {'sources': directives.unchanged,
-                   'targets': directives.unchanged,
-                   'type': directives.unchanged}
-    # Content disallowed
-    has_content = False
-
-    def run(self):
-        env = self.state.document.settings.env
-
-        node = ItemLink('')
-        node['sources'] = []
-        node['targets'] = []
-        node['type'] = None
-
-        if 'sources' in self.options:
-            node['sources'] = self.options['sources'].split()
-        else:
-            report_warning(env, 'sources argument required for item-link directive', env.docname, self.lineno)
-            return []
-        if 'targets' in self.options:
-            node['targets'] = self.options['targets'].split()
-        else:
-            report_warning(env, 'targets argument required for item-link directive', env.docname, self.lineno)
-            return []
-        if 'type' in self.options:
-            node['type'] = self.options['type']
-        else:
-            report_warning(env, 'type argument required for item-link directive', env.docname, self.lineno)
-            return []
-
-        # Processing of the item-link items. They get added as additional relationships
-        # to the existing items. Should be done before converting anything to docutils.
-        for source in node['sources']:
-            for target in node['targets']:
-                try:
-                    env.traceability_collection.add_relation(source, node['type'], target)
-                except TraceabilityException as err:
-                    docname, lineno = get_source_line(node)
-                    report_warning(env, err, docname, lineno)
-
-        # The ItemLink node has no final representation, so is removed from the tree
-        return [node]
-
-
-class ItemMatrixDirective(Directive):
-    """
-    Directive to generate a matrix of item cross-references, based on
-    a given set of relationship types.
-
-    Syntax::
-
-      .. item-matrix:: title
-         :target: regexp
-         :source: regexp
-         :<<attribute>>: regexp
-         :targettitle: Target column header
-         :sourcetitle: Source column header
-         :type: <<relationship>> ...
-         :stats:
-         :nocaptions:
-    """
-    # Optional argument: title (whitespace allowed)
-    optional_arguments = 1
-    final_argument_whitespace = True
-    # Options
-    option_spec = {'class': directives.class_option,
-                   'target': directives.unchanged,
-                   'source': directives.unchanged,
-                   'targettitle': directives.unchanged,
-                   'sourcetitle': directives.unchanged,
-                   'type': directives.unchanged,
-                   'stats': directives.flag,
-                   'nocaptions': directives.flag}
-    # Content disallowed
-    has_content = False
-
-    def run(self):
-        env = self.state.document.settings.env
-        app = env.app
-
-        item_matrix_node = ItemMatrix('')
-
-        if self.options.get('class'):
-            item_matrix_node.get('classes').extend(self.options.get('class'))
-
-        # Process title (optional argument)
-        if len(self.arguments) > 0:
-            item_matrix_node['title'] = self.arguments[0]
-        else:
-            item_matrix_node['title'] = 'Traceability matrix of items'
-
-        # Add found attributes to item. Attribute data is a single string.
-        item_matrix_node['filter-attributes'] = {}
-        for attr in TraceableItem.defined_attributes.keys():
-            if attr in self.options:
-                item_matrix_node['filter-attributes'][attr] = self.options[attr]
-
-        # Process ``target`` & ``source`` options
-        for option in ('target', 'source'):
-            if option in self.options:
-                item_matrix_node[option] = self.options[option]
+    """Node for item cross-references that cannot be resolved without complete information about all documents."""
+
+    def perform_traceability_replacement(self, app, collection, fromdocname):
+        """ Resolves item cross references (from ``item`` role).
+
+        Args:
+            app: Sphinx application object to use.
+            collection (TraceableCollection): Collection for which to generate the nodes.
+            fromdocname (str): Name of the document where the node was found.
+        """
+        env = app.builder.env
+        # Create a dummy reference to be used if target reference fails
+        new_node = make_refnode(app.builder,
+                                fromdocname,
+                                fromdocname,
+                                'ITEM_NOT_FOUND',
+                                self[0].deepcopy(),
+                                self['reftarget'] + '??')
+        # If target exists, try to create the reference
+        item_info = collection.get_item(self['reftarget'])
+        docname, lineno = get_source_line(self)
+        if item_info:
+            if item_info.is_placeholder():
+                report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_info.get_id(),
+                               docname, lineno)
             else:
-                item_matrix_node[option] = ''
-
-        # Process ``type`` option, given as a string with relationship types
-        # separated by space. It is converted to a list.
-        if 'type' in self.options:
-            item_matrix_node['type'] = self.options['type'].split()
+                try:
+                    new_node = make_refnode(app.builder,
+                                            fromdocname,
+                                            item_info.docname,
+                                            item_info.node['refid'],
+                                            self[0].deepcopy(),
+                                            self['reftarget'])
+                except NoUri:
+                    # ignore if no URI can be determined, e.g. for LaTeX output :(
+                    pass
         else:
-            item_matrix_node['type'] = []
-
-        # Check if given relationships are in configuration
-        for rel in item_matrix_node['type']:
-            if rel not in env.traceability_collection.iter_relations():
-                report_warning(env, 'Traceability: unknown relation for item-matrix: %s' % rel,
-                               env.docname, self.lineno)
-
-        # Check statistics flag
-        if 'stats' in self.options:
-            item_matrix_node['stats'] = True
-        else:
-            item_matrix_node['stats'] = False
-
-        # Check nocaptions flag
-        if 'nocaptions' in self.options:
-            item_matrix_node['nocaptions'] = True
-        elif app.config.traceability_matrix_no_captions:
-            item_matrix_node['nocaptions'] = True
-        else:
-            item_matrix_node['nocaptions'] = False
-
-        # Check source title
-        if 'sourcetitle' in self.options:
-            item_matrix_node['sourcetitle'] = self.options['sourcetitle']
-        else:
-            item_matrix_node['sourcetitle'] = 'Source'
-
-        # Check target title
-        if 'targettitle' in self.options:
-            item_matrix_node['targettitle'] = self.options['targettitle']
-        else:
-            item_matrix_node['targettitle'] = 'Target'
-
-        return [item_matrix_node]
-
-
-class ItemPieChartDirective(Directive):
-    """
-    Directive to generate a pie chart for coverage of item cross-references.
-
-    Syntax::
-
-      .. item-piechart:: title
-         :id_set: source_regexp target_regexp (nested_target_regexp)
-         :label_set: uncovered, covered(, executed)
-         :<<attribute>>: error, fail, pass ...
-
-    """
-    # Optional argument: title (whitespace allowed)
-    optional_arguments = 1
-    final_argument_whitespace = True
-    # Options
-    option_spec = {'class': directives.class_option,
-                   'id_set': directives.unchanged,
-                   'label_set': directives.unchanged}
-    # Content disallowed
-    has_content = False
-
-    def run(self):
-        env = self.state.document.settings.env
-
-        item_piechart_node = ItemPieChart('')
-
-        # Process title (optional argument)
-        if len(self.arguments) > 0:
-            item_piechart_node['title'] = self.arguments[0]
-
-        # Process ``id_set`` option
-        if 'id_set' in self.options and len(self.options['id_set']) >= 2:
-            item_piechart_node['id_set'] = self.options['id_set'].split()
-        else:
-            item_piechart_node['id_set'] = []
-            report_warning(env, 'Traceability: Expected at least two arguments in id_set.', env.docname, self.lineno)
-
-        # Process ``label_set`` option
-        default_labels = ['uncovered', 'covered', 'executed']
-        if 'label_set' in self.options:
-            item_piechart_node['label_set'] = [x.strip(' ') for x in self.options['label_set'].split(',')]
-            if len(item_piechart_node['label_set']) != len(item_piechart_node['id_set']):
-                item_piechart_node['label_set'].extend(
-                    default_labels[len(item_piechart_node['label_set']):len(item_piechart_node['id_set'])])
-        else:
-            id_amount = len(item_piechart_node['id_set'])
-            item_piechart_node['label_set'] = default_labels[:id_amount]  # default labels
-
-        # Add found attribute to item. Attribute data is a comma-separated list of strings
-        item_piechart_node['attribute'] = ''
-        item_piechart_node['priorities'] = []
-        for attr in TraceableItem.defined_attributes.keys():
-            if attr in self.options:
-                if len(item_piechart_node['id_set']) == 3:
-                    item_piechart_node['attribute'] = attr
-                    item_piechart_node['priorities'] = [x.strip(' ') for x in self.options[attr].split(',')]
-                else:
-                    report_warning(env,
-                                   'Traceability: The <<attribute>> option is only viable with an id_set with 3 '
-                                   'arguments.',
-                                   env.docname,
-                                   self.lineno,)
-                break
-
-        return [item_piechart_node]
-
-
-class ItemAttributesMatrixDirective(Directive):
-    """
-    Directive to generate a matrix of items with their attribute values.
-
-    Syntax::
-
-      .. item-attributes-matrix:: title
-         :filter: regexp
-         :<<attribute>>: regexp
-         :attributes: <<attribute>> ...
-         :sort: <attribute>> ...
-         :reverse:
-         :nocaptions:
-    """
-    # Optional argument: title (whitespace allowed)
-    optional_arguments = 1
-    final_argument_whitespace = True
-    # Options
-    option_spec = {'class': directives.class_option,
-                   'filter': directives.unchanged,
-                   'attributes': directives.unchanged,
-                   'sort': directives.unchanged,
-                   'reverse': directives.flag,
-                   'nocaptions': directives.flag}
-    # Content disallowed
-    has_content = False
-
-    def run(self):
-        env = self.state.document.settings.env
-        app = env.app
-
-        node = ItemAttributesMatrix('')
-
-        if self.options.get('class'):
-            node.get('classes').extend(self.options.get('class'))
-
-        # Process title (optional argument)
-        if len(self.arguments) > 0:
-            node['title'] = self.arguments[0]
-        else:
-            node['title'] = 'Matrix of items and attributes'
-
-        # Process ``filter`` options
-        if 'filter' in self.options:
-            node['filter'] = self.options['filter']
-        else:
-            node['filter'] = ''
-
-        # Add found attributes to item. Attribute data is a single string.
-        node['filter-attributes'] = {}
-        for attr in TraceableItem.defined_attributes.keys():
-            if attr in self.options:
-                node['filter-attributes'][attr] = self.options[attr]
-
-        # Process ``attributes`` option, given as a string with attributes
-        # separated by space. It is converted to a list.
-        if 'attributes' in self.options and self.options['attributes']:
-            node['attributes'] = self.options['attributes'].split()
-        else:
-            node['attributes'] = list(app.config.traceability_attributes.keys())
-
-        # Check if given attributes are in configuration
-        for attr in node['attributes']:
-            if attr not in TraceableItem.defined_attributes.keys():
-                report_warning(env, 'Traceability: unknown attribute for item-attributes-matrix: %s' % attr,
-                               env.docname, self.lineno)
-                node['attributes'].remove(attr)
-
-        # Process ``sort`` option, given as a string with attributes
-        # separated by space. It is converted to a list.
-        if 'sort' in self.options and self.options['sort']:
-            node['sort'] = self.options['sort'].split()
-            # Check if given sort-attributes are in configuration
-            for attr in node['sort']:
-                if attr not in TraceableItem.defined_attributes.keys():
-                    report_warning(env, 'Traceability: unknown sorting attribute for item-attributes-matrix: %s' % attr,
-                                   env.docname, self.lineno)
-                    node['sort'].remove(attr)
-        else:
-            node['sort'] = None
-
-        # Check reverse flag
-        if 'reverse' in self.options:
-            node['reverse'] = True
-        else:
-            node['reverse'] = False
-
-        # Check nocaptions flag
-        if 'nocaptions' in self.options:
-            node['nocaptions'] = True
-        elif app.config.traceability_attributes_matrix_no_captions:
-            node['nocaptions'] = True
-        else:
-            node['nocaptions'] = False
-
-        return [node]
-
-
-class Item2DMatrixDirective(Directive):
-    """
-    Directive to generate a 2D-matrix of item cross-references, based on
-    a given set of relationship types.
-
-    Syntax::
-
-      .. item-2d-matrix:: title
-         :target: regexp
-         :source: regexp
-         :<<attribute>>: regexp
-         :type: <<relationship>> ...
-
-    """
-    # Optional argument: title (whitespace allowed)
-    optional_arguments = 1
-    final_argument_whitespace = True
-    # Options
-    option_spec = {'class': directives.class_option,
-                   'target': directives.unchanged,
-                   'source': directives.unchanged,
-                   'hit': directives.unchanged,
-                   'miss': directives.unchanged,
-                   'type': directives.unchanged}
-    # Content disallowed
-    has_content = False
-
-    def run(self):
-        env = self.state.document.settings.env
-
-        node = Item2DMatrix('')
-
-        if self.options.get('class'):
-            node.get('classes').extend(self.options.get('class'))
-
-        # Process title (optional argument)
-        if len(self.arguments) > 0:
-            node['title'] = self.arguments[0]
-        else:
-            node['title'] = '2D traceability matrix of items'
-
-        # Process ``target`` & ``source`` options
-        for option in ('target', 'source'):
-            if option in self.options:
-                node[option] = self.options[option]
-            else:
-                node[option] = ''
-
-        # Add found attributes to item. Attribute data is a single string.
-        node['filter-attributes'] = {}
-        for attr in TraceableItem.defined_attributes.keys():
-            if attr in self.options:
-                node['filter-attributes'][attr] = self.options[attr]
-
-        # Process ``type`` option, given as a string with relationship types
-        # separated by space. It is converted to a list.
-        if 'type' in self.options:
-            node['type'] = self.options['type'].split()
-        else:
-            node['type'] = []
-
-        # Check if given relationships are in configuration
-        for rel in node['type']:
-            if rel not in env.traceability_collection.iter_relations():
-                report_warning(env, 'Traceability: unknown relation for item-2d-matrix: %s' % rel,
-                               env.docname, self.lineno)
-
-        # Check hit string
-        if 'hit' in self.options:
-            node['hit'] = self.options['hit']
-        else:
-            node['hit'] = 'x'
-
-        # Check miss string
-        if 'miss' in self.options:
-            node['miss'] = self.options['miss']
-        else:
-            node['miss'] = ''
-
-        return [node]
-
-
-class ItemTreeDirective(Directive):
-    """
-    Directive to generate a treeview of items, based on
-    a given set of relationship types.
-
-    Syntax::
-
-      .. item-tree:: title
-         :top: regexp
-         :top_relation_filter: <<relationship>> ...
-         :<<attribute>>: regexp
-         :type: <<relationship>> ...
-         :nocaptions:
-
-    """
-    # Optional argument: title (whitespace allowed)
-    optional_arguments = 1
-    final_argument_whitespace = True
-    # Options
-    option_spec = {'class': directives.class_option,
-                   'top': directives.unchanged,
-                   'top_relation_filter': directives.unchanged,
-                   'type': directives.unchanged,
-                   'nocaptions': directives.flag}
-    # Content disallowed
-    has_content = False
-
-    def run(self):
-        env = self.state.document.settings.env
-        app = env.app
-
-        item_tree_node = ItemTree('')
-
-        # Process title (optional argument)
-        if len(self.arguments) > 0:
-            item_tree_node['title'] = self.arguments[0]
-        else:
-            item_tree_node['title'] = 'Tree of items'
-
-        # Process ``top`` option
-        if 'top' in self.options:
-            item_tree_node['top'] = self.options['top']
-        else:
-            item_tree_node['top'] = ''
-
-        # Process ``top_relation_filter`` option, given as a string with relationship types
-        # separated by space. It is converted to a list.
-        if 'top_relation_filter' in self.options:
-            item_tree_node['top_relation_filter'] = self.options['top_relation_filter'].split()
-        else:
-            item_tree_node['top_relation_filter'] = ''
-
-        # Add found attributes to item. Attribute data is a single string.
-        item_tree_node['filter-attributes'] = {}
-        for attr in TraceableItem.defined_attributes.keys():
-            if attr in self.options:
-                item_tree_node['filter-attributes'][attr] = self.options[attr]
-
-        # Check if given relationships are in configuration
-        for rel in item_tree_node['top_relation_filter']:
-            if rel not in env.traceability_collection.iter_relations():
-                report_warning(env, 'Traceability: unknown relation for item-tree: %s' % rel, env.docname, self.lineno)
-
-        # Process ``type`` option, given as a string with relationship types
-        # separated by space. It is converted to a list.
-        if 'type' in self.options:
-            item_tree_node['type'] = self.options['type'].split()
-        else:
-            item_tree_node['type'] = []
-
-        # Check if given relationships are in configuration
-        # Combination of forward + matching reverse relationship cannot be in the same list, as it will give
-        # endless treeview (and endless recursion in python --> exception)
-        for rel in item_tree_node['type']:
-            if rel not in env.traceability_collection.iter_relations():
-                report_warning(env, 'Traceability: unknown relation for item-tree: %s' % rel, env.docname, self.lineno)
-                continue
-            if env.traceability_collection.get_reverse_relation(rel) in item_tree_node['type']:
-                report_warning(env, 'Traceability: combination of forward+reverse relations for item-tree: %s' % rel,
-                               env.docname, self.lineno)
-                raise ValueError('Traceability: combination of forward+reverse relations for item-tree: %s' % rel)
-
-        # Check nocaptions flag
-        if 'nocaptions' in self.options:
-            item_tree_node['nocaptions'] = True
-        elif app.config.traceability_tree_no_captions:
-            item_tree_node['nocaptions'] = True
-        else:
-            item_tree_node['nocaptions'] = False
-
-        return [item_tree_node]
+            report_warning(env, 'Traceability: item %s not found' % self['reftarget'],
+                           docname, lineno)
+        self.replace_self(new_node)
 
 
 # -----------------------------------------------------------------------------
@@ -948,7 +162,7 @@ def perform_consistency_check(app, doctree):
         env.traceability_collection.export(fname)
 
     if app.config.traceability_hyperlink_colors:
-        generate_color_css(env, app.config.traceability_hyperlink_colors)
+        generate_color_css(app, app.config.traceability_hyperlink_colors)
 
 
 def process_item_nodes(app, doctree, fromdocname):
@@ -970,454 +184,37 @@ def process_item_nodes(app, doctree, fromdocname):
             for err in errs.iter():
                 report_warning(env, err, err.get_document())
 
-    # Processing of the item-link items.
     for node in doctree.traverse(ItemLink):
-        # The ItemLink node has no final representation, so is removed from the tree
-        node.replace_self([])
+        node.perform_traceability_replacement(app, env.traceability_collection)
 
-    # Item matrix:
-    # Create table with related items, printing their target references.
-    # Only source and target items matching respective regexp shall be included
     for node in doctree.traverse(ItemMatrix):
-        showcaptions = not node['nocaptions']
-        source_ids = env.traceability_collection.get_items(node['source'], node['filter-attributes'])
-        target_ids = env.traceability_collection.get_items(node['target'])
-        top_node = create_top_node(node['title'])
-        table = nodes.table()
-        if node.get('classes'):
-            table.get('classes').extend(node.get('classes'))
-        tgroup = nodes.tgroup()
-        left_colspec = nodes.colspec(colwidth=5)
-        right_colspec = nodes.colspec(colwidth=5)
-        tgroup += [left_colspec, right_colspec]
-        tgroup += nodes.thead('', nodes.row(
-            '',
-            nodes.entry('', nodes.paragraph('', node['sourcetitle'])),
-            nodes.entry('', nodes.paragraph('', node['targettitle']))))
-        tbody = nodes.tbody()
-        tgroup += tbody
-        table += tgroup
+        node.perform_traceability_replacement(app, env.traceability_collection)
 
-        relationships = node['type']
-        if not relationships:
-            relationships = env.traceability_collection.iter_relations()
-
-        count_total = 0
-        count_covered = 0
-
-        for source_id in source_ids:
-            source_item = env.traceability_collection.get_item(source_id)
-            count_total += 1
-            covered = False
-            row = nodes.row()
-            left = nodes.entry()
-            left += make_internal_item_ref(app, node, fromdocname, source_id, showcaptions)
-            right = nodes.entry()
-            for relationship in relationships:
-                if REGEXP_EXTERNAL_RELATIONSHIP.search(relationship):
-                    for target_id in source_item.iter_targets(relationship):
-                        right += make_external_item_ref(app, target_id, relationship)
-                        covered = True
-            for target_id in target_ids:
-                if env.traceability_collection.are_related(source_id, relationships, target_id):
-                    right += make_internal_item_ref(app, node, fromdocname, target_id, showcaptions)
-                    covered = True
-            if covered:
-                count_covered += 1
-            row += left
-            row += right
-            tbody += row
-
-        try:
-            percentage = int(100 * count_covered / count_total)
-        except ZeroDivisionError:
-            percentage = 0
-        disp = 'Statistics: {cover} out of {total} covered: {pct}%'.format(cover=count_covered,
-                                                                           total=count_total,
-                                                                           pct=percentage)
-        if node['stats']:
-            p_node = nodes.paragraph()
-            txt = nodes.Text(disp)
-            p_node += txt
-            top_node += p_node
-
-        top_node += table
-        node.replace_self(top_node)
-
-    # Item pie chart:
-    # Very similar to item-matrix: but instead of creating a table, count the empty cells in the right column,
-    # and generate pie chart with coverage percentages.
-    # Only items matching regexp in ``id_set`` option shall be included
     for node in doctree.traverse(ItemPieChart):
-        top_node = nodes.container()
-        admon_node = nodes.admonition()
-        title_node = nodes.title()
-        title_node += nodes.Text(node['title'])
-        admon_node += title_node
-        top_node += admon_node
-        relationships = env.traceability_collection.iter_relations()
-        all_item_ids = env.traceability_collection.get_items('')
+        node.perform_traceability_replacement(app, env.traceability_collection)
 
-        # default priority order is 'uncovered', 'covered', 'executed', 'pass', 'fail', 'error'
-        priorities = {}
-        for idx, label in enumerate(node['label_set']):
-            priorities[label] = idx
-        # store :<<attribute>>: arguments in reverse order in lowercase for case-insensitivity
-        if node['priorities']:
-            for idx, attr in enumerate([value.lower() for value in node['priorities'][::-1]],
-                                       start=len(node['label_set'])):
-                priorities[attr] = idx
-
-        attribute_id = ''
-        if len(node['id_set']) > 2:
-            attribute_id = node['id_set'][2]
-
-        linked_attributes = {}  # source_id (str): attr_value (str)
-        covered_items = {}  # source_id (str): test_items (list)
-
-        for source_id in all_item_ids:
-            source_item = env.traceability_collection.get_item(source_id)
-            # placeholders don't end up in any item-piechart (less duplicate warnings for missing items)
-            if source_item.is_placeholder():
-                continue
-            if re.match(node['id_set'][0], source_id):
-                covered = False
-                test_items = []
-                linked_attributes[source_id] = list(priorities.keys())[0]  # default is "uncovered"
-                for relationship in relationships:
-                    tgts = source_item.iter_targets(relationship, True, True)
-                    for target_id in tgts:
-                        target_item = env.traceability_collection.get_item(target_id)
-                        # placeholders don't end up in any item-matrix (less duplicate warnings for missing items)
-                        if not target_item or target_item.is_placeholder():
-                            continue
-                        if re.match(node['id_set'][1], target_id):
-                            test_items.append(target_item)
-                            linked_attributes[source_id] = list(priorities.keys())[1]  # default is "covered"
-                            covered = True
-                if covered and attribute_id:
-                    covered_items[source_id] = test_items
-
-        # link highest priority attribute value of nested relations to source id
-        for source_id, test_items in covered_items.items():
-            for covering_item in test_items:
-                for relationship in relationships:
-                    tgts = covering_item.iter_targets(relationship, True, True)
-                    for target_id in tgts:
-                        target_item = env.traceability_collection.get_item(target_id)
-                        # placeholders don't end up in any item-matrix (less duplicate warnings for missing items)
-                        if not target_item or target_item.is_placeholder():
-                            continue
-                        if re.match(attribute_id, target_id):
-                            # case-insensitivity
-                            attribute_value = target_item.get_attribute(node['attribute']).lower()
-                            if attribute_value not in priorities.keys():
-                                attribute_value = list(priorities.keys())[2]  # default is "executed"
-
-                            if source_id not in linked_attributes.keys():
-                                linked_attributes[source_id] = attribute_value
-                            else:
-                                # store newly encountered attribute value if it has a higher priority
-                                stored_attribute_priority = priorities[linked_attributes[source_id]]
-                                latest_attribute_priority = priorities[attribute_value]
-                                if latest_attribute_priority > stored_attribute_priority:
-                                    linked_attributes[source_id] = attribute_value
-
-        # initialize dictionary and increment counters for each possible value
-        all_states = {}
-        for priority in priorities.keys():
-            all_states[priority] = 0
-        for attribute in linked_attributes.values():
-            all_states[attribute] += 1
-
-        count_total = len(linked_attributes)
-        count_uncovered = all_states[node['label_set'][0]]
-        count_covered = count_total - count_uncovered
-        try:
-            percentage = int(100 * count_covered / count_total)
-        except ZeroDivisionError:
-            percentage = 0
-        disp = 'Statistics: {cover} out of {total} covered: {pct}%'.format(cover=count_covered,
-                                                                           total=count_total,
-                                                                           pct=percentage,)
-
-        # remove items with count value equal to 0
-        all_states = {k: v for k, v in all_states.items() if v}
-        # keep case-sensitivity of :<<attribute>>: arguments in labels of pie chart
-        case_sensitive_priorities = node['priorities']
-        for priority in case_sensitive_priorities:
-            if priority.lower() in all_states.keys():
-                value = all_states.pop(priority.lower())
-                all_states[priority] = value
-        labels = list(all_states.keys())
-
-        sizes = all_states.values()
-        explode = [0.05]  # slightly detaches slice of first state, default is "uncovered"
-        explode.extend([0] * (len(all_states.values()) - 1))
-
-        fig, axes = plt.subplots()
-        axes.pie(sizes, explode=explode, labels=labels, autopct=pct_wrapper(sizes), startangle=90)
-        axes.axis('equal')
-        folder_name = path.join(env.app.srcdir, '_images')
-        if not path.exists(folder_name):
-            mkdir(folder_name)
-        hash_string = ''
-        for pie_slice in axes.__dict__['texts']:
-            hash_string += str(pie_slice)
-        hash_value = sha256(hash_string.encode()).hexdigest()  # create hash value based on chart parameters
-        rel_file_path = path.join('_images', 'piechart-{}.png'.format(hash_value))
-        if rel_file_path not in env.images.keys():
-            fig.savefig(path.join(env.app.srcdir, rel_file_path), format='png')
-            env.images[rel_file_path] = ['_images', path.split(rel_file_path)[-1]]  # store file name in build env
-
-        p_node = nodes.paragraph()
-        p_node += nodes.Text(disp)
-        image_node = nodes.image()
-        image_node['uri'] = rel_file_path
-        image_node['candidates'] = '*'  # look at uri value for source path, relative to the srcdir folder
-        p_node += image_node
-        top_node += p_node
-        node.replace_self(top_node)
-
-    # Item attribute matrix:
-    # Create table with items, printing their attribute values.
     for node in doctree.traverse(ItemAttributesMatrix):
-        docname, lineno = get_source_line(node)
-        showcaptions = not node['nocaptions']
-        item_ids = env.traceability_collection.get_items(node['filter'], node['filter-attributes'],
-                                                         sortattributes=node['sort'],
-                                                         reverse=node['reverse'])
-        top_node = create_top_node(node['title'])
-        table = nodes.table()
-        if node.get('classes'):
-            table.get('classes').extend(node.get('classes'))
-        tgroup = nodes.tgroup()
-        colspecs = [nodes.colspec(colwidth=5)]
-        hrow = nodes.row('', nodes.entry('', nodes.paragraph('', '')))
-        for attr in node['attributes']:
-            colspecs.append(nodes.colspec(colwidth=5))
-            p_node = nodes.paragraph()
-            p_node += make_attribute_ref(app, fromdocname, attr)
-            hrow.append(nodes.entry('', p_node))
-        tgroup += colspecs
-        tgroup += nodes.thead('', hrow)
-        tbody = nodes.tbody()
-        for item_id in item_ids:
-            item = env.traceability_collection.get_item(item_id)
-            row = nodes.row()
-            cell = nodes.entry()
-            cell += make_internal_item_ref(app, node, fromdocname, item_id, showcaptions)
-            row += cell
-            for attr in node['attributes']:
-                cell = nodes.entry()
-                p_node = nodes.paragraph()
-                txt = item.get_attribute(attr)
-                p_node += nodes.Text(txt)
-                cell += p_node
-                row += cell
-            tbody += row
-        tgroup += tbody
-        table += tgroup
-        top_node += table
-        node.replace_self(top_node)
+        node.perform_traceability_replacement(app, env.traceability_collection)
 
-    # Item 2D matrix:
-    # Create table with related items, printing their target references.
-    # Only source and target items matching respective regexp shall be included
     for node in doctree.traverse(Item2DMatrix):
-        source_ids = env.traceability_collection.get_items(node['source'], node['filter-attributes'])
-        target_ids = env.traceability_collection.get_items(node['target'])
-        top_node = create_top_node(node['title'])
-        table = nodes.table()
-        if node.get('classes'):
-            table.get('classes').extend(node.get('classes'))
-        tgroup = nodes.tgroup()
-        colspecs = [nodes.colspec(colwidth=5)]
-        hrow = nodes.row('', nodes.entry('', nodes.paragraph('', '')))
-        for source_id in source_ids:
-            colspecs.append(nodes.colspec(colwidth=5))
-            src_cell = make_internal_item_ref(app, node, fromdocname, source_id, False)
-            hrow.append(nodes.entry('', src_cell))
-        tgroup += colspecs
-        tgroup += nodes.thead('', hrow)
-        tbody = nodes.tbody()
-        for target_id in target_ids:
-            row = nodes.row()
-            tgt_cell = nodes.entry()
-            tgt_cell += make_internal_item_ref(app, node, fromdocname, target_id, False)
-            row += tgt_cell
-            for source_id in source_ids:
-                cell = nodes.entry()
-                p_node = nodes.paragraph()
-                if env.traceability_collection.are_related(source_id, node['type'], target_id):
-                    txt = node['hit']
-                else:
-                    txt = node['miss']
-                p_node += nodes.Text(txt)
-                cell += p_node
-                row += cell
-            tbody += row
-        tgroup += tbody
-        table += tgroup
-        top_node += table
-        node.replace_self(top_node)
+        node.perform_traceability_replacement(app, env.traceability_collection)
 
-    # Item list:
-    # Create list with target references. Only items matching list regexp
-    # shall be included
     for node in doctree.traverse(ItemList):
-        item_ids = env.traceability_collection.get_items(node['filter'], node['filter-attributes'])
-        showcaptions = not node['nocaptions']
-        top_node = create_top_node(node['title'])
-        ul_node = nodes.bullet_list()
-        for i in item_ids:
-            bullet_list_item = nodes.list_item()
-            p_node = nodes.paragraph()
-            p_node.append(make_internal_item_ref(app, node, fromdocname, i, showcaptions))
-            bullet_list_item.append(p_node)
-            ul_node.append(bullet_list_item)
-        top_node += ul_node
-        node.replace_self(top_node)
+        node.perform_traceability_replacement(app, env.traceability_collection)
 
-    # Item tree:
-    # Create list with target references. Only items matching list regexp
-    # shall be included
     for node in doctree.traverse(ItemTree):
-        docname, lineno = get_source_line(node)
-        top_item_ids = env.traceability_collection.get_items(node['top'], node['filter-attributes'])
-        showcaptions = not node['nocaptions']
-        top_node = create_top_node(node['title'])
-        if isinstance(app.builder, LaTeXBuilder):
-            p_node = nodes.paragraph()
-            p_node.append(nodes.Text('Item tree is not supported in latex builder'))
-            top_node.append(p_node)
-        else:
-            ul_node = nodes.bullet_list()
-            ul_node.set_class('bonsai')
-            for i in top_item_ids:
-                if is_item_top_level(env, i, node['top'], node['top_relation_filter']):
-                    ul_node.append(generate_bullet_list_tree(app, env, node, fromdocname, i, showcaptions))
-            top_node += ul_node
-        node.replace_self(top_node)
+        node.perform_traceability_replacement(app, env.traceability_collection)
 
-    # Resolve item cross references (from ``item`` role)
     for node in doctree.traverse(PendingItemXref):
-        # Create a dummy reference to be used if target reference fails
-        new_node = make_refnode(app.builder,
-                                fromdocname,
-                                fromdocname,
-                                'ITEM_NOT_FOUND',
-                                node[0].deepcopy(),
-                                node['reftarget'] + '??')
-        # If target exists, try to create the reference
-        item_info = env.traceability_collection.get_item(node['reftarget'])
-        if item_info:
-            if item_info.is_placeholder():
-                docname, lineno = get_source_line(node)
-                report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_info.get_id(),
-                               docname, lineno)
-            else:
-                try:
-                    new_node = make_refnode(app.builder,
-                                            fromdocname,
-                                            item_info.docname,
-                                            item_info.node['refid'],
-                                            node[0].deepcopy(),
-                                            node['reftarget'])
-                except NoUri:
-                    # ignore if no URI can be determined, e.g. for LaTeX output :(
-                    pass
-
-        else:
-            docname, lineno = get_source_line(node)
-            report_warning(env, 'Traceability: item %s not found' % node['reftarget'],
-                           docname, lineno)
-
-        node.replace_self(new_node)
+        node.perform_traceability_replacement(app, env.traceability_collection, fromdocname)
 
     # ItemAttribute: replace item nodes, with admonition
     for node in doctree.traverse(ItemAttribute):
-        docname, lineno = get_source_line(node)
-        if node['id'] in TraceableItem.defined_attributes.keys():
-            attr = TraceableItem.defined_attributes[node['id']]
-            header = attr.get_name()
-            if attr.get_caption():
-                header += ' : ' + attr.get_caption()
-        else:
-            header = node['id']
-        top_node = create_top_node(header)
-        par_node = nodes.paragraph()
-        dl_node = nodes.definition_list()
-        par_node.append(dl_node)
-        top_node.append(par_node)
-        node.replace_self(top_node)
+        node.perform_traceability_replacement(app, env.traceability_collection)
 
     # Item: replace item nodes, with admonition, list of relationships
     for node in doctree.traverse(Item):
-        docname, lineno = get_source_line(node)
-        currentitem = env.traceability_collection.get_item(node['id'])
-        showcaptions = not node['nocaptions']
-        header = currentitem.get_id()
-        if currentitem.caption:
-            header += ' : ' + currentitem.caption
-        top_node = create_top_node(header)
-        par_node = nodes.paragraph()
-        dl_node = nodes.definition_list()
-        if app.config.traceability_render_attributes_per_item:
-            if currentitem.iter_attributes():
-                li_node = nodes.definition_list_item()
-                dt_node = nodes.term()
-                txt = nodes.Text('Attributes')
-                dt_node.append(txt)
-                li_node.append(dt_node)
-                for attr in currentitem.iter_attributes():
-                    dd_node = nodes.definition()
-                    p_node = nodes.paragraph()
-                    link = make_attribute_ref(app, fromdocname, attr, currentitem.get_attribute(attr))
-                    p_node.append(link)
-                    dd_node.append(p_node)
-                    li_node.append(dd_node)
-                dl_node.append(li_node)
-        if app.config.traceability_render_relationship_per_item:
-            for rel in env.traceability_collection.iter_relations():
-                tgts = currentitem.iter_targets(rel)
-                if tgts:
-                    li_node = nodes.definition_list_item()
-                    dt_node = nodes.term()
-                    if rel in app.config.traceability_relationship_to_string:
-                        relstr = app.config.traceability_relationship_to_string[rel]
-                    else:
-                        report_warning(env, 'Traceability: relation {rel} cannot be translated to string'
-                                            .format(rel=rel), docname, lineno)
-                        relstr = rel
-                    txt = nodes.Text(relstr)
-                    dt_node.append(txt)
-                    li_node.append(dt_node)
-                    for tgt in tgts:
-                        dd_node = nodes.definition()
-                        p_node = nodes.paragraph()
-                        if REGEXP_EXTERNAL_RELATIONSHIP.search(rel):
-                            link = make_external_item_ref(app, tgt, rel)
-                        else:
-                            link = make_internal_item_ref(app, node, fromdocname, tgt, showcaptions)
-                        p_node.append(link)
-                        dd_node.append(p_node)
-                        li_node.append(dd_node)
-                    dl_node.append(li_node)
-        par_node.append(dl_node)
-        top_node.append(par_node)
-        # Note: content should be displayed during read of RST file, as it contains other RST objects
-        node.replace_self(top_node)
-
-
-def create_top_node(title):
-    top_node = nodes.container()
-    admon_node = nodes.admonition()
-    title_node = nodes.title()
-    title_node += nodes.Text(title)
-    admon_node += title_node
-    top_node += admon_node
-    return top_node
+        node.perform_traceability_replacement(app, env.traceability_collection)
 
 
 def init_available_relationships(app):
@@ -1481,160 +278,10 @@ def initialize_environment(app):
 \\let\@noitemerr\\relax
 \\makeatother'''
 
-    # Older sphinx versions done have the 'env-check-consistency' callback: no export possible
+    # Older sphinx versions don't have the 'env-check-consistency' callback: no export possible
     if sphinx_version < '1.6.0':
         if app.config.traceability_json_export_path:
             report_warning(env, 'No export possible, try upgrading sphinx installation')
-
-# -----------------------------------------------------------------------------
-# Utility functions
-
-
-def is_item_top_level(env, itemid, topregex, relations):
-    '''
-    Check if item with given itemid is a top level item
-
-    True, if the item is a top level item:
-
-    - given relation does not exist for given item,
-    - or given relation exists, but targets don't match the 'top' regexp.
-
-    False, otherwise.
-    '''
-    item = env.traceability_collection.get_item(itemid)
-    for relation in relations:
-        tgts = item.iter_targets(relation)
-        for tgt in tgts:
-            if re.match(topregex, tgt):
-                return False
-    return True
-
-
-def generate_bullet_list_tree(app, env, node, fromdocname, itemid, captions=True):
-    '''
-    Generate a bullet list tree for the given item id
-
-    This function returns the given itemid as a bullet item node, makes a child bulleted list, and adds all
-    of the matching child items to it.
-    '''
-    # First add current itemid
-    bullet_list_item = nodes.list_item()
-    bullet_list_item['id'] = nodes.make_id(itemid)
-    p_node = nodes.paragraph()
-    p_node.set_class('thumb')
-    bullet_list_item.append(p_node)
-    bullet_list_item.append(make_internal_item_ref(app, node, fromdocname, itemid, captions))
-    bullet_list_item.set_class('has-children')
-    bullet_list_item.set_class('collapsed')
-    childcontent = nodes.bullet_list()
-    childcontent.set_class('bonsai')
-    # Then recurse one level, and add dependencies
-    for relation in node['type']:
-        tgts = env.traceability_collection.get_item(itemid).iter_targets(relation)
-        for target in tgts:
-            # print('%s has child %s for relation %s' % (itemid, target, relation))
-            if env.traceability_collection.get_item(target).attributes_match(node['filter-attributes']):
-                childcontent.append(generate_bullet_list_tree(app, env, node, fromdocname, target, captions))
-    bullet_list_item.append(childcontent)
-    return bullet_list_item
-
-
-def make_external_item_ref(app, targettext, relationship):
-    '''Generate a reference to an external item'''
-    if relationship not in app.config.traceability_external_relationship_to_url:
-        return
-    p_node = nodes.paragraph()
-    link = nodes.reference()
-    txt = nodes.Text(targettext)
-    tgt_strs = targettext.split(':')  # syntax = field1:field2:field3:...
-    url = app.config.traceability_external_relationship_to_url[relationship]
-    cnt = 0
-    for tgt_str in tgt_strs:
-        cnt += 1
-        url = url.replace(EXTERNAL_LINK_FIELDNAME+str(cnt), tgt_str)
-    link['refuri'] = url
-    link.append(txt)
-    targetid = nodes.make_id(targettext)
-    target = nodes.target('', '', ids=[targetid])
-    p_node += target
-    p_node += link
-    return p_node
-
-
-def make_internal_item_ref(app, node, fromdocname, item_id, caption=True):
-    """
-    Creates a reference node for an item, embedded in a
-    paragraph. Reference text adds also a caption if it exists.
-
-    """
-    env = app.builder.env
-    item_info = env.traceability_collection.get_item(item_id)
-
-    p_node = nodes.paragraph()
-
-    # Only create link when target item exists, warn otherwise (in html and terminal)
-    if item_info.is_placeholder():
-        docname, lineno = get_source_line(node)
-        report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_id,
-                       docname, lineno)
-        txt = nodes.Text('%s not defined, broken link' % item_id)
-        p_node.append(txt)
-    else:
-        if item_info.caption != '' and caption:
-            caption = ' : ' + item_info.caption
-        else:
-            caption = ''
-
-        newnode = nodes.reference('', '')
-        innernode = nodes.emphasis(item_id + caption, item_id + caption)
-        newnode['refdocname'] = item_info.docname
-        try:
-            newnode['refuri'] = app.builder.get_relative_uri(fromdocname,
-                                                             item_info.docname)
-            newnode['refuri'] += '#' + item_id
-        except NoUri:
-            # ignore if no URI can be determined, e.g. for LaTeX output :(
-            pass
-        # change text color if item_id matches a regex in traceability_hyperlink_colors
-        class_name = find_color_class(app.config.traceability_hyperlink_colors, item_id)
-        newnode['classes'].append(class_name)
-        newnode.append(innernode)
-        p_node += newnode
-
-    return p_node
-
-
-def make_attribute_ref(app, fromdocname, attr_id, value=''):
-    """
-    Creates a reference node for an attribute, embedded in a paragraph.
-    """
-    p_node = nodes.paragraph()
-
-    if value:
-        value = ': ' + value
-
-    if attr_id in TraceableItem.defined_attributes.keys():
-        attr_info = TraceableItem.defined_attributes[attr_id]
-        attr_name = attr_info.get_name()
-        if attr_info.docname:
-            newnode = nodes.reference('', '')
-            innernode = nodes.emphasis(attr_name + value, attr_name + value)
-            newnode['refdocname'] = attr_info.docname
-            try:
-                newnode['refuri'] = app.builder.get_relative_uri(fromdocname,
-                                                                 attr_info.docname)
-                newnode['refuri'] += '#' + attr_info.get_name()
-            except NoUri:
-                # ignore if no URI can be determined, e.g. for LaTeX output :(
-                pass
-            newnode.append(innernode)
-        else:
-            newnode = nodes.Text('{attr}{value}'.format(attr=attr_info.get_name(), value=value))
-    else:
-        newnode = nodes.Text('{attr}{value}'.format(attr=attr_id, value=value))
-    p_node += newnode
-
-    return p_node
 
 
 # -----------------------------------------------------------------------------
@@ -1738,7 +385,9 @@ def setup(app):
                          False, 'env')
 
     # Configuration for customizing the color of hyperlinked items
-    app.add_config_value('traceability_hyperlink_colors', {}, 'env')
+    app.add_config_value('traceability_hyperlink_colors', OrderedDict([]), 'env')
+    # Dictionary used by plugin to pass class names via application object
+    app.add_config_value('class_names', {}, 'env')
 
     app.add_node(ItemTree)
     app.add_node(ItemMatrix)
