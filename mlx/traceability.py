@@ -115,9 +115,9 @@ class PendingItemXref(nodes.Inline, nodes.Element):
                                 self['reftarget'] + '??')
         # If target exists, try to create the reference
         item_info = collection.get_item(self['reftarget'])
-        docname, lineno = get_source_line(self)
         if item_info:
             if item_info.is_placeholder():
+                docname, lineno = get_source_line(self)
                 report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_info.get_id(),
                                docname, lineno)
             else:
@@ -132,6 +132,7 @@ class PendingItemXref(nodes.Inline, nodes.Element):
                     # ignore if no URI can be determined, e.g. for LaTeX output :(
                     pass
         else:
+            docname, lineno = get_source_line(self)
             report_warning(env, 'Traceability: item %s not found' % self['reftarget'],
                            docname, lineno)
         self.replace_self(new_node)
