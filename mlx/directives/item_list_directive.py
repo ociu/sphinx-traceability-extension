@@ -14,8 +14,7 @@ class ItemList(ItemElement):
             app: Sphinx application object to use.
             collection (TraceableCollection): Collection for which to generate the nodes.
         """
-        env = app.builder.env
-        item_ids = env.traceability_collection.get_items(self['filter'], self['filter-attributes'])
+        item_ids = collection.get_items(self['filter'], self['filter-attributes'])
         showcaptions = not self['nocaptions']
         top_node = self.create_top_node(self['title'])
         ul_node = nodes.bullet_list()
@@ -55,7 +54,9 @@ class ItemListDirective(Directive):
         env = self.state.document.settings.env
         app = env.app
 
-        item_list_node = ItemList(env.docname, self.lineno)
+        item_list_node = ItemList('')
+        item_list_node['document'] = env.docname
+        item_list_node['line'] = self.lineno
 
         # Process title (optional argument)
         if self.arguments:

@@ -55,9 +55,11 @@ class ItemAttributeDirective(Directive):
         env = self.state.document.settings.env
 
         # Convert to lower-case as sphinx only allows lowercase arguments (attribute to item directive)
-        attrid = self.arguments[0]
-        targetnode = nodes.target('', '', ids=[attrid])
-        attrnode = ItemAttribute(env.docname, self.lineno)
+        attribute_id = self.arguments[0]
+        target_node = nodes.target('', '', ids=[attribute_id])
+        attribute_node = ItemAttribute('')
+        attribute_node['document'] = env.docname
+        attribute_node['line'] = self.lineno
 
         # Item caption is the text following the mandatory id argument.
         # Caption should be considered a line of text. Remove line breaks.
@@ -65,18 +67,19 @@ class ItemAttributeDirective(Directive):
         if len(self.arguments) > 1:
             caption = self.arguments[1].replace('\n', ' ')
 
-        stored_id = TraceableAttribute.to_id(attrid)
+        stored_id = TraceableAttribute.to_id(attribute_id)
         if stored_id not in TraceableItem.defined_attributes.keys():
             report_warning(env,
-                           'Found attribute description which is not defined in configuration ({})'.format(attrid),
+                           'Found attribute description which is not defined in configuration ({})'
+                           .format(attribute_id),
                            env.docname,
                            self.lineno)
-            attrnode['id'] = stored_id
+            attribute_node['id'] = stored_id
         else:
             attr = TraceableItem.defined_attributes[stored_id]
             attr.set_caption(caption)
             attr.set_document(env.docname, self.lineno)
-            attrnode['id'] = attr.get_id()
+            attribute_node['id'] = attr.get_id()
 
         # Output content of attribute to document
         template = []
@@ -85,4 +88,4 @@ class ItemAttributeDirective(Directive):
         self.state_machine.insert_input(template, self.state_machine.document.attributes['source'])
 
 
-        return [targetnode, attrnode]
+        return [target_node, attribute_node]

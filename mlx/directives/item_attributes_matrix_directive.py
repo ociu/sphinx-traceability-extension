@@ -15,9 +15,8 @@ class ItemAttributesMatrix(ItemElement):
             app: Sphinx application object to use.
             collection (TraceableCollection): Collection for which to generate the nodes.
         """
-        env = app.builder.env
         showcaptions = not self['nocaptions']
-        item_ids = env.traceability_collection.get_items(self['filter'], self['filter-attributes'],
+        item_ids = collection.get_items(self['filter'], self['filter-attributes'],
                                                          sortattributes=self['sort'],
                                                          reverse=self['reverse'])
         top_node = self.create_top_node(self['title'])
@@ -36,7 +35,7 @@ class ItemAttributesMatrix(ItemElement):
         tgroup += nodes.thead('', hrow)
         tbody = nodes.tbody()
         for item_id in item_ids:
-            item = env.traceability_collection.get_item(item_id)
+            item = collection.get_item(item_id)
             row = nodes.row()
             cell = nodes.entry()
             cell += self.make_internal_item_ref(app, item_id, showcaptions)
@@ -86,7 +85,9 @@ class ItemAttributesMatrixDirective(Directive):
         env = self.state.document.settings.env
         app = env.app
 
-        node = ItemAttributesMatrix(env.docname, self.lineno)
+        node = ItemAttributesMatrix('')
+        node['document'] = env.docname
+        node['line'] = self.lineno
 
         if self.options.get('class'):
             node.get('classes').extend(self.options.get('class'))

@@ -17,17 +17,6 @@ EXTERNAL_LINK_FIELDNAME = 'field'
 
 class ItemElement(nodes.General, nodes.Element):
 
-    def __init__(self, docname, line, *args, **kwargs):
-        """ Constructor of the ItemElement class.
-
-        Args:
-            docname (str): Name of the document where the node was found.
-            line (int): Number of the line where the node was found.
-        """
-        super(ItemElement, self).__init__(*args, **kwargs)
-        self.docname = docname
-        self.line = line
-
     @staticmethod
     def create_top_node(title):
         '''
@@ -47,7 +36,7 @@ class ItemElement(nodes.General, nodes.Element):
 
     @abstractmethod
     def perform_traceability_replacement(self, app, collection):
-        """ Performs the node replacement.
+        """ Performs the traceability node replacement.
 
         Args:
             app: Sphinx application object to use.
@@ -67,7 +56,7 @@ class ItemElement(nodes.General, nodes.Element):
         # Only create link when target item exists, warn otherwise (in html and terminal)
         if item_info.is_placeholder():
             report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_id,
-                           self.docname, self.line)
+                           self['document'], self.line)
             txt = nodes.Text('%s not defined, broken link' % item_id)
             p_node.append(txt)
         else:
@@ -80,7 +69,7 @@ class ItemElement(nodes.General, nodes.Element):
             innernode = nodes.emphasis(item_id + caption, item_id + caption)
             newnode['refdocname'] = item_info.docname
             try:
-                newnode['refuri'] = app.builder.get_relative_uri(self.docname, item_info.docname)
+                newnode['refuri'] = app.builder.get_relative_uri(self['document'], item_info.docname)
                 newnode['refuri'] += '#' + item_id
             except NoUri:
                 # ignore if no URI can be determined, e.g. for LaTeX output :(
@@ -88,14 +77,14 @@ class ItemElement(nodes.General, nodes.Element):
             # change text color if item_id matches a regex in traceability_hyperlink_colors
             colors = self.find_colors_for_class(app.config.traceability_hyperlink_colors, item_id)
             if colors:
-                class_name = app.config.class_names[colors]
+                class_name = app.config.traceability_class_names[colors]
                 newnode['classes'].append(class_name)
             newnode.append(innernode)
             p_node += newnode
 
         return p_node
 
-    def generate_bullet_list_tree(self, app, env, item_id, captions=True):
+    def generate_bullet_list_tree(self, app, collection, item_id, captions=True):
         '''
         Generates a bullet list tree for the given item ID.
 
@@ -115,11 +104,11 @@ class ItemElement(nodes.General, nodes.Element):
         childcontent.set_class('bonsai')
         # Then recurse one level, and add dependencies
         for relation in self['type']:
-            tgts = env.traceability_collection.get_item(item_id).iter_targets(relation)
+            tgts = collection.get_item(item_id).iter_targets(relation)
             for target in tgts:
                 # print('%s has child %s for relation %s' % (item_id, target, relation))
-                if env.traceability_collection.get_item(target).attributes_match(self['filter-attributes']):
-                    childcontent.append(self.generate_bullet_list_tree(app, env, target, captions))
+                if collection.get_item(target).attributes_match(self['filter-attributes']):
+                    childcontent.append(self.generate_bullet_list_tree(app, collection, target, captions))
         bullet_list_item.append(childcontent)
         return bullet_list_item
 
@@ -181,7 +170,7 @@ class ItemElement(nodes.General, nodes.Element):
                 innernode = nodes.emphasis(attr_name + value, attr_name + value)
                 newnode['refdocname'] = attr_info.docname
                 try:
-                    newnode['refuri'] = app.builder.get_relative_uri(self.docname, attr_info.docname)
+                    newnode['refuri'] = app.builder.get_relative_uri(self['document'], attr_info.docname)
                     newnode['refuri'] += '#' + attr_info.get_name()
                 except NoUri:
                     # ignore if no URI can be determined, e.g. for LaTeX output :(

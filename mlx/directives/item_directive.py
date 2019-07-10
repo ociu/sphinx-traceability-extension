@@ -16,7 +16,7 @@ class Item(ItemElement):
             collection (TraceableCollection): Collection for which to generate the nodes.
         """
         env = app.builder.env
-        currentitem = env.traceability_collection.get_item(self['id'])
+        currentitem = collection.get_item(self['id'])
         showcaptions = not self['nocaptions']
         header = currentitem.get_id()
         if currentitem.caption:
@@ -40,7 +40,7 @@ class Item(ItemElement):
                     li_node.append(dd_node)
                 dl_node.append(li_node)
         if app.config.traceability_render_relationship_per_item:
-            for rel in env.traceability_collection.iter_relations():
+            for rel in collection.iter_relations():
                 tgts = currentitem.iter_targets(rel)
                 if tgts:
                     li_node = nodes.definition_list_item()
@@ -113,11 +113,13 @@ class ItemDirective(Directive):
         app = env.app
         caption = ''
 
-        targetid = self.arguments[0]
-        targetnode = nodes.target('', '', ids=[targetid])
+        target_id = self.arguments[0]
+        target_node = nodes.target('', '', ids=[target_id])
 
-        itemnode = Item(env.docname, self.lineno)
-        itemnode['id'] = targetid
+        item_node = Item('')
+        item_node['document'] = env.docname
+        item_node['line'] = self.lineno
+        item_node['id'] = target_id
 
         # Item caption is the text following the mandatory id argument.
         # Caption should be considered a line of text. Remove line breaks.
@@ -125,9 +127,9 @@ class ItemDirective(Directive):
             caption = self.arguments[1].replace('\n', ' ')
 
         # Store item info
-        item = TraceableItem(targetid)
+        item = TraceableItem(target_id)
         item.set_document(env.docname, self.lineno)
-        item.bind_node(targetnode)
+        item.bind_node(target_node)
         item.set_caption(caption)
         item.set_content('\n'.join(self.content))
         try:
@@ -150,13 +152,13 @@ class ItemDirective(Directive):
                 related_ids = self.options[rel].split()
                 for related_id in related_ids:
                     try:
-                        env.traceability_collection.add_relation(targetid, rel, related_id)
+                        env.traceability_collection.add_relation(target_id, rel, related_id)
                     except TraceabilityException as err:
                         report_warning(env, err, env.docname, self.lineno)
 
         # Custom callback for modifying items
         if app.config.traceability_callback_per_item:
-            app.config.traceability_callback_per_item(targetid, env.traceability_collection)
+            app.config.traceability_callback_per_item(target_id, env.traceability_collection)
 
         # Output content of item to document
         template = []
@@ -166,10 +168,10 @@ class ItemDirective(Directive):
 
         # Check nocaptions flag
         if 'nocaptions' in self.options:
-            itemnode['nocaptions'] = True
+            item_node['nocaptions'] = True
         elif app.config.traceability_item_no_captions:
-            itemnode['nocaptions'] = True
+            item_node['nocaptions'] = True
         else:
-            itemnode['nocaptions'] = False
+            item_node['nocaptions'] = False
 
-        return [targetnode, itemnode]
+        return [target_node, item_node]

@@ -39,13 +39,12 @@ def generate_color_css(app, hyperlink_colors):
         app: Sphinx application object to use.
         hyperlink_colors (OrderedDict): Ordered dict with regex strings as keys and list/tuple of strings as values.
     """
-    env = app.builder.env
-    class_names = app.config.class_names
+    class_names = app.config.traceability_class_names
     with open(path.join(path.dirname(__file__), 'assets', 'hyperlink_colors.css'), 'w') as css_file:
         for regex, colors in hyperlink_colors.items():
             colors = tuple(colors)
             if len(colors) > 3:
-                report_warning(env,
+                report_warning(app.env,
                                "Regex '%s' can take a maximum of 3 colors in traceability_hyperlink_colors." % regex)
             else:
                 build_class_name(colors, class_names)
@@ -105,7 +104,6 @@ class PendingItemXref(nodes.Inline, nodes.Element):
             collection (TraceableCollection): Collection for which to generate the nodes.
             fromdocname (str): Name of the document where the node was found.
         """
-        env = app.builder.env
         # Create a dummy reference to be used if target reference fails
         new_node = make_refnode(app.builder,
                                 fromdocname,
@@ -115,10 +113,10 @@ class PendingItemXref(nodes.Inline, nodes.Element):
                                 self['reftarget'] + '??')
         # If target exists, try to create the reference
         item_info = collection.get_item(self['reftarget'])
+        docname, lineno = get_source_line(self)
         if item_info:
             if item_info.is_placeholder():
-                docname, lineno = get_source_line(self)
-                report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_info.get_id(),
+                report_warning(app.env, 'Traceability: cannot link to %s, item is not defined' % item_info.get_id(),
                                docname, lineno)
             else:
                 try:
@@ -132,8 +130,7 @@ class PendingItemXref(nodes.Inline, nodes.Element):
                     # ignore if no URI can be determined, e.g. for LaTeX output :(
                     pass
         else:
-            docname, lineno = get_source_line(self)
-            report_warning(env, 'Traceability: item %s not found' % self['reftarget'],
+            report_warning(app.env, 'Traceability: item %s not found' % self['reftarget'],
                            docname, lineno)
         self.replace_self(new_node)
 
@@ -388,7 +385,7 @@ def setup(app):
     # Configuration for customizing the color of hyperlinked items
     app.add_config_value('traceability_hyperlink_colors', OrderedDict([]), 'env')
     # Dictionary used by plugin to pass class names via application object
-    app.add_config_value('class_names', {}, 'env')
+    app.add_config_value('traceability_class_names', {}, 'env')
 
     app.add_node(ItemTree)
     app.add_node(ItemMatrix)

@@ -17,8 +17,7 @@ class ItemTree(ItemElement):
             app: Sphinx application object to use.
             collection (TraceableCollection): Collection for which to generate the nodes.
         """
-        env = app.builder.env
-        top_item_ids = env.traceability_collection.get_items(self['top'], self['filter-attributes'])
+        top_item_ids = collection.get_items(self['top'], self['filter-attributes'])
         showcaptions = not self['nocaptions']
         top_node = self.create_top_node(self['title'])
         if isinstance(app.builder, LaTeXBuilder):
@@ -29,8 +28,8 @@ class ItemTree(ItemElement):
             ul_node = nodes.bullet_list()
             ul_node.set_class('bonsai')
             for i in top_item_ids:
-                if self.is_item_top_level(env, i):
-                    ul_node.append(self.generate_bullet_list_tree(app, env, i, showcaptions))
+                if self.is_item_top_level(app.env, i):
+                    ul_node.append(self.generate_bullet_list_tree(app, collection, i, showcaptions))
             top_node += ul_node
         self.replace_self(top_node)
 
@@ -66,7 +65,9 @@ class ItemTreeDirective(Directive):
         env = self.state.document.settings.env
         app = env.app
 
-        item_tree_node = ItemTree(env.docname, self.lineno)
+        item_tree_node = ItemTree('')
+        item_tree_node['document'] = env.docname
+        item_tree_node['line'] = self.lineno
 
         # Process title (optional argument)
         if self.arguments:

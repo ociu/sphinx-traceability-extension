@@ -40,8 +40,8 @@ class ItemPieChart(ItemElement):
         """
         env = app.builder.env
         top_node = self.create_top_node(self['title'])
-        relationships = env.traceability_collection.iter_relations()
-        all_item_ids = env.traceability_collection.get_items('')
+        relationships = collection.iter_relations()
+        all_item_ids = collection.get_items('')
 
         # default priority order is 'uncovered', 'covered', 'executed', 'pass', 'fail', 'error'
         priorities = {}
@@ -61,7 +61,7 @@ class ItemPieChart(ItemElement):
         covered_items = {}  # source_id (str): test_items (list)
 
         for source_id in all_item_ids:
-            source_item = env.traceability_collection.get_item(source_id)
+            source_item = collection.get_item(source_id)
             # placeholders don't end up in any item-piechart (less duplicate warnings for missing items)
             if source_item.is_placeholder():
                 continue
@@ -72,7 +72,7 @@ class ItemPieChart(ItemElement):
                 for relationship in relationships:
                     tgts = source_item.iter_targets(relationship, True, True)
                     for target_id in tgts:
-                        target_item = env.traceability_collection.get_item(target_id)
+                        target_item = collection.get_item(target_id)
                         # placeholders don't end up in any item-matrix (less duplicate warnings for missing items)
                         if not target_item or target_item.is_placeholder():
                             continue
@@ -89,7 +89,7 @@ class ItemPieChart(ItemElement):
                 for relationship in relationships:
                     tgts = covering_item.iter_targets(relationship, True, True)
                     for target_id in tgts:
-                        target_item = env.traceability_collection.get_item(target_id)
+                        target_item = collection.get_item(target_id)
                         # placeholders don't end up in any item-matrix (less duplicate warnings for missing items)
                         if not target_item or target_item.is_placeholder():
                             continue
@@ -190,38 +190,40 @@ class ItemPieChartDirective(Directive):
     def run(self):
         env = self.state.document.settings.env
 
-        item_piechart_node = ItemPieChart(env.docname, self.lineno)
+        item_chart_node = ItemPieChart('')
+        item_chart_node['document'] = env.docname
+        item_chart_node['line'] = self.lineno
 
         # Process title (optional argument)
         if self.arguments:
-            item_piechart_node['title'] = self.arguments[0]
+            item_chart_node['title'] = self.arguments[0]
 
         # Process ``id_set`` option
         if 'id_set' in self.options and len(self.options['id_set']) >= 2:
-            item_piechart_node['id_set'] = self.options['id_set'].split()
+            item_chart_node['id_set'] = self.options['id_set'].split()
         else:
-            item_piechart_node['id_set'] = []
+            item_chart_node['id_set'] = []
             report_warning(env, 'Traceability: Expected at least two arguments in id_set.', env.docname, self.lineno)
 
         # Process ``label_set`` option
         default_labels = ['uncovered', 'covered', 'executed']
         if 'label_set' in self.options:
-            item_piechart_node['label_set'] = [x.strip(' ') for x in self.options['label_set'].split(',')]
-            if len(item_piechart_node['label_set']) != len(item_piechart_node['id_set']):
-                item_piechart_node['label_set'].extend(
-                    default_labels[len(item_piechart_node['label_set']):len(item_piechart_node['id_set'])])
+            item_chart_node['label_set'] = [x.strip(' ') for x in self.options['label_set'].split(',')]
+            if len(item_chart_node['label_set']) != len(item_chart_node['id_set']):
+                item_chart_node['label_set'].extend(
+                    default_labels[len(item_chart_node['label_set']):len(item_chart_node['id_set'])])
         else:
-            id_amount = len(item_piechart_node['id_set'])
-            item_piechart_node['label_set'] = default_labels[:id_amount]  # default labels
+            id_amount = len(item_chart_node['id_set'])
+            item_chart_node['label_set'] = default_labels[:id_amount]  # default labels
 
         # Add found attribute to item. Attribute data is a comma-separated list of strings
-        item_piechart_node['attribute'] = ''
-        item_piechart_node['priorities'] = []
+        item_chart_node['attribute'] = ''
+        item_chart_node['priorities'] = []
         for attr in TraceableItem.defined_attributes.keys():
             if attr in self.options:
-                if len(item_piechart_node['id_set']) == 3:
-                    item_piechart_node['attribute'] = attr
-                    item_piechart_node['priorities'] = [x.strip(' ') for x in self.options[attr].split(',')]
+                if len(item_chart_node['id_set']) == 3:
+                    item_chart_node['attribute'] = attr
+                    item_chart_node['priorities'] = [x.strip(' ') for x in self.options[attr].split(',')]
                 else:
                     report_warning(env,
                                    'Traceability: The <<attribute>> option is only viable with an id_set with 3 '
@@ -230,4 +232,4 @@ class ItemPieChartDirective(Directive):
                                    self.lineno,)
                 break
 
-        return [item_piechart_node]
+        return [item_chart_node]

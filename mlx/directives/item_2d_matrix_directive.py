@@ -17,9 +17,8 @@ class Item2DMatrix(ItemElement):
             app: Sphinx application object to use.
             collection (TraceableCollection): Collection for which to generate the nodes.
         """
-        env = app.builder.env
-        source_ids = env.traceability_collection.get_items(self['source'], self['filter-attributes'])
-        target_ids = env.traceability_collection.get_items(self['target'])
+        source_ids = collection.get_items(self['source'], self['filter-attributes'])
+        target_ids = collection.get_items(self['target'])
         top_node = self.create_top_node(self['title'])
         table = nodes.table()
         if self.get('classes'):
@@ -42,7 +41,7 @@ class Item2DMatrix(ItemElement):
             for source_id in source_ids:
                 cell = nodes.entry()
                 p_node = nodes.paragraph()
-                if env.traceability_collection.are_related(source_id, self['type'], target_id):
+                if collection.are_related(source_id, self['type'], target_id):
                     txt = self['hit']
                 else:
                     txt = self['miss']
@@ -86,7 +85,9 @@ class Item2DMatrixDirective(Directive):
     def run(self):
         env = self.state.document.settings.env
 
-        node = Item2DMatrix(env.docname, self.lineno)
+        node = Item2DMatrix('')
+        node['document'] = env.docname
+        node['line'] = self.lineno
 
         if self.options.get('class'):
             node.get('classes').extend(self.options.get('class'))

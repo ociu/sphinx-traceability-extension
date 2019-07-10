@@ -1,5 +1,4 @@
 from docutils.parsers.rst import Directive
-from docutils.utils import get_source_line
 from docutils.parsers.rst import directives
 from mlx.traceability import report_warning
 from mlx.traceability_exception import TraceabilityException
@@ -41,7 +40,9 @@ class ItemLinkDirective(Directive):
     def run(self):
         env = self.state.document.settings.env
 
-        node = ItemLink(env.docname, self.lineno)
+        node = ItemLink('')
+        node['document'] = env.docname
+        node['line'] = self.lineno
         node['sources'] = []
         node['targets'] = []
         node['type'] = None

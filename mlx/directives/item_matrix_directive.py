@@ -19,8 +19,8 @@ class ItemMatrix(ItemElement):
         """
         env = app.builder.env
         showcaptions = not self['nocaptions']
-        source_ids = env.traceability_collection.get_items(self['source'], self['filter-attributes'])
-        target_ids = env.traceability_collection.get_items(self['target'])
+        source_ids = collection.get_items(self['source'], self['filter-attributes'])
+        target_ids = collection.get_items(self['target'])
         top_node = self.create_top_node(self['title'])
         table = nodes.table()
         if self.get('classes'):
@@ -39,13 +39,13 @@ class ItemMatrix(ItemElement):
 
         relationships = self['type']
         if not relationships:
-            relationships = env.traceability_collection.iter_relations()
+            relationships = collection.iter_relations()
 
         count_total = 0
         count_covered = 0
 
         for source_id in source_ids:
-            source_item = env.traceability_collection.get_item(source_id)
+            source_item = collection.get_item(source_id)
             count_total += 1
             covered = False
             row = nodes.row()
@@ -58,7 +58,7 @@ class ItemMatrix(ItemElement):
                         right += self.make_external_item_ref(app, target_id, relationship)
                         covered = True
             for target_id in target_ids:
-                if env.traceability_collection.are_related(source_id, relationships, target_id):
+                if collection.are_related(source_id, relationships, target_id):
                     right += self.make_internal_item_ref(app, target_id, showcaptions)
                     covered = True
             if covered:
@@ -120,7 +120,9 @@ class ItemMatrixDirective(Directive):
         env = self.state.document.settings.env
         app = env.app
 
-        item_matrix_node = ItemMatrix(env.docname, self.lineno)
+        item_matrix_node = ItemMatrix('')
+        item_matrix_node['document'] = env.docname
+        item_matrix_node['line'] = self.lineno
 
         if self.options.get('class'):
             item_matrix_node.get('classes').extend(self.options.get('class'))
