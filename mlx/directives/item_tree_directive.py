@@ -10,7 +10,7 @@ from mlx.traceable_item import TraceableItem
 class ItemTree(ItemElement):
     '''Tree-view on documentation items'''
 
-    def perform_traceability_replacement(self, app, collection):
+    def perform_replacement(self, app, collection):
         """ Performs the node replacement.
 
         Args:

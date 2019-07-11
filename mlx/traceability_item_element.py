@@ -35,7 +35,7 @@ class ItemElement(nodes.General, nodes.Element):
         return top_node
 
     @abstractmethod
-    def perform_traceability_replacement(self, app, collection):
+    def perform_replacement(self, app, collection):
         """ Performs the traceability node replacement.
 
         Args:
@@ -54,9 +54,7 @@ class ItemElement(nodes.General, nodes.Element):
         p_node = nodes.paragraph()
 
         # Only create link when target item exists, warn otherwise (in html and terminal)
-        if item_info.is_placeholder():
-            report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_id,
-                           self['document'], self.line)
+        if self.has_warned_about_undefined(item_info, env):
             txt = nodes.Text('%s not defined, broken link' % item_id)
             p_node.append(txt)
         else:
@@ -201,3 +199,17 @@ class ItemElement(nodes.General, nodes.Element):
             if re.search(regex, item_id):
                 return tuple(colors)
         return None
+
+    def has_warned_about_undefined(self, item_info, env):
+        """
+        Reports a warning if the given node is a placeholder node. Returns True if this is the case, False otherwise.
+
+        Args:
+            item_info (TraceableItem): TraceableItem object.
+            env (sphinx.environment.BuildEnvironment): Sphinx' build environment.
+        """
+        if item_info.is_placeholder():
+            report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_info.get_id(),
+                           self['document'], self['line'])
+            return True
+        return False

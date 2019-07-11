@@ -7,7 +7,7 @@ from mlx.traceable_item import TraceableItem
 class ItemList(ItemElement):
     '''List of documentation items'''
 
-    def perform_traceability_replacement(self, app, collection):
+    def perform_replacement(self, app, collection):
         """ Create list with target references. Only items matching list regexp shall be included.
 
         Args:

@@ -8,7 +8,7 @@ from mlx.traceable_item import TraceableItem
 class ItemAttributesMatrix(ItemElement):
     '''Matrix for referencing documentation items with their attributes'''
 
-    def perform_traceability_replacement(self, app, collection):
+    def perform_replacement(self, app, collection):
         """ Creates table with items, printing their attribute values.
 
         Args:
