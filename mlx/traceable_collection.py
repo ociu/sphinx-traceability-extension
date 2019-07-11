@@ -109,36 +109,36 @@ class TraceableCollection(object):
         '''
         return itemid in self.items
 
-    def add_relation(self, sourceid, relation, targetid):
+    def add_relation(self, source_id, relation, target_id):
         '''
         Add relation between two items
 
         The function adds the forward and the automatic reverse relation.
 
         Args:
-            sourceid (str): ID of the source item
+            source_id (str): ID of the source item
             relation (str): Relation between source and target item
-            targetid (str): ID of the target item
+            target_id (str): ID of the target item
         '''
         # Add placeholder if source item is unknown
-        if sourceid not in self.items:
-            src = TraceableItem(sourceid, True)
+        if source_id not in self.items:
+            src = TraceableItem(source_id, True)
             self.add_item(src)
-        source = self.items[sourceid]
+        source = self.items[source_id]
         # Error if relation is unknown
         if relation not in self.relations:
             raise TraceabilityException('Relation {name} not known'.format(name=relation), source.get_document())
         # Add forward relation
-        source.add_target(relation, targetid)
+        source.add_target(relation, target_id)
         # When reverse relation exists, continue to create/adapt target-item
         reverse_relation = self.get_reverse_relation(relation)
         if reverse_relation:
             # Add placeholder if target item is unknown
-            if targetid not in self.items:
-                tgt = TraceableItem(targetid, True)
+            if target_id not in self.items:
+                tgt = TraceableItem(target_id, True)
                 self.add_item(tgt)
             # Add reverse relation to target-item
-            self.items[targetid].add_target(reverse_relation, sourceid, implicit=True)
+            self.items[target_id].add_target(reverse_relation, source_id, implicit=True)
 
     def export(self, fname):
         '''
@@ -214,32 +214,32 @@ class TraceableCollection(object):
             retval += str(self.items[itemid])
         return retval
 
-    def are_related(self, sourceid, relations, targetid):
+    def are_related(self, source_id, relations, target_id):
         '''
         Check if 2 items are related using a list of relationships
 
         Placeholders are excluded
 
         Args:
-            - sourceid (str): id of the source item
+            - source_id (str): id of the source item
             - relations (list): list of relations, empty list for wildcard
-            - targetid (str): id of the target item
+            - target_id (str): id of the target item
         Returns:
             (boolean) True if both items are related through the given relationships, false otherwise
         '''
-        if sourceid not in self.items:
+        if source_id not in self.items:
             return False
-        source = self.items[sourceid]
+        source = self.items[source_id]
         if not source or source.is_placeholder():
             return False
-        if targetid not in self.items:
+        if target_id not in self.items:
             return False
-        target = self.items[targetid]
+        target = self.items[target_id]
         if not target or target.is_placeholder():
             return False
         if not relations:
             relations = self.iter_relations()
-        return self.items[sourceid].is_related(relations, targetid)
+        return self.items[source_id].is_related(relations, target_id)
 
     def get_items(self, regex, attributes={}, sortattributes=None, reverse=False):
         '''
