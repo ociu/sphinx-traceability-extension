@@ -17,89 +17,93 @@ class TraceableItem(TraceableBaseClass):
 
     defined_attributes = {}
 
-    def __init__(self, itemid, placeholder=False):
-        '''
-        Initialize a new traceable item
+    def __init__(self, item_id, placeholder=False):
+        ''' Initializes a new traceable item
 
         Args:
-            itemid (str): Item identification
-            placeholder (bool): Internal use only
+            item_id (str): Item identifier.
+            placeholder (bool): Internal use only.
         '''
-        super(TraceableItem, self).__init__(itemid)
+        super(TraceableItem, self).__init__(item_id)
         self.explicit_relations = {}
         self.implicit_relations = {}
         self.attributes = {}
-        self.placeholder = placeholder
+        self._placeholder = placeholder
 
     def update(self, other):
-        '''
-        Update item with new object
-
-        Store the sum of both objects
-        '''
-        super(TraceableItem, self).update(other)
-        for relation in other.explicit_relations.keys():
-            if relation not in self.explicit_relations:
-                self.explicit_relations[relation] = []
-            self.explicit_relations[relation].extend(other.explicit_relations[relation])
-        for relation in other.implicit_relations.keys():
-            if relation not in self.implicit_relations:
-                self.implicit_relations[relation] = []
-            self.implicit_relations[relation].extend(other.implicit_relations[relation])
-        # Remainder of fields: update if they improve quality of the item
-        for attr in other.attributes.keys():
-            self.add_attribute(attr, other.attributes[attr], False)
-        if not other.placeholder:
-            self.placeholder = False
-
-    def is_placeholder(self):
-        '''
-        Getter for item being a placeholder or not
-
-        Returns:
-            bool: True if the item is a placeholder, false otherwise.
-        '''
-        return self.placeholder
-
-    def _add_target(self, database, relation, target):
-        '''
-        Add a relation to another traceable item
+        ''' Updates item with other object. Stores the sum of both objects.
 
         Args:
-            relation (str): Name of the relation
-            target (str): Item identification of the targetted traceable item
-            database (dict): Dictionary to add the relation to
+            other (TraceableItem): Other TraceableItem which is the source for the update.
+        '''
+        super(TraceableItem, self).update(other)
+        self._add_relations(self.explicit_relations, other.explicit_relations)
+        self._add_relations(self.implicit_relations, other.implicit_relations)
+        # Remainder of fields: update if they improve the quality of the item
+        for attr in other.attributes.keys():
+            self.add_attribute(attr, other.attributes[attr], False)
+        if not other.is_placeholder():
+            self._placeholder = False
+
+    @staticmethod
+    def _add_relations(relations_of_self, relations_of_other):
+        ''' Adds all relations from other item to own relations.
+
+        Args:
+            relations_of_self (dict): Dictionary used to add relations to.
+            relations_of_other (dict): Dictionary used to fetch relations from.
+        '''
+        for relation in relations_of_other.keys():
+            if relation not in relations_of_self:
+                relations_of_self[relation] = []
+            relations_of_self[relation].extend(relations_of_other[relation])
+
+    def is_placeholder(self):
+        ''' Gets whether the item is a placeholder or not.
+
+        Returns:
+            bool: True if the item is a placeholder, False otherwise.
+        '''
+        return self._placeholder
+
+    @staticmethod
+    def _add_target(database, relation, target):
+        ''' Adds a relation to another traceable item.
+
+        Args:
+            relation (str): Name of the relation.
+            target (str): Item identification of the targeted traceable item.
+            database (dict): Dictionary to add the relation to.
         '''
         if relation not in database:
             database[relation] = []
         if target not in database[relation]:
             database[relation].append(target)
 
-    def _remove_target(self, database, relation, target):
-        '''
-        Delete a relation to another traceable item
+    @staticmethod
+    def _remove_target(database, relation, target):
+        ''' Deletes a relation to another traceable item.
 
         Args:
-            relation (str): Name of the relation
-            target (str): Item identification of the targetted traceable item
-            database (dict): Dictionary to remove the relation from
+            relation (str): Name of the relation.
+            target (str): Item identification of the targeted traceable item.
+            database (dict): Dictionary to remove the relation from.
         '''
         if relation in database:
             if target in database[relation]:
                 database[relation].remove(target)
 
     def add_target(self, relation, target, implicit=False):
-        '''
-        Add a relation to another traceable item
+        ''' Adds a relation to another traceable item.
 
         Note: using this API, the automatic reverse relation is not created. Adding the relation
         through the TraceableItemCollection class performs the adding of automatic reverse
         relations.
 
         Args:
-            relation (str): Name of the relation
-            target (str): Item identification of the targetted traceable item
-            implicit (bool): If true, an explicitely expressed relation is added here. If false, an implicite
+            relation (str): Name of the relation.
+            target (str): Item identification of the targeted traceable item.
+            implicit (bool): If True, an explicitly expressed relation is added here. If false, an implicite
                              (e.g. automatic reverse) relation is added here.
         '''
         # When target is the item itself, it is an error: no circular relationships
@@ -122,79 +126,72 @@ class TraceableItem(TraceableBaseClass):
                 self._add_target(self.explicit_relations, relation, target)
         # Otherwise it is a new relation, and we add to the selected database
         else:
-            if implicit is False:
-                database = self.explicit_relations
-            else:
-                database = self.implicit_relations
+            database = self.implicit_relations if implicit else self.explicit_relations
             self._add_target(database, relation, target)
 
-    def remove_targets(self, targetid, explicit=False, implicit=True):
-        '''
-        Remove any relation to given target item
+    def remove_targets(self, target_id, explicit=False, implicit=True):
+        ''' Removes any relation to given target item.
 
         Args:
-            targetid (str): Identification of the target items to remove
-            explicit (bool): If true, explicitely expressed relations to given target are removed.
-            implicit (bool): If true, implicitely expressed relations to given target are removed.
+            target_id (str): Identification of the target items to remove.
+            explicit (bool): If True, explicitly expressed relations to given target are removed.
+            implicit (bool): If True, implicitly expressed relations to given target are removed.
         '''
-        if explicit is True:
+        if explicit:
             for relation in self.explicit_relations.keys():
-                if targetid in self.explicit_relations[relation]:
-                    self.explicit_relations[relation].remove(targetid)
-        if implicit is True:
+                if target_id in self.explicit_relations[relation]:
+                    self.explicit_relations[relation].remove(target_id)
+        if implicit:
             for relation in self.implicit_relations.keys():
-                if targetid in self.implicit_relations[relation]:
-                    self.implicit_relations[relation].remove(targetid)
+                if target_id in self.implicit_relations[relation]:
+                    self.implicit_relations[relation].remove(target_id)
 
     def iter_targets(self, relation, explicit=True, implicit=True):
-        '''
-        Get a naturally sorted list of targets to other traceable item(s)
+        ''' Gets a naturally sorted list of targets to other traceable item(s).
 
         Args:
-            relation (str): Name of the relation
-            explicit (bool): If true, explicitely expressed relations are included in the returned list.
-            implicit (bool): If true, implicitely expressed relations are included in the returned list.
+            relation (str): Name of the relation.
+            explicit (bool): If True, explicitly expressed relations are included in the returned list.
+            implicit (bool): If True, implicitly expressed relations are included in the returned list.
+
+        Returns:
+            (list) Naturally sorted list of targets to other traceable item(s).
         '''
         relations = []
-        if explicit is True:
-            if relation in self.explicit_relations.keys():
-                relations.extend(self.explicit_relations[relation])
-        if implicit is True:
-            if relation in self.implicit_relations.keys():
-                relations.extend(self.implicit_relations[relation])
+        if explicit and relation in self.explicit_relations.keys():
+            relations.extend(self.explicit_relations[relation])
+        if implicit and relation in self.implicit_relations.keys():
+            relations.extend(self.implicit_relations[relation])
         return natsorted(relations)
 
     def iter_relations(self):
-        '''
-        Iterate over available relations: naturally sorted
+        ''' Iterates over available relations: naturally sorted.
 
         Returns:
-            Sorted iterator over available relations in the item
+            (list) Naturally sorted list containing available relations in the item.
         '''
         return natsorted(list(self.explicit_relations) + list(self.implicit_relations.keys()))
 
     @staticmethod
     def define_attribute(attr):
-        '''
-        Define a attribute that can be assigned to TraceableItems
+        ''' Defines an attribute that can be assigned to traceable items.
 
         Args:
-            attr (TraceableAttribute): Attribute
+            attr (TraceableAttribute): Attribute to be assigned.
         '''
         TraceableItem.defined_attributes[attr.get_id()] = attr
 
     def add_attribute(self, attr, value, overwrite=True):
-        '''
-        Add an attribute key-value pair to the traceable item
+        ''' Adds an attribute key-value pair to the traceable item.
 
         Note:
-            The given attribute value is compared against defined attribute possibilities. When the attribute
-            value doesn't match the defined regex, an exception is thrown.
+            The given attribute value is compared against defined attribute possibilities. An exception is thrown when
+            the attribute value doesn't match the defined regex.
 
         Args:
-            attr (str): Name of the attribute
-            value (str): Value of the attribute
-            overwrite(boolean): Overwrite existing attribute value, if any
+            attr (str): Name of the attribute.
+            value (str): Value of the attribute.
+            overwrite (bool): Overwrite existing attribute value, if any.
         '''
         if not attr or not value or attr not in TraceableItem.defined_attributes:
             raise TraceabilityException('item {item} has invalid attribute ({attr}={value})'.format(item=self.get_id(),
@@ -209,26 +206,24 @@ class TraceableItem(TraceableBaseClass):
             self.attributes[attr] = value
 
     def remove_attribute(self, attr):
-        '''
-        Removes an attribute key-value pair from the traceable item
+        ''' Removes an attribute key-value pair from the traceable item.
 
         Args:
-            attr (str): Name of the attribute
+            attr (str): Name of the attribute.
         '''
         if not attr:
-            raise TraceabilityException('item {item} cannot remove invalid attribute {attr}'.format(item=self.get_id(),
-                                                                                                    attr=attr),
+            raise TraceabilityException('item {item}: cannot remove invalid attribute {attr}'.format(item=self.get_id(),
+                                                                                                     attr=attr),
                                         self.get_document())
         del self.attributes[attr]
 
     def get_attribute(self, attr):
-        '''
-        Get the value of an attribute from the traceable item
+        ''' Gets the value of an attribute from the traceable item.
 
         Args:
-            attr (str): Name of the attribute
+            attr (str): Name of the attribute.
         Returns:
-            Value matching the given attribute key, or '' if attribute does not exist
+            (str) Value matching the given attribute key, or '' if attribute does not exist.
         '''
         value = ''
         if attr in self.attributes:
@@ -236,13 +231,12 @@ class TraceableItem(TraceableBaseClass):
         return value
 
     def get_attributes(self, attrs):
-        '''
-        Get the values of a list of attributes from the traceable item
+        ''' Gets the values of a list of attributes from the traceable item.
 
         Args:
             attr (list): List of names of the attribute
         Returns:
-            List of values matching the given attributes, or [] if attributes do not exist
+            (list) List of values matching the given attributes, or [] if attributes do not exist
         '''
         value = []
         if attrs:
@@ -251,80 +245,93 @@ class TraceableItem(TraceableBaseClass):
         return value
 
     def iter_attributes(self):
-        '''
-        Iterate over available attributes: naturally sorted
+        ''' Iterates over available attributes: naturally sorted.
 
         Returns:
-            Sorted iterator over available attributes in the item
+            (list) Naturally sorted list containing available attributes in the item.
         '''
         return natsorted(list(self.attributes))
 
     def __str__(self, explicit=True, implicit=True):
-        '''
-        Convert object to string
+        ''' Converts object to string.
+
+        Args:
+            explicit (bool)
+
+        Returns:
+            (str): String representation of the item.
         '''
         retval = TraceableItem.STRING_TEMPLATE.format(identification=self.get_id())
         retval += '\tPlaceholder: {placeholder}\n'.format(placeholder=self.is_placeholder())
         for attribute in self.attributes:
             retval += '\tAttribute {attribute} = {value}\n'.format(attribute=attribute,
                                                                    value=self.attributes[attribute])
-        for relation in self.explicit_relations:
-            retval += '\tExplicit {relation}\n'.format(relation=relation)
-            for tgtid in self.explicit_relations[relation]:
-                retval += '\t\t{target}\n'.format(target=tgtid)
-        for relation in self.implicit_relations:
-            retval += '\tImplicit {relation}\n'.format(relation=relation)
-            for tgtid in self.implicit_relations[relation]:
+        if explicit:
+            retval += self._relations_to_str(self.explicit_relations, 'Explicit')
+        if implicit:
+            retval += self._relations_to_str(self.implicit_relations, 'Implicit')
+        return retval
+
+    @staticmethod
+    def _relations_to_str(relations, description):
+        ''' Returns the string represtentation of the given relations.
+
+        Args:
+            relations (dict): Dictionary of relations.
+            description (str): Description of the kind of relations.
+        '''
+        retval = ''
+        for relation in relations:
+            retval += '\t{text} {relation}\n'.format(text=description, relation=relation)
+            for tgtid in relations[relation]:
                 retval += '\t\t{target}\n'.format(target=tgtid)
         return retval
 
     def is_match(self, regex):
-        '''
-        Check if item matches a given regular expression
+        ''' Checks if the item matches a given regular expression.
 
         Args:
-            - regex (str): Regex to match the given item against
+            regex (str): Regex to match the given item against.
+
         Returns:
-            (boolean) True if the given regex matches the item identification
+            (bool) True if the given regex matches the item identification.
         '''
         return re.match(regex, self.get_id())
 
     def attributes_match(self, attributes):
-        '''
-        Check if item matches a given set of attributes
+        ''' Checks if item matches a given set of attributes.
 
         Args:
-            - attributes (dict): Dictionary with attribute-regex pairs to match the given item against
+            attributes (dict): Dictionary with attribute-regex pairs to match the given item against.
+
         Returns:
-            (boolean) True if the given attributes match the item attributes
+            (bool) True if the given attributes match the item attributes.
         '''
         for attr in attributes.keys():
             if not re.match(attributes[attr], self.get_attribute(attr)):
                 return False
         return True
 
-    def is_related(self, relations, targetid):
-        '''
-        Check if a given item is related using a list of relationships
+    def is_related(self, relations, target_id):
+        ''' Checks if a given item is related using a list of relationships.
 
         Args:
-            - relations (list): list of relations
-            - targetid (str): id of the target item
+            relations (list): List of relations.
+            target_id (str): Identifier of the target item.
+
         Returns:
-            (boolean) True if given item is related through the given relationships, false otherwise
+            (bool) True if given item is related through the given relationships, False otherwise.
         '''
-        related = False
         for relation in relations:
-            if targetid in self.iter_targets(relation, explicit=True, implicit=True):
-                related = True
-        return related
+            if target_id in self.iter_targets(relation, explicit=True, implicit=True):
+                return True
+        return False
 
     def to_dict(self):
-        '''
-        Export to dictionary
+        ''' Exports item to a dictionary.
 
         Returns:
-            (dict) Dictionary representation of the object
+            (dict) Dictionary representation of the object.
         '''
         data = {}
         if not self.is_placeholder():
@@ -344,8 +351,12 @@ class TraceableItem(TraceableBaseClass):
         return data
 
     def self_test(self):
-        '''
-        Perform self test on collection content
+        ''' Performs self-test on collection content.
+
+        Raises:
+            TraceabilityException: Item is not defined.
+            TraceabilityException: Item has an invalid attribute value.
+            TraceabilityException: Duplicate target found for item.
         '''
         super(TraceableItem, self).self_test()
         # Item should not be a placeholder
@@ -360,7 +371,7 @@ class TraceableItem(TraceableBaseClass):
         for relation in self.iter_relations():
             tgts = self.iter_targets(relation)
             cnt_duplicate = len(tgts) - len(set(tgts))
-            if cnt_duplicate != 0:
+            if cnt_duplicate:
                 raise TraceabilityException('{cnt} duplicate target(s) found for {item} {relation})'
                                             .format(cnt=cnt_duplicate, item=self.get_id(), relation=relation),
                                             self.get_document())
