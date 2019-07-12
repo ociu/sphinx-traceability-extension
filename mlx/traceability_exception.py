@@ -10,9 +10,10 @@ def report_warning(env, msg, docname=None, lineno=None):
     '''Convenience function for logging a warning
 
     Args:
-        msg (any __str__): Message of the warning, gets converted to str
-        docname (str): Name of the document on which the error occured
-        lineno (int): Line number in the document on which the error occured
+        env (sphinx.environment.BuildEnvironment): Sphinx' build environment.
+        msg (any __str__): Message of the warning, gets converted to str.
+        docname (str): Relative path to the document on which the error occured, without extension.
+        lineno (int): Line number in the document on which the error occured.
     '''
     msg = str(msg)
     if sphinx_version >= '1.6.0':
