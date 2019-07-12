@@ -66,33 +66,6 @@ class TraceableItem(TraceableBaseClass):
         '''
         return self._placeholder
 
-    @staticmethod
-    def _add_target(database, relation, target):
-        ''' Adds a relation to another traceable item.
-
-        Args:
-            relation (str): Name of the relation.
-            target (str): Item identification of the targeted traceable item.
-            database (dict): Dictionary to add the relation to.
-        '''
-        if relation not in database:
-            database[relation] = []
-        if target not in database[relation]:
-            database[relation].append(target)
-
-    @staticmethod
-    def _remove_target(database, relation, target):
-        ''' Deletes a relation to another traceable item.
-
-        Args:
-            relation (str): Name of the relation.
-            target (str): Item identification of the targeted traceable item.
-            database (dict): Dictionary to remove the relation from.
-        '''
-        if relation in database:
-            if target in database[relation]:
-                database[relation].remove(target)
-
     def add_target(self, relation, target, implicit=False):
         ''' Adds a relation to another traceable item.
 
@@ -129,6 +102,33 @@ class TraceableItem(TraceableBaseClass):
             database = self.implicit_relations if implicit else self.explicit_relations
             self._add_target(database, relation, target)
 
+    @staticmethod
+    def _add_target(database, relation, target):
+        ''' Adds a relation to another traceable item.
+
+        Args:
+            database (dict): Dictionary to add the relation to.
+            relation (str): Name of the relation.
+            target (str): Item identification of the targeted traceable item.
+        '''
+        if relation not in database.keys():
+            database[relation] = []
+        if target not in database[relation]:
+            database[relation].append(target)
+
+    @staticmethod
+    def _remove_target(database, relation, target):
+        ''' Deletes a relation to another traceable item.
+
+        Args:
+            relation (str): Name of the relation.
+            target (str): Item identification of the targeted traceable item.
+            database (dict): Dictionary to remove the relation from.
+        '''
+        if relation in database:
+            if target in database[relation]:
+                database[relation].remove(target)
+
     def remove_targets(self, target_id, explicit=False, implicit=True):
         ''' Removes any relation to given target item.
 
@@ -137,14 +137,15 @@ class TraceableItem(TraceableBaseClass):
             explicit (bool): If True, explicitly expressed relations to given target are removed.
             implicit (bool): If True, implicitly expressed relations to given target are removed.
         '''
+        source_databases = []
         if explicit:
-            for relation in self.explicit_relations.keys():
-                if target_id in self.explicit_relations[relation]:
-                    self.explicit_relations[relation].remove(target_id)
+            source_databases.append(self.explicit_relations)
         if implicit:
-            for relation in self.implicit_relations.keys():
-                if target_id in self.implicit_relations[relation]:
-                    self.implicit_relations[relation].remove(target_id)
+            source_databases.append(self.implicit_relations)
+        for database in source_databases:
+            for relation in database.keys():
+                if target_id in database[relation]:
+                    database[relation].remove(target_id)
 
     def iter_targets(self, relation, explicit=True, implicit=True):
         ''' Gets a naturally sorted list of targets to other traceable item(s).
