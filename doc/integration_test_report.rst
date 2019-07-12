@@ -104,7 +104,7 @@ This text is not part of any item
     :asil: D
     :trace: non_existing_requirement
 
-    Ai caramba, this should report a broken link to an non existing requirement.
+    Ai caramba, this should report a broken link to a non-existing requirement.
 
 .. item:: r009 Requirement with invalid relation kind or attribute
     :non_existing_relation_or_attribute: r007

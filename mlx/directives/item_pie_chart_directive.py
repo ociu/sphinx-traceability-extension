@@ -28,7 +28,7 @@ def pct_wrapper(sizes):
 class ItemPieChart(ItemElement):
     '''Pie chart on documentation items'''
 
-    def perform_traceability_replacement(self, app, collection):
+    def perform_replacement(self, app, collection):
         """
         Very similar to item-matrix: but instead of creating a table, the empty cells in the right column are counted.
         Generates a pie chart with coverage percentages. Only items matching regexp in ``id_set`` option shall be

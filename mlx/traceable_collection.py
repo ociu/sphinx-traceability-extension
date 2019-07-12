@@ -52,7 +52,7 @@ class TraceableCollection(object):
         Iterate over available relations: naturally sorted
 
         Returns:
-            Sorted iterator over available relations in the collection
+            Naturally sorted list over available relations in the collection
         '''
         return natsorted(self.relations.keys())
 
@@ -68,7 +68,7 @@ class TraceableCollection(object):
         if itemid in self.items:
             olditem = self.items[itemid]
             # ... and it's not a placeholder, log an error
-            if not olditem.placeholder:
+            if not olditem.is_placeholder():
                 raise TraceabilityException('duplicating {itemid}'.format(itemid=itemid), item.get_document())
             # ... otherwise, update the item with new content
             else:

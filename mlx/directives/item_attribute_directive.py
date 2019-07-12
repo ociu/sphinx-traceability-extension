@@ -10,7 +10,7 @@ from mlx.traceable_item import TraceableItem
 class ItemAttribute(ItemElement):
     '''Attribute to documentation item'''
 
-    def perform_traceability_replacement(self, app, collection):
+    def perform_replacement(self, app, collection):
         """
         Perform the node replacement
         Args:

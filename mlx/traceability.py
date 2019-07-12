@@ -15,7 +15,7 @@ from sphinx.util.nodes import make_refnode
 from sphinx.environment import NoUri
 from docutils import nodes
 from docutils.parsers.rst import directives
-from docutils.utils import get_source_line
+from mlx.traceability_item_element import ItemElement
 from mlx.traceable_attribute import TraceableAttribute
 from mlx.traceable_item import TraceableItem
 from mlx.traceable_collection import TraceableCollection
@@ -93,35 +93,30 @@ def build_class_name(inputs, class_names):
 # Pending item cross reference node
 
 
-class PendingItemXref(nodes.Inline, nodes.Element):
+class PendingItemXref(ItemElement):
     """Node for item cross-references that cannot be resolved without complete information about all documents."""
 
-    def perform_traceability_replacement(self, app, collection, fromdocname):
+    def perform_replacement(self, app, collection):
         """ Resolves item cross references (from ``item`` role).
 
         Args:
             app: Sphinx application object to use.
             collection (TraceableCollection): Collection for which to generate the nodes.
-            fromdocname (str): Name of the document where the node was found.
         """
         # Create a dummy reference to be used if target reference fails
         new_node = make_refnode(app.builder,
-                                fromdocname,
-                                fromdocname,
+                                self['document'],
+                                self['document'],
                                 'ITEM_NOT_FOUND',
                                 self[0].deepcopy(),
                                 self['reftarget'] + '??')
         # If target exists, try to create the reference
         item_info = collection.get_item(self['reftarget'])
-        docname, lineno = get_source_line(self)
         if item_info:
-            if item_info.is_placeholder():
-                report_warning(app.env, 'Traceability: cannot link to %s, item is not defined' % item_info.get_id(),
-                               docname, lineno)
-            else:
+            if not self.has_warned_about_undefined(item_info, app.env):
                 try:
                     new_node = make_refnode(app.builder,
-                                            fromdocname,
+                                            self['document'],
                                             item_info.docname,
                                             item_info.node['refid'],
                                             self[0].deepcopy(),
@@ -131,7 +126,7 @@ class PendingItemXref(nodes.Inline, nodes.Element):
                     pass
         else:
             report_warning(app.env, 'Traceability: item %s not found' % self['reftarget'],
-                           docname, lineno)
+                           self['document'], self['line'])
         self.replace_self(new_node)
 
 
@@ -183,36 +178,38 @@ def process_item_nodes(app, doctree, fromdocname):
                 report_warning(env, err, err.get_document())
 
     for node in doctree.traverse(ItemLink):
-        node.perform_traceability_replacement(app, env.traceability_collection)
+        node.perform_replacement(app, env.traceability_collection)
 
     for node in doctree.traverse(ItemMatrix):
-        node.perform_traceability_replacement(app, env.traceability_collection)
+        node.perform_replacement(app, env.traceability_collection)
 
     for node in doctree.traverse(ItemPieChart):
-        node.perform_traceability_replacement(app, env.traceability_collection)
+        node.perform_replacement(app, env.traceability_collection)
 
     for node in doctree.traverse(ItemAttributesMatrix):
-        node.perform_traceability_replacement(app, env.traceability_collection)
+        node.perform_replacement(app, env.traceability_collection)
 
     for node in doctree.traverse(Item2DMatrix):
-        node.perform_traceability_replacement(app, env.traceability_collection)
+        node.perform_replacement(app, env.traceability_collection)
 
     for node in doctree.traverse(ItemList):
-        node.perform_traceability_replacement(app, env.traceability_collection)
+        node.perform_replacement(app, env.traceability_collection)
 
     for node in doctree.traverse(ItemTree):
-        node.perform_traceability_replacement(app, env.traceability_collection)
+        node.perform_replacement(app, env.traceability_collection)
 
     for node in doctree.traverse(PendingItemXref):
-        node.perform_traceability_replacement(app, env.traceability_collection, fromdocname)
+        node['document'] = fromdocname
+        node['line'] = node.line
+        node.perform_replacement(app, env.traceability_collection)
 
     # ItemAttribute: replace item nodes, with admonition
     for node in doctree.traverse(ItemAttribute):
-        node.perform_traceability_replacement(app, env.traceability_collection)
+        node.perform_replacement(app, env.traceability_collection)
 
     # Item: replace item nodes, with admonition, list of relationships
     for node in doctree.traverse(Item):
-        node.perform_traceability_replacement(app, env.traceability_collection)
+        node.perform_replacement(app, env.traceability_collection)
 
 
 def init_available_relationships(app):

@@ -8,7 +8,7 @@ from mlx.traceable_item import TraceableItem
 class Item2DMatrix(ItemElement):
     '''Matrix for cross referencing documentation items in 2 dimensions'''
 
-    def perform_traceability_replacement(self, app, collection):
+    def perform_replacement(self, app, collection):
         """
         Creates table with related items, printing their target references. Only source and target items matching
         respective regexp shall be included.
