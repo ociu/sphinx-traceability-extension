@@ -337,12 +337,6 @@ class TraceableItem(TraceableBaseClass):
         data = {}
         if not self.is_placeholder():
             data = super(TraceableItem, self).to_dict()
-            data['id'] = self.get_id()
-            caption = self.get_caption()
-            if caption:
-                data['caption'] = caption
-            data['document'] = self.docname
-            data['line'] = self.lineno
             data['attributes'] = self.attributes
             data['targets'] = {}
             for relation in self.iter_relations():
