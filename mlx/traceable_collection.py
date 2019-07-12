@@ -68,7 +68,7 @@ class TraceableCollection(object):
         if itemid in self.items:
             olditem = self.items[itemid]
             # ... and it's not a placeholder, log an error
-            if not olditem.placeholder:
+            if not olditem.is_placeholder():
                 raise TraceabilityException('duplicating {itemid}'.format(itemid=itemid), item.get_document())
             # ... otherwise, update the item with new content
             else:
