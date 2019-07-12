@@ -52,7 +52,7 @@ class TraceableCollection(object):
         Iterate over available relations: naturally sorted
 
         Returns:
-            Sorted iterator over available relations in the collection
+            Naturally sorted list over available relations in the collection
         '''
         return natsorted(self.relations.keys())
 
