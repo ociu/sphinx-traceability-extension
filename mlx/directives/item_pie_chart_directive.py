@@ -149,6 +149,15 @@ class ItemPieChart(ItemElement):
 
     @staticmethod
     def _get_statistics(count_uncovered, count_total):
+        """ Returns the coverage statistics based in the number of uncovered items and total number of items.
+
+        Args:
+            count_uncovered (int): The number of uncovered items.
+            count_total (int): The total number of items.
+
+        Returns:
+            (str) Coverage statistics in string representation.
+        """
         count_covered = count_total - count_uncovered
         try:
             percentage = int(100 * count_covered / count_total)
