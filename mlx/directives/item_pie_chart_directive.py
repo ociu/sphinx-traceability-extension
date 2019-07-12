@@ -108,37 +108,72 @@ class ItemPieChart(ItemElement):
                                 if latest_attribute_priority > stored_attribute_priority:
                                     linked_attributes[source_id] = attribute_value
 
-        # initialize dictionary and increment counters for each possible value
-        all_states = {}
-        for priority in priorities.keys():
-            all_states[priority] = 0
-        for attribute in linked_attributes.values():
-            all_states[attribute] += 1
+        chart_labels, statistics = self._prepare_labels_and_values(list(priorities.keys()),
+                                                                   list(linked_attributes.values()))
+        image_node = self.build_pie_chart(chart_labels, env)
 
-        count_total = len(linked_attributes)
-        count_uncovered = all_states[self['label_set'][0]]
+        p_node = nodes.paragraph()
+        p_node += nodes.Text(statistics)
+        p_node += image_node
+        top_node += p_node
+        self.replace_self(top_node)
+
+    def _prepare_labels_and_values(self, lower_labels, attributes):
+        """ Keeps case-sensitivity of :<<attribute>>: arguments in labels and calculates slice size based on the
+        highest-priority label for each relevant item.
+
+        Args:
+            lower_labels (list): List of unique lower-case labels (str).
+            attributes (list): List of labels with the highest priority for each relevant item.
+
+        Returns:
+            (dict) Dictionary containing the slice labels as keys and slice sizes (int) as values.
+            (str) Coverage statistics.
+        """
+        # initialize dictionary for each possible value, and count label occurences
+        chart_labels = {}
+        for label in lower_labels:
+            chart_labels[label] = 0
+        for attribute in attributes:
+            chart_labels[attribute] += 1
+
+        # get statistics before removing any labels with value 0
+        statistics = self._get_statistics(chart_labels[self['label_set'][0]], len(attributes))
+        # removes labels with count value equal to 0
+        chart_labels = {k: v for k, v in chart_labels.items() if v}
+        for priority in self['priorities']:
+            if priority.lower() in chart_labels.keys():
+                value = chart_labels.pop(priority.lower())
+                chart_labels[priority] = value
+        return chart_labels, statistics
+
+    @staticmethod
+    def _get_statistics(count_uncovered, count_total):
         count_covered = count_total - count_uncovered
         try:
             percentage = int(100 * count_covered / count_total)
         except ZeroDivisionError:
             percentage = 0
-        disp = 'Statistics: {cover} out of {total} covered: {pct}%'.format(cover=count_covered,
+        return 'Statistics: {cover} out of {total} covered: {pct}%'.format(cover=count_covered,
                                                                            total=count_total,
                                                                            pct=percentage,)
 
-        # remove items with count value equal to 0
-        all_states = {k: v for k, v in all_states.items() if v}
-        # keep case-sensitivity of :<<attribute>>: arguments in labels of pie chart
-        case_sensitive_priorities = self['priorities']
-        for priority in case_sensitive_priorities:
-            if priority.lower() in all_states.keys():
-                value = all_states.pop(priority.lower())
-                all_states[priority] = value
-        labels = list(all_states.keys())
+    @staticmethod
+    def build_pie_chart(chart_labels, env):
+        """
+        Builds and returns image node containing the pie chart image.
 
-        sizes = all_states.values()
+        Args:
+            chart_labels (dict): Dictionary containing the slice labels as keys and slice sizes (int) as values.
+            env (sphinx.environment.BuildEnvironment): Sphinx' build environment.
+
+        Returns:
+            (nodes.image) Image node containing the pie chart image.
+        """
+        labels = list(chart_labels.keys())
+        sizes = chart_labels.values()
         explode = [0.05]  # slightly detaches slice of first state, default is "uncovered"
-        explode.extend([0] * (len(all_states.values()) - 1))
+        explode.extend([0] * (len(chart_labels.values()) - 1))
 
         fig, axes = plt.subplots()
         axes.pie(sizes, explode=explode, labels=labels, autopct=pct_wrapper(sizes), startangle=90)
@@ -155,14 +190,10 @@ class ItemPieChart(ItemElement):
             fig.savefig(path.join(env.app.srcdir, rel_file_path), format='png')
             env.images[rel_file_path] = ['_images', path.split(rel_file_path)[-1]]  # store file name in build env
 
-        p_node = nodes.paragraph()
-        p_node += nodes.Text(disp)
         image_node = nodes.image()
         image_node['uri'] = rel_file_path
         image_node['candidates'] = '*'  # look at uri value for source path, relative to the srcdir folder
-        p_node += image_node
-        top_node += p_node
-        self.replace_self(top_node)
+        return image_node
 
 
 class ItemPieChartDirective(Directive):
