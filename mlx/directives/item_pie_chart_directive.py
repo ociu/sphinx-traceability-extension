@@ -44,20 +44,11 @@ class ItemPieChart(ItemElement):
             collection (TraceableCollection): Collection for which to generate the nodes.
         """
         env = app.builder.env
+        top_node = self.create_top_node(self['title'])
         self.collection = collection
         self.relationships = self.collection.iter_relations()
-        top_node = self.create_top_node(self['title'])
-
-        for idx, label in enumerate(self['label_set']):
-            self.priorities[label] = idx
-        # store :<<attribute>>: arguments in reverse order in lowercase for case-insensitivity
-        if self['priorities']:
-            for idx, attr in enumerate([value.lower() for value in self['priorities'][::-1]],
-                                       start=len(self['label_set'])):
-                self.priorities[attr] = idx
-
-        if len(self['id_set']) > 2:
-            self.attribute_id = self['id_set'][2]
+        self._set_priorities()
+        self._set_attribute_id()
 
         for source_id in self.collection.get_items(''):
             source_item = self.collection.get_item(source_id)
@@ -76,6 +67,21 @@ class ItemPieChart(ItemElement):
         top_node += p_node
         self.replace_self(top_node)
 
+    def _set_priorities(self):
+        """ Initializes the priorities dictionary with labels as keys and priority numbers as values. """
+        for idx, label in enumerate(self['label_set']):
+            self.priorities[label] = idx
+        # store :<<attribute>>: arguments in reverse order in lowercase for case-insensitivity
+        if self['priorities']:
+            for idx, attr in enumerate([value.lower() for value in self['priorities'][::-1]],
+                                       start=len(self['label_set'])):
+                self.priorities[attr] = idx
+
+    def _set_attribute_id(self):
+        """ Sets the attribute_id if a third item ID in the id_set option is given. """
+        if len(self['id_set']) > 2:
+            self.attribute_id = self['id_set'][2]
+
     def loop_relationships(self, top_source_id, source_item, pattern, match_function):
         """
         Loops through all relationships and for each relationship it loops through the matches that have been found
@@ -89,8 +95,7 @@ class ItemPieChart(ItemElement):
             match_function (func): Function to be called when the regular expression hits.
         """
         for relationship in self.relationships:
-            tgts = source_item.iter_targets(relationship, True, True)
-            for target_id in tgts:
+            for target_id in source_item.iter_targets(relationship, True, True):
                 target_item = self.collection.get_item(target_id)
                 # placeholders don't end up in any item-matrix (less duplicate warnings for missing items)
                 if not target_item or target_item.is_placeholder():
