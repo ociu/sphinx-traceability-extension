@@ -204,20 +204,6 @@ class ItemPieChartDirective(Directive):
         self._process_label_set(item_chart_node)
 
         self._process_attribute(item_chart_node, env)
-        item_chart_node['attribute'] = ''
-        item_chart_node['priorities'] = []
-        for attr in TraceableItem.defined_attributes.keys():
-            if attr in self.options:
-                if len(item_chart_node['id_set']) == 3:
-                    item_chart_node['attribute'] = attr
-                    item_chart_node['priorities'] = [x.strip(' ') for x in self.options[attr].split(',')]
-                else:
-                    report_warning(env,
-                                   'Traceability: The <<attribute>> option is only viable with an id_set with 3 '
-                                   'arguments.',
-                                   env.docname,
-                                   self.lineno,)
-                break
 
         return [item_chart_node]
 
