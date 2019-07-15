@@ -7,7 +7,7 @@ from docutils.parsers.rst import Directive, directives
 import matplotlib as mpl
 if not environ.get('DISPLAY'):
     mpl.use('Agg')
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt  # pylint: disable=wrong-import-order
 
 from mlx.traceability import report_warning
 from mlx.traceability_item_element import ItemElement
@@ -188,6 +188,7 @@ class ItemPieChartDirective(Directive):
     has_content = False
 
     def run(self):
+        """ Processes the contents of the directive. """
         env = self.state.document.settings.env
 
         item_chart_node = ItemPieChart('')
@@ -198,32 +199,48 @@ class ItemPieChartDirective(Directive):
         if self.arguments:
             item_chart_node['title'] = self.arguments[0]
 
-        # Process ``id_set`` option
-        if 'id_set' in self.options and len(self.options['id_set']) >= 2:
-            item_chart_node['id_set'] = self.options['id_set'].split()
-        else:
-            item_chart_node['id_set'] = []
-            report_warning(env, 'Traceability: Expected at least two arguments in id_set.', env.docname, self.lineno)
+        self._process_id_set(item_chart_node, env)
 
-        # Process ``label_set`` option
+        self._process_label_set(item_chart_node)
+
+        self._process_attribute(item_chart_node, env)
+
+        return [item_chart_node]
+
+    def _process_id_set(self, node, env):
+        """ Processes id_set option. At least two arguments are required. Otherwise, a warning is reported. """
+        if 'id_set' in self.options and len(self.options['id_set']) >= 2:
+            node['id_set'] = self.options['id_set'].split()
+        else:
+            node['id_set'] = []
+            report_warning(env,
+                           'Traceability: Expected at least two arguments in id_set.',
+                           node['document'],
+                           node['line'])
+
+    def _process_label_set(self, node):
         default_labels = ['uncovered', 'covered', 'executed']
         if 'label_set' in self.options:
-            item_chart_node['label_set'] = [x.strip(' ') for x in self.options['label_set'].split(',')]
-            if len(item_chart_node['label_set']) != len(item_chart_node['id_set']):
-                item_chart_node['label_set'].extend(
-                    default_labels[len(item_chart_node['label_set']):len(item_chart_node['id_set'])])
+            node['label_set'] = [x.strip(' ') for x in self.options['label_set'].split(',')]
+            if len(node['label_set']) != len(node['id_set']):
+                node['label_set'].extend(
+                    default_labels[len(node['label_set']):len(node['id_set'])])
         else:
-            id_amount = len(item_chart_node['id_set'])
-            item_chart_node['label_set'] = default_labels[:id_amount]  # default labels
+            id_amount = len(node['id_set'])
+            node['label_set'] = default_labels[:id_amount]  # default labels
 
-        # Add found attribute to item. Attribute data is a comma-separated list of strings
-        item_chart_node['attribute'] = ''
-        item_chart_node['priorities'] = []
+    def _process_attribute(self, node, env):
+        """
+        Processes the <<attribute>> option. Attribute data is a comma-separated list of attribute values.
+        A warning is reported when this option is given while the id_set does not contan 3 IDs.
+        """
+        node['attribute'] = ''
+        node['priorities'] = []
         for attr in TraceableItem.defined_attributes.keys():
             if attr in self.options:
-                if len(item_chart_node['id_set']) == 3:
-                    item_chart_node['attribute'] = attr
-                    item_chart_node['priorities'] = [x.strip(' ') for x in self.options[attr].split(',')]
+                if len(node['id_set']) == 3:
+                    node['attribute'] = attr
+                    node['priorities'] = [x.strip(' ') for x in self.options[attr].split(',')]
                 else:
                     report_warning(env,
                                    'Traceability: The <<attribute>> option is only viable with an id_set with 3 '
@@ -231,5 +248,3 @@ class ItemPieChartDirective(Directive):
                                    env.docname,
                                    self.lineno,)
                 break
-
-        return [item_chart_node]
