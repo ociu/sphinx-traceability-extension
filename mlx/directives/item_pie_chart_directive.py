@@ -27,6 +27,11 @@ def pct_wrapper(sizes):
 
 class ItemPieChart(ItemElement):
     '''Pie chart on documentation items'''
+    collection = None
+    relationships = []
+    priorities = {}  # default priority order is 'uncovered', 'covered', 'executed', 'pass', 'fail', 'error'
+    attribute_id = ''
+    linked_attributes = {}  # source_id (str): attr_value (str)
 
     def perform_replacement(self, app, collection):
         """
@@ -39,83 +44,99 @@ class ItemPieChart(ItemElement):
             collection (TraceableCollection): Collection for which to generate the nodes.
         """
         env = app.builder.env
+        self.collection = collection
+        self.relationships = self.collection.iter_relations()
         top_node = self.create_top_node(self['title'])
-        relationships = collection.iter_relations()
-        all_item_ids = collection.get_items('')
 
-        # default priority order is 'uncovered', 'covered', 'executed', 'pass', 'fail', 'error'
-        priorities = {}
         for idx, label in enumerate(self['label_set']):
-            priorities[label] = idx
+            self.priorities[label] = idx
         # store :<<attribute>>: arguments in reverse order in lowercase for case-insensitivity
         if self['priorities']:
             for idx, attr in enumerate([value.lower() for value in self['priorities'][::-1]],
                                        start=len(self['label_set'])):
-                priorities[attr] = idx
+                self.priorities[attr] = idx
 
-        attribute_id = ''
         if len(self['id_set']) > 2:
-            attribute_id = self['id_set'][2]
+            self.attribute_id = self['id_set'][2]
 
-        linked_attributes = {}  # source_id (str): attr_value (str)
-        covered_items = {}  # source_id (str): test_items (list)
-
-        for source_id in all_item_ids:
-            source_item = collection.get_item(source_id)
+        for source_id in self.collection.get_items(''):
+            source_item = self.collection.get_item(source_id)
             # placeholders don't end up in any item-piechart (less duplicate warnings for missing items)
             if source_item.is_placeholder():
                 continue
             if re.match(self['id_set'][0], source_id):
-                covered = False
-                test_items = []
-                linked_attributes[source_id] = list(priorities.keys())[0]  # default is "uncovered"
-                for relationship in relationships:
-                    tgts = source_item.iter_targets(relationship, True, True)
-                    for target_id in tgts:
-                        target_item = collection.get_item(target_id)
-                        # placeholders don't end up in any item-matrix (less duplicate warnings for missing items)
-                        if not target_item or target_item.is_placeholder():
-                            continue
-                        if re.match(self['id_set'][1], target_id):
-                            test_items.append(target_item)
-                            linked_attributes[source_id] = list(priorities.keys())[1]  # default is "covered"
-                            covered = True
-                if covered and attribute_id:
-                    covered_items[source_id] = test_items
+                self.linked_attributes[source_id] = self['label_set'][0].lower()  # default is "uncovered"
+                self.loop_relationships(source_id, source_item, self['id_set'][1], self._match_covered)
 
-        # link highest priority attribute value of nested relations to source id
-        for source_id, test_items in covered_items.items():
-            for covering_item in test_items:
-                for relationship in relationships:
-                    tgts = covering_item.iter_targets(relationship, True, True)
-                    for target_id in tgts:
-                        target_item = collection.get_item(target_id)
-                        # placeholders don't end up in any item-matrix (less duplicate warnings for missing items)
-                        if not target_item or target_item.is_placeholder():
-                            continue
-                        if re.match(attribute_id, target_id):
-                            # case-insensitivity
-                            attribute_value = target_item.get_attribute(self['attribute']).lower()
-                            if attribute_value not in priorities.keys():
-                                attribute_value = list(priorities.keys())[2]  # default is "executed"
-
-                            if source_id not in linked_attributes.keys():
-                                linked_attributes[source_id] = attribute_value
-                            else:
-                                # store newly encountered attribute value if it has a higher priority
-                                stored_attribute_priority = priorities[linked_attributes[source_id]]
-                                latest_attribute_priority = priorities[attribute_value]
-                                if latest_attribute_priority > stored_attribute_priority:
-                                    linked_attributes[source_id] = attribute_value
-
-        chart_labels, statistics = self._prepare_labels_and_values(list(priorities.keys()),
-                                                                   list(linked_attributes.values()))
-
+        chart_labels, statistics = self._prepare_labels_and_values(list(self.priorities.keys()),
+                                                                   list(self.linked_attributes.values()))
         p_node = nodes.paragraph()
         p_node += nodes.Text(statistics)
         p_node += self.build_pie_chart(chart_labels, env)
         top_node += p_node
         self.replace_self(top_node)
+
+    def loop_relationships(self, top_source_id, source_item, pattern, match_function):
+        """
+        Loops through all relationships and for each relationship it loops through the matches that have been found
+        for the source item. If the matched item is not a placeholder and matches to the specified pattern, the
+        specified function is called with the matched item as a parameter.
+
+        Args:
+            top_source_id (str): Item identifier of the top source item.
+            source_item (TraceableItem): Traceable item to be used as a source for the relationship search.
+            pattern (str): Regexp pattern string to be used on items that have a relationship to the source item.
+            match_function (func): Function to be called when the regular expression hits.
+        """
+        for relationship in self.relationships:
+            tgts = source_item.iter_targets(relationship, True, True)
+            for target_id in tgts:
+                target_item = self.collection.get_item(target_id)
+                # placeholders don't end up in any item-matrix (less duplicate warnings for missing items)
+                if not target_item or target_item.is_placeholder():
+                    continue
+                if re.match(pattern, target_id):
+                    match_function(top_source_id, target_item)
+
+    def _match_covered(self, top_source_id, nested_source_item):
+        """
+        Sets the appropriate label when the top-level relationship is accounted for. If the <<attribute>> option is
+        used, it loops through all relationships again, this time with the matched item as the source.
+
+        Args:
+            top_source_id (str): Identifier of the top source item, e.g. requirement identifier.
+            nested_source_item (TraceableItem): Nested traceable item to be used as a source for looping through its
+                relationships, e.g. a test item.
+        """
+        self.linked_attributes[top_source_id] = self['label_set'][1].lower()  # default is "covered"
+        if self.attribute_id:
+            self.loop_relationships(top_source_id, nested_source_item, self.attribute_id, self._match_attribute_values)
+
+    def _match_attribute_values(self, top_source_id, nested_target_item):
+        """ Links the highest priority attribute value of nested relations to the top source id.
+
+        This function is only called when the <<attribute>> option is used. It gets the attribute value from the nested
+        target item and stores it as value in the dict `linked_attributes` with the top source id as key, but only if
+        the priority of the attribute value is higher than what's already been stored.
+
+        Args:
+            top_source_id (str): Identifier of the top source item, e.g. requirement identifier.
+            nested_target_item (TraceableItem): Nested traceable item used as a target while looping through
+                relationships, e.g. a test report item.
+        """
+        # case-insensitivity
+        attribute_value = nested_target_item.get_attribute(self['attribute']).lower()
+        if attribute_value not in self.priorities.keys():
+            attribute_value = self['label_set'][2].lower()  # default is "executed"
+
+        if top_source_id not in self.linked_attributes.keys():
+            self.linked_attributes[top_source_id] = attribute_value
+        else:
+            # store newly encountered attribute value if it has a higher priority
+            stored_attribute_priority = self.priorities[self.linked_attributes[top_source_id]]
+            latest_attribute_priority = self.priorities[attribute_value]
+            if latest_attribute_priority > stored_attribute_priority:
+                self.linked_attributes[top_source_id] = attribute_value
 
     def _prepare_labels_and_values(self, lower_labels, attributes):
         """ Keeps case-sensitivity of :<<attribute>>: arguments in labels and calculates slice size based on the
@@ -166,8 +187,7 @@ class ItemPieChart(ItemElement):
                                                                            total=count_total,
                                                                            pct=percentage,)
 
-    @staticmethod
-    def build_pie_chart(chart_labels, env):
+    def build_pie_chart(self, chart_labels, env):
         """
         Builds and returns image node containing the pie chart image.
 
@@ -179,9 +199,10 @@ class ItemPieChart(ItemElement):
             (nodes.image) Image node containing the pie chart image.
         """
         labels = list(chart_labels.keys())
-        sizes = chart_labels.values()
-        explode = [0.05]  # slightly detaches slice of first state, default is "uncovered"
-        explode.extend([0] * (len(chart_labels.values()) - 1))
+        sizes = list(chart_labels.values())
+        explode = [0] * len(labels)
+        uncoverd_index = labels.index(self['label_set'][0])
+        explode[uncoverd_index] = 0.05
 
         fig, axes = plt.subplots()
         axes.pie(sizes, explode=explode, labels=labels, autopct=pct_wrapper(sizes), startangle=90)
