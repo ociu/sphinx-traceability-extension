@@ -110,11 +110,10 @@ class ItemPieChart(ItemElement):
 
         chart_labels, statistics = self._prepare_labels_and_values(list(priorities.keys()),
                                                                    list(linked_attributes.values()))
-        image_node = self.build_pie_chart(chart_labels, env)
 
         p_node = nodes.paragraph()
         p_node += nodes.Text(statistics)
-        p_node += image_node
+        p_node += self.build_pie_chart(chart_labels, env)
         top_node += p_node
         self.replace_self(top_node)
 
