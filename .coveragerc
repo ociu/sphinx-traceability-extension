@@ -1,0 +1,2 @@
+[run]
+omit = mlx/traceability.py, */__*__.py
