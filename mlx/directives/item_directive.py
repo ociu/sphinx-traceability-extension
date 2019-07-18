@@ -152,30 +152,7 @@ class ItemDirective(BaseDirective):
         item_node['id'] = target_id
 
         # Store item info
-        item = TraceableItem(target_id)
-        item.set_document(env.docname, self.lineno)
-        item.bind_node(target_node)
-        item.set_caption(self.get_caption())
-        item.set_content('\n'.join(self.content))
-        try:
-            env.traceability_collection.add_item(item)
-        except TraceabilityException as err:
-            report_warning(env, err, env.docname, self.lineno)
-
-        # Add found attributes to item. Attribute data is a single string.
-        for attribute in TraceableItem.defined_attributes.keys():
-            if attribute in self.options:
-                try:
-                    item.add_attribute(attribute, self.options[attribute])
-                except TraceabilityException as err:
-                    report_warning(env, err, env.docname, self.lineno)
-
-        # Add found relationships to item. All relationship data is a string of
-        # item ids separated by space. It is split in a list of item ids
-        for rel in env.traceability_collection.iter_relations():
-            if rel in self.options:
-                related_ids = self.options[rel].split()
-                self.add_relation_to_ids(rel, target_id, related_ids, env)
+        self.store_item_info(target_id, target_node, env)
 
         # Custom callback for modifying items
         if app.config.traceability_callback_per_item:
@@ -191,6 +168,33 @@ class ItemDirective(BaseDirective):
 
         return [target_node, item_node]
 
+    def store_item_info(self, target_id, target_node, env):
+        """ Stores item info.
+
+        Args:
+            target_id (str): Item identifier.
+            target_node (nodes.target): Target node.
+            env (sphinx.environment.BuildEnvironment): Sphinx's build environment.
+        """
+        item = TraceableItem(target_id)
+        item.set_document(env.docname, self.lineno)
+        item.bind_node(target_node)
+        item.set_caption(self.get_caption())
+        item.set_content('\n'.join(self.content))
+        try:
+            env.traceability_collection.add_item(item)
+        except TraceabilityException as err:
+            report_warning(env, err, env.docname, self.lineno)
+
+        self.add_attributes(item, env)
+
+        # Add found relationships to item. All relationship data is a string of
+        # item ids separated by space. It is split in a list of item ids.
+        for rel in env.traceability_collection.iter_relations():
+            if rel in self.options:
+                related_ids = self.options[rel].split()
+                self.add_relation_to_ids(rel, target_id, related_ids, env)
+
     def add_relation_to_ids(self, relation, source_id, related_ids, env):
         """ Adds the given relation between the source id and all related ids.
 
@@ -200,9 +204,26 @@ class ItemDirective(BaseDirective):
             relation (str): Name of the given relation.
             source_id (str): ID of the source item.
             related_ids (list): List of target item IDs.
+            env (sphinx.environment.BuildEnvironment): Sphinx's build environment.
         """
         for related_id in related_ids:
             try:
                 env.traceability_collection.add_relation(source_id, relation, related_id)
             except TraceabilityException as err:
                 report_warning(env, err, env.docname, self.lineno)
+
+    def add_attributes(self, item, env):
+        """ Adds all specified attributes to the item. Attribute data is a single string.
+
+        A warning is reported when an attribute's value doesn't match the attribute's regex.
+
+        Args:
+            item (TraceableItem): Item to add the attributes to.
+            env (sphinx.environment.BuildEnvironment): Sphinx' build environment.
+        """
+        for attribute in TraceableItem.defined_attributes.keys():
+            if attribute in self.options:
+                try:
+                    item.add_attribute(attribute, self.options[attribute])
+                except TraceabilityException as err:
+                    report_warning(env, err, env.docname, self.lineno)
