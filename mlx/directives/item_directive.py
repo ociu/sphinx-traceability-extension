@@ -174,12 +174,7 @@ class ItemDirective(BaseDirective):
         # item ids separated by space. It is split in a list of item ids
         for rel in env.traceability_collection.iter_relations():
             if rel in self.options:
-                related_ids = self.options[rel].split()
-                for related_id in related_ids:
-                    try:
-                        env.traceability_collection.add_relation(target_id, rel, related_id)
-                    except TraceabilityException as err:
-                        report_warning(env, err, env.docname, self.lineno)
+                self.add_all_relations(rel, target_id, env)
 
         # Custom callback for modifying items
         if app.config.traceability_callback_per_item:
@@ -194,3 +189,19 @@ class ItemDirective(BaseDirective):
         self.check_no_captions_flag(item_node, app.config.traceability_item_no_captions)
 
         return [target_node, item_node]
+
+    def add_all_relations(self, relation, source_id, env):
+        """ Adds the given relation between the source id and all related ids.
+
+        Both the forward and the automatic reverse relation are added.
+
+        Args:
+            relation (str): Name of the given relation.
+            source_id (str): ID of the source item
+        """
+        related_ids = self.options[relation].split()
+        for related_id in related_ids:
+            try:
+                env.traceability_collection.add_relation(source_id, relation, related_id)
+            except TraceabilityException as err:
+                report_warning(env, err, env.docname, self.lineno)
