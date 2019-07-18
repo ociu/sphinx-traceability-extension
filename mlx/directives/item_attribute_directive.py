@@ -61,12 +61,6 @@ class ItemAttributeDirective(BaseDirective):
         attribute_node['document'] = env.docname
         attribute_node['line'] = self.lineno
 
-        # Item caption is the text following the mandatory id argument.
-        # Caption should be considered a line of text. Remove line breaks.
-        caption = ''
-        if len(self.arguments) > 1:
-            caption = self.arguments[1].replace('\n', ' ')
-
         stored_id = TraceableAttribute.to_id(attribute_id)
         if stored_id not in TraceableItem.defined_attributes.keys():
             report_warning(env,
@@ -77,7 +71,7 @@ class ItemAttributeDirective(BaseDirective):
             attribute_node['id'] = stored_id
         else:
             attr = TraceableItem.defined_attributes[stored_id]
-            attr.set_caption(caption)
+            attr.set_caption(self.get_caption())
             attr.set_document(env.docname, self.lineno)
             attribute_node['id'] = attr.get_id()
 

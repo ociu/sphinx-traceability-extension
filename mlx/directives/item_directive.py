@@ -142,7 +142,6 @@ class ItemDirective(BaseDirective):
     def run(self):
         env = self.state.document.settings.env
         app = env.app
-        caption = ''
 
         target_id = self.arguments[0]
         target_node = nodes.target('', '', ids=[target_id])
@@ -152,16 +151,11 @@ class ItemDirective(BaseDirective):
         item_node['line'] = self.lineno
         item_node['id'] = target_id
 
-        # Item caption is the text following the mandatory id argument.
-        # Caption should be considered a line of text. Remove line breaks.
-        if len(self.arguments) > 1:
-            caption = self.arguments[1].replace('\n', ' ')
-
         # Store item info
         item = TraceableItem(target_id)
         item.set_document(env.docname, self.lineno)
         item.bind_node(target_node)
-        item.set_caption(caption)
+        item.set_caption(self.get_caption())
         item.set_content('\n'.join(self.content))
         try:
             env.traceability_collection.add_item(item)
@@ -177,7 +171,7 @@ class ItemDirective(BaseDirective):
                     report_warning(env, err, env.docname, self.lineno)
 
         # Add found relationships to item. All relationship data is a string of
-        # item ids separated by space. It is splitted in a list of item ids
+        # item ids separated by space. It is split in a list of item ids
         for rel in env.traceability_collection.iter_relations():
             if rel in self.options:
                 related_ids = self.options[rel].split()
