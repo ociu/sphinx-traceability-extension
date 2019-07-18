@@ -100,10 +100,7 @@ class ItemAttributesMatrixDirective(BaseDirective):
             node['title'] = 'Matrix of items and attributes'
 
         # Process ``filter`` options
-        if 'filter' in self.options:
-            node['filter'] = self.options['filter']
-        else:
-            node['filter'] = ''
+        self.process_options(node, ('filter', ))
 
         self.add_found_attributes(node)
 

@@ -76,10 +76,7 @@ class ItemTreeDirective(BaseDirective):
             item_tree_node['title'] = 'Tree of items'
 
         # Process ``top`` option
-        if 'top' in self.options:
-            item_tree_node['top'] = self.options['top']
-        else:
-            item_tree_node['top'] = ''
+        self.process_options(item_tree_node, ('top', ))
 
         # Process ``top_relation_filter`` option, given as a string with relationship types
         # separated by space. It is converted to a list.

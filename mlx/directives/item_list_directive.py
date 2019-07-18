@@ -66,10 +66,7 @@ class ItemListDirective(BaseDirective):
             item_list_node['title'] = 'List of items'
 
         # Process ``filter`` option
-        if 'filter' in self.options:
-            item_list_node['filter'] = self.options['filter']
-        else:
-            item_list_node['filter'] = ''
+        self.process_options(item_list_node, ('filter', ))
 
         self.add_found_attributes(item_list_node)
 
