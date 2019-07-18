@@ -29,7 +29,7 @@ class Item(ItemElement):
         if app.config.traceability_render_attributes_per_item:
             self.process_attributes(dl_node, app)
         if app.config.traceability_render_relationship_per_item:
-            self.process_relationship(collection, dl_node, app)
+            self.process_relationships(collection, dl_node, app)
         par_node.append(dl_node)
         top_node.append(par_node)
         # Note: content should be displayed during read of RST file, as it contains other RST objects
@@ -57,8 +57,9 @@ class Item(ItemElement):
                 li_node.append(dd_node)
             dl_node.append(li_node)
 
-    def process_relationship(self, collection, *args):
-        """
+    def process_relationships(self, collection, *args):
+        """ Processes all relationships of the item. All targets get listed per relationship.
+
         Args:
             collection (TraceableCollection): Collection of all TraceableItems.
         """
@@ -68,8 +69,11 @@ class Item(ItemElement):
                 self.list_targets_for_relation(rel, targets, *args)
 
     def list_targets_for_relation(self, relation, targets, dl_node, app):
-        """
+        """ Add a list with all targets for a specific relation to the given definition list.
+
         Args:
+            relation (str): Name of the relation.
+            targets (list): Naturally sorted list of targets to other traceable item(s).
             dl_node (nodes.definition_list): Definition list of the item.
             app: Sphinx's application object to use.
         """
