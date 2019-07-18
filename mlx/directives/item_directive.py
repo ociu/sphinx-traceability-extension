@@ -9,56 +9,65 @@ from mlx.traceable_item import TraceableItem
 
 class Item(ItemElement):
     '''Documentation item'''
+    item = None
 
     def perform_replacement(self, app, collection):
         """
         Perform the node replacement
         Args:
-            app: Sphinx application object to use.
+            app: Sphinx's application object to use.
             collection (TraceableCollection): Collection for which to generate the nodes.
         """
-        current_item = collection.get_item(self['id'])
-        header = current_item.get_id()
-        if current_item.caption:
-            header += ' : ' + current_item.caption
+
+        self.item = collection.get_item(self['id'])
+        header = self.item.get_id()
+        if self.item.caption:
+            header += ' : ' + self.item.caption
         top_node = self.create_top_node(header)
         par_node = nodes.paragraph()
         dl_node = nodes.definition_list()
         if app.config.traceability_render_attributes_per_item:
-            self.process_attributes(dl_node, current_item, app)
+            self.process_attributes(dl_node, app)
         if app.config.traceability_render_relationship_per_item:
-            self.process_relationship(dl_node, current_item, collection, app)
+            self.process_relationship(dl_node, collection, app)
         par_node.append(dl_node)
         top_node.append(par_node)
         # Note: content should be displayed during read of RST file, as it contains other RST objects
         self.replace_self(top_node)
 
-    def process_attributes(self, dl_node, item, app):
+    def process_attributes(self, dl_node, app):
         """ Processes all attributes for the given item and adds the list of attributes to the given definition list.
 
         Args:
             dl_node (nodes.definition_list): Definition list of the item.
+            app: Sphinx's application object to use.
         """
-        if item.iter_attributes():
+        if self.item.iter_attributes():
             li_node = nodes.definition_list_item()
             dt_node = nodes.term()
             txt = nodes.Text('Attributes')
             dt_node.append(txt)
             li_node.append(dt_node)
-            for attr in item.iter_attributes():
+            for attr in self.item.iter_attributes():
                 dd_node = nodes.definition()
                 p_node = nodes.paragraph()
-                link = self.make_attribute_ref(app, attr, item.get_attribute(attr))
+                link = self.make_attribute_ref(app, attr, self.item.get_attribute(attr))
                 p_node.append(link)
                 dd_node.append(p_node)
                 li_node.append(dd_node)
             dl_node.append(li_node)
 
-    def process_relationship(self, dl_node, item, collection, app):
+    def process_relationship(self, dl_node, collection, app):
+        """
+        Args:
+            dl_node (nodes.definition_list): Definition list of the item.
+            collection (TraceableCollection): Collection of all TraceableItems.
+            app: Sphinx's application object to use.
+        """
         env = app.builder.env
         showcaptions = not self['nocaptions']
         for rel in collection.iter_relations():
-            tgts = item.iter_targets(rel)
+            tgts = self.item.iter_targets(rel)
             if tgts:
                 li_node = nodes.definition_list_item()
                 dt_node = nodes.term()
@@ -70,8 +79,7 @@ class Item(ItemElement):
                                    .format(rel=rel),
                                    env.docname, self.line)
                     relstr = rel
-                txt = nodes.Text(relstr)
-                dt_node.append(txt)
+                dt_node.append(nodes.Text(relstr))
                 li_node.append(dt_node)
                 for tgt in tgts:
                     dd_node = nodes.definition()
