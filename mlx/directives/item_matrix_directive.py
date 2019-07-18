@@ -133,12 +133,7 @@ class ItemMatrixDirective(BaseDirective):
 
         self.add_found_attributes(item_matrix_node)
 
-        # Process ``target`` & ``source`` options
-        for option in ('target', 'source'):
-            if option in self.options:
-                item_matrix_node[option] = self.options[option]
-            else:
-                item_matrix_node[option] = ''
+        self.process_options(item_matrix_node, ('target', 'source'))
 
         # Process ``type`` option, given as a string with relationship types
         # separated by space. It is converted to a list.
