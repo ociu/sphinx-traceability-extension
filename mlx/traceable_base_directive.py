@@ -39,6 +39,17 @@ class BaseDirective(Directive, ABC):
                                env.docname, self.lineno)
                 attributes.remove(attr)
 
+    def check_relationships(self, relationships, env):
+        """  Checks if given relationships are in configuration.
+
+        Args:
+            relationships (list): List of relationships (str).
+        """
+        for rel in relationships:
+            if rel not in env.traceability_collection.iter_relations():
+                report_warning(env, 'Traceability: unknown relation for %s: %s' % (self.name, rel),
+                               env.docname, self.lineno)
+
     def check_no_captions_flag(self, node, no_captions_config):
         """ Checks the nocaptions flag.
 

@@ -90,10 +90,7 @@ class ItemTreeDirective(BaseDirective):
 
         self.add_found_attributes(item_tree_node)
 
-        # Check if given relationships are in configuration
-        for rel in item_tree_node['top_relation_filter']:
-            if rel not in env.traceability_collection.iter_relations():
-                report_warning(env, 'Traceability: unknown relation for item-tree: %s' % rel, env.docname, self.lineno)
+        self.check_relationships(item_tree_node['top_relation_filter'], env)
 
         # Process ``type`` option, given as a string with relationship types
         # separated by space. It is converted to a list.

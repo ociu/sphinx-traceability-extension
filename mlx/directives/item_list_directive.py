@@ -3,7 +3,6 @@ from docutils.parsers.rst import directives
 
 from mlx.traceability_item_element import ItemElement
 from mlx.traceable_base_directive import BaseDirective
-from mlx.traceable_item import TraceableItem
 
 
 class ItemList(ItemElement):

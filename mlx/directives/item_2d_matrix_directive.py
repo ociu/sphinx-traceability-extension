@@ -1,10 +1,8 @@
 from docutils import nodes
 from docutils.parsers.rst import directives
 
-from mlx.traceability import report_warning
 from mlx.traceability_item_element import ItemElement
 from mlx.traceable_base_directive import BaseDirective
-from mlx.traceable_item import TraceableItem
 
 
 class Item2DMatrix(ItemElement):
@@ -111,11 +109,7 @@ class Item2DMatrixDirective(BaseDirective):
         else:
             node['type'] = []
 
-        # Check if given relationships are in configuration
-        for rel in node['type']:
-            if rel not in env.traceability_collection.iter_relations():
-                report_warning(env, 'Traceability: unknown relation for item-2d-matrix: %s' % rel,
-                               env.docname, self.lineno)
+        self.check_relationships(node['type'], env)
 
         # Check hit string
         if 'hit' in self.options:

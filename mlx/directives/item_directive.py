@@ -53,7 +53,7 @@ class Item(ItemElement):
                         report_warning(env,
                                        'Traceability: relation {rel} cannot be translated to string'
                                        .format(rel=rel),
-                                       self.docname, self.line)
+                                       env.docname, self.line)
                         relstr = rel
                     txt = nodes.Text(relstr)
                     dt_node.append(txt)

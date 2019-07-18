@@ -1,10 +1,8 @@
 from docutils import nodes
 from docutils.parsers.rst import directives
 
-from mlx.traceability import report_warning
 from mlx.traceability_item_element import ItemElement, REGEXP_EXTERNAL_RELATIONSHIP
 from mlx.traceable_base_directive import BaseDirective
-from mlx.traceable_item import TraceableItem
 
 class ItemMatrix(ItemElement):
     '''Matrix for cross referencing documentation items'''
@@ -149,11 +147,7 @@ class ItemMatrixDirective(BaseDirective):
         else:
             item_matrix_node['type'] = []
 
-        # Check if given relationships are in configuration
-        for rel in item_matrix_node['type']:
-            if rel not in env.traceability_collection.iter_relations():
-                report_warning(env, 'Traceability: unknown relation for item-matrix: %s' % rel,
-                               env.docname, self.lineno)
+        self.check_relationships(item_matrix_node['type'], env)
 
         # Check statistics flag
         if 'stats' in self.options:
