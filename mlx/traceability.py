@@ -177,38 +177,14 @@ def process_item_nodes(app, doctree, fromdocname):
             for err in errs.iter():
                 report_warning(env, err, err.get_document())
 
-    for node in doctree.traverse(ItemLink):
-        node.perform_replacement(app, env.traceability_collection)
-
-    for node in doctree.traverse(ItemMatrix):
-        node.perform_replacement(app, env.traceability_collection)
-
-    for node in doctree.traverse(ItemPieChart):
-        node.perform_replacement(app, env.traceability_collection)
-
-    for node in doctree.traverse(ItemAttributesMatrix):
-        node.perform_replacement(app, env.traceability_collection)
-
-    for node in doctree.traverse(Item2DMatrix):
-        node.perform_replacement(app, env.traceability_collection)
-
-    for node in doctree.traverse(ItemList):
-        node.perform_replacement(app, env.traceability_collection)
-
-    for node in doctree.traverse(ItemTree):
-        node.perform_replacement(app, env.traceability_collection)
+    for node_class in (ItemLink, ItemMatrix, ItemPieChart, ItemAttributesMatrix, Item2DMatrix, ItemList, ItemTree,
+                       ItemAttribute, Item):
+        for node in doctree.traverse(node_class):
+            node.perform_replacement(app, env.traceability_collection)
 
     for node in doctree.traverse(PendingItemXref):
         node['document'] = fromdocname
         node['line'] = node.line
-        node.perform_replacement(app, env.traceability_collection)
-
-    # ItemAttribute: replace item nodes, with admonition
-    for node in doctree.traverse(ItemAttribute):
-        node.perform_replacement(app, env.traceability_collection)
-
-    # Item: replace item nodes, with admonition, list of relationships
-    for node in doctree.traverse(Item):
         node.perform_replacement(app, env.traceability_collection)
 
 
