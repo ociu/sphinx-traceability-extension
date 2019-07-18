@@ -1,3 +1,4 @@
+""" Module for the base class for all Coverity directives. """
 from abc import ABC, abstractmethod
 from docutils.parsers.rst import Directive
 
@@ -6,10 +7,11 @@ from mlx.traceable_item import TraceableItem
 
 
 class BaseDirective(Directive, ABC):
+    """ Base class for all Coverity directives. """
 
     @abstractmethod
     def run(self):
-        pass
+        """ Processes directive's contents. Called by Sphinx. """
 
     def add_found_attributes(self, node):
         """ Adds found attributes to item. Attribute data is a single string.
@@ -44,7 +46,7 @@ class BaseDirective(Directive, ABC):
             node (ItemElement): Node object for which to set the nocaptions flag.
             no_captions_config (bool): Value for nocaptions option in configuration
         """
-        if 'nocaptions' in self.options or no_captions_config:
+        if no_captions_config or 'nocaptions' in self.options:
             node['nocaptions'] = True
         else:
             node['nocaptions'] = False
