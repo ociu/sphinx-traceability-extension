@@ -1,10 +1,10 @@
 from docutils import nodes
-from docutils.parsers.rst import Directive, directives
+from docutils.parsers.rst import directives
 from sphinx.builders.latex import LaTeXBuilder
 
 from mlx.traceability import report_warning
 from mlx.traceability_item_element import ItemElement
-from mlx.traceable_item import TraceableItem
+from mlx.traceable_base_directive import BaseDirective
 
 
 class ItemTree(ItemElement):
@@ -34,7 +34,7 @@ class ItemTree(ItemElement):
         self.replace_self(top_node)
 
 
-class ItemTreeDirective(Directive):
+class ItemTreeDirective(BaseDirective):
     """
     Directive to generate a treeview of items, based on
     a given set of relationship types.
@@ -88,11 +88,7 @@ class ItemTreeDirective(Directive):
         else:
             item_tree_node['top_relation_filter'] = ''
 
-        # Add found attributes to item. Attribute data is a single string.
-        item_tree_node['filter-attributes'] = {}
-        for attr in TraceableItem.defined_attributes.keys():
-            if attr in self.options:
-                item_tree_node['filter-attributes'][attr] = self.options[attr]
+        self.add_found_attributes(item_tree_node)
 
         # Check if given relationships are in configuration
         for rel in item_tree_node['top_relation_filter']:
@@ -118,12 +114,6 @@ class ItemTreeDirective(Directive):
                                env.docname, self.lineno)
                 raise ValueError('Traceability: combination of forward+reverse relations for item-tree: %s' % rel)
 
-        # Check nocaptions flag
-        if 'nocaptions' in self.options:
-            item_tree_node['nocaptions'] = True
-        elif app.config.traceability_tree_no_captions:
-            item_tree_node['nocaptions'] = True
-        else:
-            item_tree_node['nocaptions'] = False
+        self.check_no_captions_flag(item_tree_node, app.config.traceability_tree_no_captions)
 
         return [item_tree_node]

@@ -1,8 +1,10 @@
 from docutils import nodes
-from docutils.parsers.rst import Directive
 from docutils.parsers.rst import directives
+
 from mlx.traceability_item_element import ItemElement
+from mlx.traceable_base_directive import BaseDirective
 from mlx.traceable_item import TraceableItem
+
 
 class ItemList(ItemElement):
     '''List of documentation items'''
@@ -28,7 +30,7 @@ class ItemList(ItemElement):
         self.replace_self(top_node)
 
 
-class ItemListDirective(Directive):
+class ItemListDirective(BaseDirective):
     """
     Directive to generate a list of items.
 
@@ -70,18 +72,8 @@ class ItemListDirective(Directive):
         else:
             item_list_node['filter'] = ''
 
-        # Add found attributes to item. Attribute data is a single string.
-        item_list_node['filter-attributes'] = {}
-        for attr in TraceableItem.defined_attributes.keys():
-            if attr in self.options:
-                item_list_node['filter-attributes'][attr] = self.options[attr]
+        self.add_found_attributes(item_list_node)
 
-        # Check nocaptions flag
-        if 'nocaptions' in self.options:
-            item_list_node['nocaptions'] = True
-        elif app.config.traceability_list_no_captions:
-            item_list_node['nocaptions'] = True
-        else:
-            item_list_node['nocaptions'] = False
+        self.check_no_captions_flag(item_list_node, app.config.traceability_list_no_captions)
 
         return [item_list_node]

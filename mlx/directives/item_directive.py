@@ -1,9 +1,11 @@
 from docutils import nodes
-from docutils.parsers.rst import Directive
 from docutils.parsers.rst import directives
+
 from mlx.traceability_exception import report_warning, TraceabilityException
 from mlx.traceability_item_element import ItemElement, REGEXP_EXTERNAL_RELATIONSHIP
+from mlx.traceable_base_directive import BaseDirective
 from mlx.traceable_item import TraceableItem
+
 
 class Item(ItemElement):
     '''Documentation item'''
@@ -73,7 +75,7 @@ class Item(ItemElement):
         self.replace_self(top_node)
 
 
-class ItemDirective(Directive):
+class ItemDirective(BaseDirective):
     """
     Directive to declare items and their traceability relationships.
 
@@ -166,12 +168,6 @@ class ItemDirective(Directive):
             template.append('    ' + line)
         self.state_machine.insert_input(template, self.state_machine.document.attributes['source'])
 
-        # Check nocaptions flag
-        if 'nocaptions' in self.options:
-            item_node['nocaptions'] = True
-        elif app.config.traceability_item_no_captions:
-            item_node['nocaptions'] = True
-        else:
-            item_node['nocaptions'] = False
+        self.check_no_captions_flag(item_node, app.config.traceability_item_no_captions)
 
         return [target_node, item_node]

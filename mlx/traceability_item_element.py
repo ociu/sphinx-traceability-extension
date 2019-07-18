@@ -1,5 +1,5 @@
 import re
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 
 from docutils import nodes
 from sphinx.environment import NoUri
@@ -15,16 +15,17 @@ REGEXP_EXTERNAL_RELATIONSHIP = re.compile('^ext_.*')
 EXTERNAL_LINK_FIELDNAME = 'field'
 
 
-class ItemElement(nodes.General, nodes.Element):
+class ItemElement(nodes.General, nodes.Element, ABC):
 
     @staticmethod
     def create_top_node(title):
-        '''
-        Create the top node for the Element node
-        An admonition object with given title is created and returns
+        ''' Creates the top node for the Element node. An admonition object with given title is created and returns.
+
         Args:
-            - title (str): Title of the top node
-        Returns: Top level replacement node to which other nodes can be appended
+            title (str): Title of the top node
+
+        Returns:
+            Top level replacement node to which other nodes can be appended
         '''
         top_node = nodes.container()
         admon_node = nodes.admonition()
@@ -191,6 +192,7 @@ class ItemElement(nodes.General, nodes.Element):
         Args:
             hyperlink_colors (OrderedDict): Ordered dict with regex strings as keys and list/tuple of strings as values.
             item_id (str): A traceability item ID.
+
         Returns:
             (tuple) Tuple of color strings that should be used to color the given item ID or None if no match was found.
         """

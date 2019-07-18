@@ -1,8 +1,9 @@
 from docutils import nodes
-from docutils.parsers.rst import Directive
 from docutils.parsers.rst import directives
+
 from mlx.traceability import report_warning
 from mlx.traceability_item_element import ItemElement, REGEXP_EXTERNAL_RELATIONSHIP
+from mlx.traceable_base_directive import BaseDirective
 from mlx.traceable_item import TraceableItem
 
 class ItemMatrix(ItemElement):
@@ -17,7 +18,6 @@ class ItemMatrix(ItemElement):
             app: Sphinx application object to use.
             collection (TraceableCollection): Collection for which to generate the nodes.
         """
-        env = app.builder.env
         showcaptions = not self['nocaptions']
         source_ids = collection.get_items(self['source'], self['filter-attributes'])
         target_ids = collection.get_items(self['target'])
@@ -84,7 +84,7 @@ class ItemMatrix(ItemElement):
         self.replace_self(top_node)
 
 
-class ItemMatrixDirective(Directive):
+class ItemMatrixDirective(BaseDirective):
     """
     Directive to generate a matrix of item cross-references, based on
     a given set of relationship types.
@@ -133,11 +133,7 @@ class ItemMatrixDirective(Directive):
         else:
             item_matrix_node['title'] = 'Traceability matrix of items'
 
-        # Add found attributes to item. Attribute data is a single string.
-        item_matrix_node['filter-attributes'] = {}
-        for attr in TraceableItem.defined_attributes.keys():
-            if attr in self.options:
-                item_matrix_node['filter-attributes'][attr] = self.options[attr]
+        self.add_found_attributes(item_matrix_node)
 
         # Process ``target`` & ``source`` options
         for option in ('target', 'source'):
@@ -165,13 +161,7 @@ class ItemMatrixDirective(Directive):
         else:
             item_matrix_node['stats'] = False
 
-        # Check nocaptions flag
-        if 'nocaptions' in self.options:
-            item_matrix_node['nocaptions'] = True
-        elif app.config.traceability_matrix_no_captions:
-            item_matrix_node['nocaptions'] = True
-        else:
-            item_matrix_node['nocaptions'] = False
+        self.check_no_captions_flag(item_matrix_node, app.config.traceability_matrix_no_captions)
 
         # Check source title
         if 'sourcetitle' in self.options:

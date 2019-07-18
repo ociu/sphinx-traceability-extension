@@ -3,7 +3,7 @@ from hashlib import sha256
 from os import environ, mkdir, path
 
 from docutils import nodes
-from docutils.parsers.rst import Directive, directives
+from docutils.parsers.rst import directives
 import matplotlib as mpl
 if not environ.get('DISPLAY'):
     mpl.use('Agg')
@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt  # pylint: disable=wrong-import-order
 
 from mlx.traceability import report_warning
 from mlx.traceability_item_element import ItemElement
+from mlx.traceable_base_directive import BaseDirective
 from mlx.traceable_item import TraceableItem
 
 def pct_wrapper(sizes):
@@ -204,7 +205,7 @@ class ItemPieChart(ItemElement):
         return image_node
 
 
-class ItemPieChartDirective(Directive):
+class ItemPieChartDirective(BaseDirective):
     """
     Directive to generate a pie chart for coverage of item cross-references.
 

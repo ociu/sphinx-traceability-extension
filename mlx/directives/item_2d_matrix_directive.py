@@ -1,9 +1,11 @@
 from docutils import nodes
-from docutils.parsers.rst import Directive
 from docutils.parsers.rst import directives
+
 from mlx.traceability import report_warning
 from mlx.traceability_item_element import ItemElement
+from mlx.traceable_base_directive import BaseDirective
 from mlx.traceable_item import TraceableItem
+
 
 class Item2DMatrix(ItemElement):
     '''Matrix for cross referencing documentation items in 2 dimensions'''
@@ -55,7 +57,7 @@ class Item2DMatrix(ItemElement):
         self.replace_self(top_node)
 
 
-class Item2DMatrixDirective(Directive):
+class Item2DMatrixDirective(BaseDirective):
     """
     Directive to generate a 2D-matrix of item cross-references, based on
     a given set of relationship types.
@@ -98,18 +100,9 @@ class Item2DMatrixDirective(Directive):
         else:
             node['title'] = '2D traceability matrix of items'
 
-        # Process ``target`` & ``source`` options
-        for option in ('target', 'source'):
-            if option in self.options:
-                node[option] = self.options[option]
-            else:
-                node[option] = ''
+        self.process_options(node, ('target', 'source'))
 
-        # Add found attributes to item. Attribute data is a single string.
-        node['filter-attributes'] = {}
-        for attr in TraceableItem.defined_attributes.keys():
-            if attr in self.options:
-                node['filter-attributes'][attr] = self.options[attr]
+        self.add_found_attributes(node)
 
         # Process ``type`` option, given as a string with relationship types
         # separated by space. It is converted to a list.

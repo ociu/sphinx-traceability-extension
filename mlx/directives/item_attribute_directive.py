@@ -1,9 +1,9 @@
 from docutils import nodes
-from docutils.parsers.rst import Directive
 
 from mlx.traceability import report_warning
 from mlx.traceability_item_element import ItemElement
 from mlx.traceable_attribute import TraceableAttribute
+from mlx.traceable_base_directive import BaseDirective
 from mlx.traceable_item import TraceableItem
 
 
@@ -32,7 +32,7 @@ class ItemAttribute(ItemElement):
         self.replace_self(top_node)
 
 
-class ItemAttributeDirective(Directive):
+class ItemAttributeDirective(BaseDirective):
     """
     Directive to declare attribute for items
 
