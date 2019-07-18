@@ -29,7 +29,7 @@ class Item(ItemElement):
         if app.config.traceability_render_attributes_per_item:
             self.process_attributes(dl_node, app)
         if app.config.traceability_render_relationship_per_item:
-            self.process_relationship(dl_node, collection, app)
+            self.process_relationship(collection, dl_node, app)
         par_node.append(dl_node)
         top_node.append(par_node)
         # Note: content should be displayed during read of RST file, as it contains other RST objects
@@ -57,41 +57,47 @@ class Item(ItemElement):
                 li_node.append(dd_node)
             dl_node.append(li_node)
 
-    def process_relationship(self, dl_node, collection, app):
+    def process_relationship(self, collection, *args):
+        """
+        Args:
+            collection (TraceableCollection): Collection of all TraceableItems.
+        """
+        for rel in collection.iter_relations():
+            targets = self.item.iter_targets(rel)
+            if targets:
+                self.list_targets_for_relation(rel, targets, *args)
+
+    def list_targets_for_relation(self, relation, targets, dl_node, app):
         """
         Args:
             dl_node (nodes.definition_list): Definition list of the item.
-            collection (TraceableCollection): Collection of all TraceableItems.
             app: Sphinx's application object to use.
         """
         env = app.builder.env
-        showcaptions = not self['nocaptions']
-        for rel in collection.iter_relations():
-            tgts = self.item.iter_targets(rel)
-            if tgts:
-                li_node = nodes.definition_list_item()
-                dt_node = nodes.term()
-                if rel in app.config.traceability_relationship_to_string:
-                    relstr = app.config.traceability_relationship_to_string[rel]
-                else:
-                    report_warning(env,
-                                   'Traceability: relation {rel} cannot be translated to string'
-                                   .format(rel=rel),
-                                   env.docname, self.line)
-                    relstr = rel
-                dt_node.append(nodes.Text(relstr))
-                li_node.append(dt_node)
-                for tgt in tgts:
-                    dd_node = nodes.definition()
-                    p_node = nodes.paragraph()
-                    if REGEXP_EXTERNAL_RELATIONSHIP.search(rel):
-                        link = self.make_external_item_ref(app, tgt, rel)
-                    else:
-                        link = self.make_internal_item_ref(app, tgt, showcaptions)
-                    p_node.append(link)
-                    dd_node.append(p_node)
-                    li_node.append(dd_node)
-                dl_node.append(li_node)
+        li_node = nodes.definition_list_item()
+        dt_node = nodes.term()
+        if relation in app.config.traceability_relationship_to_string:
+            relstr = app.config.traceability_relationship_to_string[relation]
+        else:
+            report_warning(env,
+                           'Traceability: relation {rel} cannot be translated to string'
+                           .format(rel=relation),
+                           env.docname, self.line)
+            relstr = relation
+        dt_node.append(nodes.Text(relstr))
+        li_node.append(dt_node)
+        for target in targets:
+            dd_node = nodes.definition()
+            p_node = nodes.paragraph()
+            if REGEXP_EXTERNAL_RELATIONSHIP.search(relation):
+                link = self.make_external_item_ref(app, target, relation)
+            else:
+                showcaptions = not self['nocaptions']
+                link = self.make_internal_item_ref(app, target, showcaptions)
+            p_node.append(link)
+            dd_node.append(p_node)
+            li_node.append(dd_node)
+        dl_node.append(li_node)
 
 
 class ItemDirective(BaseDirective):
