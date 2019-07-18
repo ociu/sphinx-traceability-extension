@@ -57,10 +57,7 @@ class BaseDirective(Directive, ABC):
             node (ItemElement): Node object for which to set the nocaptions flag.
             no_captions_config (bool): Value for nocaptions option in configuration
         """
-        if no_captions_config or 'nocaptions' in self.options:
-            node['nocaptions'] = True
-        else:
-            node['nocaptions'] = False
+        node['nocaptions'] = bool(no_captions_config or 'nocaptions' in self.options)
 
     def process_options(self, node, options):
         """ Processes ``target`` & ``source`` options.
