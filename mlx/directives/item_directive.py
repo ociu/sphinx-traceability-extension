@@ -144,15 +144,13 @@ class ItemDirective(BaseDirective):
         app = env.app
 
         target_id = self.arguments[0]
-        target_node = nodes.target('', '', ids=[target_id])
 
         item_node = Item('')
         item_node['document'] = env.docname
         item_node['line'] = self.lineno
         item_node['id'] = target_id
 
-        # Store item info
-        self.store_item_info(target_id, target_node, env)
+        target_node = self.store_item_info(target_id, env)
 
         # Custom callback for modifying items
         if app.config.traceability_callback_per_item:
@@ -168,14 +166,17 @@ class ItemDirective(BaseDirective):
 
         return [target_node, item_node]
 
-    def store_item_info(self, target_id, target_node, env):
-        """ Stores item info.
+    def store_item_info(self, target_id, env):
+        """ Stores item info and adds TraceableItem to the collection.
 
         Args:
             target_id (str): Item identifier.
-            target_node (nodes.target): Target node.
             env (sphinx.environment.BuildEnvironment): Sphinx's build environment.
+
+        Returns:
+            (nodes.target) Node object which is bound to the traceable item.
         """
+        target_node = nodes.target('', '', ids=[target_id])
         item = TraceableItem(target_id)
         item.set_document(env.docname, self.lineno)
         item.bind_node(target_node)
@@ -194,6 +195,8 @@ class ItemDirective(BaseDirective):
             if rel in self.options:
                 related_ids = self.options[rel].split()
                 self.add_relation_to_ids(rel, target_id, related_ids, env)
+
+        return target_node
 
     def add_relation_to_ids(self, relation, source_id, related_ids, env):
         """ Adds the given relation between the source id and all related ids.
