@@ -246,9 +246,11 @@ class ItemPieChartDirective(TraceableBaseDirective):
     # Optional argument: title (whitespace allowed)
     optional_arguments = 1
     # Options
-    option_spec = {'class': directives.class_option,
-                   'id_set': directives.unchanged,
-                   'label_set': directives.unchanged}
+    option_spec = {
+        'class': directives.class_option,
+        'id_set': directives.unchanged,
+        'label_set': directives.unchanged,
+    }
     # Content disallowed
     has_content = False
 

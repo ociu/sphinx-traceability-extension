@@ -70,19 +70,34 @@ class TraceableBaseDirective(Directive, ABC):
 
         Args:
             node (TraceableBaseNode): Node object for which to set the nocaptions flag.
-            no_captions_config (bool): Value for nocaptions option in configuration
+            no_captions_config (bool): Value for nocaptions option in configuration.
         """
         node['nocaptions'] = bool(no_captions_config or 'nocaptions' in self.options)
 
     def process_options(self, node, options):
-        """ Processes ``target`` & ``source`` options.
+        """ Processes given options.
 
         Args:
             node (TraceableBaseNode): Node object for which to set the target and source options.
-            options (tuple): Tuple of optoins (str).
+            options (dict): Dictionary with options (str) as keys and default values (str) as values.
         """
-        for option in options:
+        for option, default_value in options.items():
             if option in self.options:
-                node[option] = self.options[option]
+                if isinstance(default_value, list):
+                    node[option] = self.options[option].split()
+                else:
+                    node[option] = self.options[option]
             else:
-                node[option] = ''
+                node[option] = default_value
+
+    def check_option_presence(self, node, option):
+        """ Checks the presence of the given option. Set the value to True if the option is present, False otherwise.
+
+        Args:
+            node (TraceableBaseNode): Node object for which to set the nocaptions flag.
+            option (str): Name of the option.
+        """
+        if option in self.options:
+            node[option] = True
+        else:
+            node[option] = False

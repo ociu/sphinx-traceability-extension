@@ -17,7 +17,7 @@ class ItemAttributesMatrix(TraceableBaseNode):
         """
         showcaptions = not self['nocaptions']
         item_ids = collection.get_items(self['filter'],
-                                        self['filter-attributes'],
+                                        attributes=self['filter-attributes'],
                                         sortattributes=self['sort'],
                                         reverse=self['reverse'])
         top_node = self.create_top_node(self['title'])
@@ -72,12 +72,14 @@ class ItemAttributesMatrixDirective(TraceableBaseDirective):
     # Optional argument: title (whitespace allowed)
     optional_arguments = 1
     # Options
-    option_spec = {'class': directives.class_option,
-                   'filter': directives.unchanged,
-                   'attributes': directives.unchanged,
-                   'sort': directives.unchanged,
-                   'reverse': directives.flag,
-                   'nocaptions': directives.flag}
+    option_spec = {
+        'class': directives.class_option,
+        'filter': directives.unchanged,
+        'attributes': directives.unchanged,
+        'sort': directives.unchanged,
+        'reverse': directives.flag,
+        'nocaptions': directives.flag,
+    }
     # Content disallowed
     has_content = False
 
@@ -99,7 +101,7 @@ class ItemAttributesMatrixDirective(TraceableBaseDirective):
             node['title'] = 'Matrix of items and attributes'
 
         # Process ``filter`` options
-        self.process_options(node, ('filter', ))
+        self.process_options(node, {'filter': ''})
 
         self.add_found_attributes(node)
 
@@ -117,13 +119,10 @@ class ItemAttributesMatrixDirective(TraceableBaseDirective):
             node['sort'] = self.options['sort'].split()
             self.remove_unknown_attributes(node['sort'], 'sorting attribute', env)
         else:
-            node['sort'] = None
+            node['sort'] = []
 
         # Check reverse flag
-        if 'reverse' in self.options:
-            node['reverse'] = True
-        else:
-            node['reverse'] = False
+        self.check_option_presence(node, 'reverse')
 
         self.check_no_captions_flag(node, app.config.traceability_attributes_matrix_no_captions)
 

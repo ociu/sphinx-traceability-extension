@@ -44,9 +44,11 @@ class ItemListDirective(TraceableBaseDirective):
     # Optional argument: title (whitespace allowed)
     optional_arguments = 1
     # Options
-    option_spec = {'class': directives.class_option,
-                   'filter': directives.unchanged,
-                   'nocaptions': directives.flag}
+    option_spec = {
+        'class': directives.class_option,
+        'filter': directives.unchanged,
+        'nocaptions': directives.flag,
+    }
     # Content disallowed
     has_content = False
 
@@ -65,7 +67,7 @@ class ItemListDirective(TraceableBaseDirective):
             item_list_node['title'] = 'List of items'
 
         # Process ``filter`` option
-        self.process_options(item_list_node, ('filter', ))
+        self.process_options(item_list_node, {'filter': ''})
 
         self.add_found_attributes(item_list_node)
 

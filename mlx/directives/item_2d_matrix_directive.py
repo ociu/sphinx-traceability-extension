@@ -72,12 +72,14 @@ class Item2DMatrixDirective(TraceableBaseDirective):
     # Optional argument: title (whitespace allowed)
     optional_arguments = 1
     # Options
-    option_spec = {'class': directives.class_option,
-                   'target': directives.unchanged,
-                   'source': directives.unchanged,
-                   'hit': directives.unchanged,
-                   'miss': directives.unchanged,
-                   'type': directives.unchanged}
+    option_spec = {
+        'class': directives.class_option,
+        'target': directives.unchanged,
+        'source': directives.unchanged,
+        'hit': directives.unchanged,
+        'miss': directives.unchanged,
+        'type': directives.unchanged,  # a string with relationship types separated by space
+    }
     # Content disallowed
     has_content = False
 
@@ -97,29 +99,16 @@ class Item2DMatrixDirective(TraceableBaseDirective):
         else:
             node['title'] = '2D traceability matrix of items'
 
-        self.process_options(node, ('target', 'source'))
+        self.process_options(node,
+                             {'target': '',
+                              'source': '',
+                              'type': [],
+                              'hit': 'x',
+                              'miss': '',
+                              })
 
         self.add_found_attributes(node)
 
-        # Process ``type`` option, given as a string with relationship types
-        # separated by space. It is converted to a list.
-        if 'type' in self.options:
-            node['type'] = self.options['type'].split()
-        else:
-            node['type'] = []
-
         self.check_relationships(node['type'], env)
-
-        # Check hit string
-        if 'hit' in self.options:
-            node['hit'] = self.options['hit']
-        else:
-            node['hit'] = 'x'
-
-        # Check miss string
-        if 'miss' in self.options:
-            node['miss'] = self.options['miss']
-        else:
-            node['miss'] = ''
 
         return [node]

@@ -32,9 +32,11 @@ class ItemLinkDirective(TraceableBaseDirective):
 
     """
     # Options
-    option_spec = {'sources': directives.unchanged,
-                   'targets': directives.unchanged,
-                   'type': directives.unchanged}
+    option_spec = {
+        'sources': directives.unchanged,
+        'targets': directives.unchanged,
+        'type': directives.unchanged,
+    }
     # Content disallowed
     has_content = False
 
