@@ -1,4 +1,4 @@
-""" Module for the base class for all Coverity directives. """
+""" Module for the base class for all Traceability directives. """
 from abc import ABC, abstractmethod
 from docutils.parsers.rst import Directive
 
@@ -7,7 +7,7 @@ from mlx.traceable_item import TraceableItem
 
 
 class BaseDirective(Directive, ABC):
-    """ Base class for all Coverity directives. """
+    """ Base class for all Traceability directives. """
 
     @abstractmethod
     def run(self):
