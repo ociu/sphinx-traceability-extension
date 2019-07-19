@@ -223,8 +223,10 @@ Design for mlx.traceability
 
         TraceableBaseClass <|-- TraceableItem
         TraceableBaseClass <|-- TraceableAttribute
-        TraceableItem "1" *-- "N" TraceableAttribute
-        TraceableCollection "1" *-- "N" TraceableItem
+        TraceableItem "1" o-- "N" TraceableAttribute
+        TraceableCollection "1" o-- "N" TraceableItem
+        sphinx.environment.BuildEnvironment "1" o-- "1" TraceableCollection
+        docutils.parsers.rst.Directive <|-- TraceableBaseDirective
         TraceableBaseDirective <|-- Item2DMatrixDirective
         TraceableBaseDirective <|-- ItemAttributeDirective
         TraceableBaseDirective <|-- ItemAttributesMatrixDirective
@@ -234,6 +236,8 @@ Design for mlx.traceability
         TraceableBaseDirective <|-- ItemMatrixDirective
         TraceableBaseDirective <|-- ItemPieChartDirective
         TraceableBaseDirective <|-- ItemTreeDirective
+        TraceableBaseNode <|-- docutils.nodes.General
+        TraceableBaseNode <|-- docutils.nodes.Element
         TraceableBaseNode <|-- Item2DMatrix
         TraceableBaseNode <|-- ItemAttribute
         TraceableBaseNode <|-- ItemAttributesMatrix
