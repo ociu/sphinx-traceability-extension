@@ -2,11 +2,11 @@ from docutils.parsers.rst import directives
 
 from mlx.traceability import report_warning
 from mlx.traceability_exception import TraceabilityException
-from mlx.traceability_item_element import ItemElement
-from mlx.traceable_base_directive import BaseDirective
+from mlx.traceable_base_directive import TraceableBaseDirective
+from mlx.traceable_base_node import TraceableBaseNode
 
 
-class ItemLink(ItemElement):
+class ItemLink(TraceableBaseNode):
     '''List of documentation items'''
 
     def perform_replacement(self, app, collection):
@@ -19,7 +19,7 @@ class ItemLink(ItemElement):
         self.replace_self([])
 
 
-class ItemLinkDirective(BaseDirective):
+class ItemLinkDirective(TraceableBaseDirective):
     """
     Directive to add additional relations between lists of items.
 
@@ -31,7 +31,6 @@ class ItemLinkDirective(BaseDirective):
          :type: relationship_type
 
     """
-    final_argument_whitespace = True
     # Options
     option_spec = {'sources': directives.unchanged,
                    'targets': directives.unchanged,

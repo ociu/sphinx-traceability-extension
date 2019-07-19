@@ -6,8 +6,10 @@ from mlx.traceability_exception import report_warning
 from mlx.traceable_item import TraceableItem
 
 
-class BaseDirective(Directive, ABC):
+class TraceableBaseDirective(Directive, ABC):
     """ Base class for all Traceability directives. """
+
+    final_argument_whitespace = True
 
     @abstractmethod
     def run(self):
@@ -30,7 +32,7 @@ class BaseDirective(Directive, ABC):
         """ Adds found attributes to item. Attribute data is a single string.
 
         Args:
-            node (ItemElement): Node object for which to add found attributes to.
+            node (TraceableBaseNode): Node object for which to add found attributes to.
         """
         node['filter-attributes'] = {}
         for attr in TraceableItem.defined_attributes.keys():
@@ -67,7 +69,7 @@ class BaseDirective(Directive, ABC):
         """ Checks the nocaptions flag.
 
         Args:
-            node (ItemElement): Node object for which to set the nocaptions flag.
+            node (TraceableBaseNode): Node object for which to set the nocaptions flag.
             no_captions_config (bool): Value for nocaptions option in configuration
         """
         node['nocaptions'] = bool(no_captions_config or 'nocaptions' in self.options)
@@ -76,7 +78,7 @@ class BaseDirective(Directive, ABC):
         """ Processes ``target`` & ``source`` options.
 
         Args:
-            node (ItemElement): Node object for which to set the target and source options.
+            node (TraceableBaseNode): Node object for which to set the target and source options.
             options (tuple): Tuple of optoins (str).
         """
         for option in options:

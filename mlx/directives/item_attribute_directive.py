@@ -1,13 +1,13 @@
 from docutils import nodes
 
 from mlx.traceability import report_warning
-from mlx.traceability_item_element import ItemElement
 from mlx.traceable_attribute import TraceableAttribute
-from mlx.traceable_base_directive import BaseDirective
+from mlx.traceable_base_directive import TraceableBaseDirective
+from mlx.traceable_base_node import TraceableBaseNode
 from mlx.traceable_item import TraceableItem
 
 
-class ItemAttribute(ItemElement):
+class ItemAttribute(TraceableBaseNode):
     '''Attribute to documentation item'''
 
     def perform_replacement(self, app, collection):
@@ -32,7 +32,7 @@ class ItemAttribute(ItemElement):
         self.replace_self(top_node)
 
 
-class ItemAttributeDirective(BaseDirective):
+class ItemAttributeDirective(TraceableBaseDirective):
     """
     Directive to declare attribute for items
 
@@ -47,7 +47,6 @@ class ItemAttributeDirective(BaseDirective):
     required_arguments = 1
     # Optional argument: caption (whitespace allowed)
     optional_arguments = 1
-    final_argument_whitespace = True
     # Content allowed
     has_content = True
 

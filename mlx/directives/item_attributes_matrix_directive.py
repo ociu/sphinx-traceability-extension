@@ -1,11 +1,11 @@
 from docutils import nodes
 from docutils.parsers.rst import directives
 
-from mlx.traceability_item_element import ItemElement
-from mlx.traceable_base_directive import BaseDirective
+from mlx.traceable_base_directive import TraceableBaseDirective
+from mlx.traceable_base_node import TraceableBaseNode
 
 
-class ItemAttributesMatrix(ItemElement):
+class ItemAttributesMatrix(TraceableBaseNode):
     '''Matrix for referencing documentation items with their attributes'''
 
     def perform_replacement(self, app, collection):
@@ -55,7 +55,7 @@ class ItemAttributesMatrix(ItemElement):
         self.replace_self(top_node)
 
 
-class ItemAttributesMatrixDirective(BaseDirective):
+class ItemAttributesMatrixDirective(TraceableBaseDirective):
     """
     Directive to generate a matrix of items with their attribute values.
 
@@ -71,7 +71,6 @@ class ItemAttributesMatrixDirective(BaseDirective):
     """
     # Optional argument: title (whitespace allowed)
     optional_arguments = 1
-    final_argument_whitespace = True
     # Options
     option_spec = {'class': directives.class_option,
                    'filter': directives.unchanged,

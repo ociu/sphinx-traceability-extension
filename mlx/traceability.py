@@ -15,8 +15,8 @@ from sphinx.util.nodes import make_refnode
 from sphinx.environment import NoUri
 from docutils import nodes
 from docutils.parsers.rst import directives
-from mlx.traceability_item_element import ItemElement
 from mlx.traceable_attribute import TraceableAttribute
+from mlx.traceable_base_node import TraceableBaseNode
 from mlx.traceable_item import TraceableItem
 from mlx.traceable_collection import TraceableCollection
 from mlx.traceability_exception import TraceabilityException, MultipleTraceabilityExceptions, report_warning
@@ -93,7 +93,7 @@ def build_class_name(inputs, class_names):
 # Pending item cross reference node
 
 
-class PendingItemXref(ItemElement):
+class PendingItemXref(TraceableBaseNode):
     """Node for item cross-references that cannot be resolved without complete information about all documents."""
 
     def perform_replacement(self, app, collection):

@@ -1,11 +1,11 @@
 from docutils import nodes
 from docutils.parsers.rst import directives
 
-from mlx.traceability_item_element import ItemElement
-from mlx.traceable_base_directive import BaseDirective
+from mlx.traceable_base_directive import TraceableBaseDirective
+from mlx.traceable_base_node import TraceableBaseNode
 
 
-class Item2DMatrix(ItemElement):
+class Item2DMatrix(TraceableBaseNode):
     '''Matrix for cross referencing documentation items in 2 dimensions'''
 
     def perform_replacement(self, app, collection):
@@ -55,7 +55,7 @@ class Item2DMatrix(ItemElement):
         self.replace_self(top_node)
 
 
-class Item2DMatrixDirective(BaseDirective):
+class Item2DMatrixDirective(TraceableBaseDirective):
     """
     Directive to generate a 2D-matrix of item cross-references, based on
     a given set of relationship types.
@@ -71,7 +71,6 @@ class Item2DMatrixDirective(BaseDirective):
     """
     # Optional argument: title (whitespace allowed)
     optional_arguments = 1
-    final_argument_whitespace = True
     # Options
     option_spec = {'class': directives.class_option,
                    'target': directives.unchanged,
