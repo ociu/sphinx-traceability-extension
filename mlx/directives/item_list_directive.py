@@ -44,13 +44,16 @@ class ItemListDirective(TraceableBaseDirective):
     # Optional argument: title (whitespace allowed)
     optional_arguments = 1
     # Options
-    option_spec = {'class': directives.class_option,
-                   'filter': directives.unchanged,
-                   'nocaptions': directives.flag}
+    option_spec = {
+        'class': directives.class_option,
+        'filter': directives.unchanged,
+        'nocaptions': directives.flag,
+    }
     # Content disallowed
     has_content = False
 
     def run(self):
+        """ Processes the contents of the directive. """
         env = self.state.document.settings.env
         app = env.app
 
@@ -58,14 +61,10 @@ class ItemListDirective(TraceableBaseDirective):
         item_list_node['document'] = env.docname
         item_list_node['line'] = self.lineno
 
-        # Process title (optional argument)
-        if self.arguments:
-            item_list_node['title'] = self.arguments[0]
-        else:
-            item_list_node['title'] = 'List of items'
+        self.process_title(item_list_node, 'List of items')
 
         # Process ``filter`` option
-        self.process_options(item_list_node, ('filter', ))
+        self.process_options(item_list_node, {'filter': ''})
 
         self.add_found_attributes(item_list_node)
 

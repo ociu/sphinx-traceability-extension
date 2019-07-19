@@ -80,15 +80,18 @@ class ItemTreeDirective(TraceableBaseDirective):
     # Optional argument: title (whitespace allowed)
     optional_arguments = 1
     # Options
-    option_spec = {'class': directives.class_option,
-                   'top': directives.unchanged,
-                   'top_relation_filter': directives.unchanged,
-                   'type': directives.unchanged,
-                   'nocaptions': directives.flag}
+    option_spec = {
+        'class': directives.class_option,
+        'top': directives.unchanged,
+        'top_relation_filter': directives.unchanged,  # a string with relationship types separated by space
+        'type': directives.unchanged,  # a string with relationship types separated by space
+        'nocaptions': directives.flag,
+    }
     # Content disallowed
     has_content = False
 
     def run(self):
+        """ Processes the contents of the directive. """
         env = self.state.document.settings.env
         app = env.app
 
@@ -96,32 +99,17 @@ class ItemTreeDirective(TraceableBaseDirective):
         item_tree_node['document'] = env.docname
         item_tree_node['line'] = self.lineno
 
-        # Process title (optional argument)
-        if self.arguments:
-            item_tree_node['title'] = self.arguments[0]
-        else:
-            item_tree_node['title'] = 'Tree of items'
+        self.process_title(item_tree_node, 'Tree of items')
 
-        # Process ``top`` option
-        self.process_options(item_tree_node, ('top', ))
-
-        # Process ``top_relation_filter`` option, given as a string with relationship types
-        # separated by space. It is converted to a list.
-        if 'top_relation_filter' in self.options:
-            item_tree_node['top_relation_filter'] = self.options['top_relation_filter'].split()
-        else:
-            item_tree_node['top_relation_filter'] = ''
+        self.process_options(item_tree_node,
+                             {'top': '',
+                              'top_relation_filter': [],
+                              'type': [],
+                              })
 
         self.add_found_attributes(item_tree_node)
 
         self.check_relationships(item_tree_node['top_relation_filter'], env)
-
-        # Process ``type`` option, given as a string with relationship types
-        # separated by space. It is converted to a list.
-        if 'type' in self.options:
-            item_tree_node['type'] = self.options['type'].split()
-        else:
-            item_tree_node['type'] = []
 
         # Check if given relationships are in configuration
         # Combination of forward + matching reverse relationship cannot be in the same list, as it will give

@@ -51,6 +51,7 @@ class ItemAttributeDirective(TraceableBaseDirective):
     has_content = True
 
     def run(self):
+        """ Processes the contents of the directive. """
         env = self.state.document.settings.env
 
         # Convert to lower-case as sphinx only allows lowercase arguments (attribute to item directive)

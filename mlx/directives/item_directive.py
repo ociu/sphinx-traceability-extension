@@ -133,12 +133,15 @@ class ItemDirective(TraceableBaseDirective):
     optional_arguments = 1
     # Options: the typical ones plus every relationship (and reverse)
     # defined in env.config.traceability_relationships
-    option_spec = {'class': directives.class_option,
-                   'nocaptions': directives.flag}
+    option_spec = {
+        'class': directives.class_option,
+        'nocaptions': directives.flag,
+    }
     # Content allowed
     has_content = True
 
     def run(self):
+        """ Processes the contents of the directive. """
         env = self.state.document.settings.env
         app = env.app
 
