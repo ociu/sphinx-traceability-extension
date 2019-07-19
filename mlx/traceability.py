@@ -10,6 +10,7 @@ See readme for more details.
 from __future__ import print_function
 from collections import OrderedDict
 from os import path
+from sphinx import __version__ as sphinx_version
 from sphinx.roles import XRefRole
 from sphinx.util.nodes import make_refnode
 from sphinx.environment import NoUri
@@ -29,7 +30,6 @@ from mlx.directives.item_list_directive import ItemList, ItemListDirective
 from mlx.directives.item_matrix_directive import ItemMatrix, ItemMatrixDirective
 from mlx.directives.item_pie_chart_directive import ItemPieChart, ItemPieChartDirective
 from mlx.directives.item_tree_directive import ItemTree, ItemTreeDirective
-from sphinx import __version__ as sphinx_version
 
 
 def generate_color_css(app, hyperlink_colors):
