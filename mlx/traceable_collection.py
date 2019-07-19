@@ -221,9 +221,9 @@ class TraceableCollection(object):
         Placeholders are excluded
 
         Args:
-            - source_id (str): id of the source item
-            - relations (list): list of relations, empty list for wildcard
-            - target_id (str): id of the target item
+            source_id (str): id of the source item
+            relations (list): list of relations, empty list for wildcard
+            target_id (str): id of the target item
         Returns:
             (boolean) True if both items are related through the given relationships, false otherwise
         '''
@@ -241,17 +241,17 @@ class TraceableCollection(object):
             relations = self.iter_relations()
         return self.items[source_id].is_related(relations, target_id)
 
-    def get_items(self, regex, attributes={}, sortattributes=None, reverse=False):
+    def get_items(self, regex, attributes=None, sortattributes=None, reverse=False):
         '''
         Get all items that match a given regular expression
 
         Placeholders are excluded
 
         Args:
-            - regex (str): Regex to match the items in this collection against
-            - attributes (dict): Dictionary with attribute-regex pairs to match the items in this collection against
-            - sortattributes (list): List of attributes on which to alphabetically sort the items
-            - reverse (bool): True for reverse sorting
+            regex (str): Regex to match the items in this collection against
+            attributes (dict): Dictionary with attribute-regex pairs to match the items in this collection against
+            sortattributes (list): List of attributes on which to alphabetically sort the items
+            reverse (bool): True for reverse sorting
         Returns:
             A sorted list of item-id's matching the given regex. Sorting is done naturally when sortattributes is
             unused.
@@ -260,7 +260,8 @@ class TraceableCollection(object):
         for itemid in self.items:
             if self.items[itemid].is_placeholder():
                 continue
-            if self.items[itemid].is_match(regex) and self.items[itemid].attributes_match(attributes):
+            if self.items[itemid].is_match(regex) and \
+                (not attributes or self.items[itemid].attributes_match(attributes)):
                 matches.append(itemid)
         if sortattributes:
             matches = sorted(matches, key=lambda itemid: self.get_item(itemid).get_attributes(sortattributes),

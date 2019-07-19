@@ -32,13 +32,16 @@ class ItemLinkDirective(TraceableBaseDirective):
 
     """
     # Options
-    option_spec = {'sources': directives.unchanged,
-                   'targets': directives.unchanged,
-                   'type': directives.unchanged}
+    option_spec = {
+        'sources': directives.unchanged,
+        'targets': directives.unchanged,
+        'type': directives.unchanged,
+    }
     # Content disallowed
     has_content = False
 
     def run(self):
+        """ Processes the contents of the directive. """
         env = self.state.document.settings.env
 
         node = ItemLink('')

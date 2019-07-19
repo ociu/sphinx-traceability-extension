@@ -1,3 +1,4 @@
+""" Module for the base class for all Traceability node classes. """
 import re
 from abc import abstractmethod, ABC
 
@@ -16,6 +17,7 @@ EXTERNAL_LINK_FIELDNAME = 'field'
 
 
 class TraceableBaseNode(nodes.General, nodes.Element, ABC):
+    """ Base class for all Traceability node classes. """
 
     @staticmethod
     def create_top_node(title):

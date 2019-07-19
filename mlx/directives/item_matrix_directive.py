@@ -103,14 +103,16 @@ class ItemMatrixDirective(TraceableBaseDirective):
     # Optional argument: title (whitespace allowed)
     optional_arguments = 1
     # Options
-    option_spec = {'class': directives.class_option,
-                   'target': directives.unchanged,
-                   'source': directives.unchanged,
-                   'targettitle': directives.unchanged,
-                   'sourcetitle': directives.unchanged,
-                   'type': directives.unchanged,
-                   'stats': directives.flag,
-                   'nocaptions': directives.flag}
+    option_spec = {
+        'class': directives.class_option,
+        'target': directives.unchanged,
+        'source': directives.unchanged,
+        'targettitle': directives.unchanged,
+        'sourcetitle': directives.unchanged,
+        'type': directives.unchanged,  # a string with relationship types separated by space
+        'stats': directives.flag,
+        'nocaptions': directives.flag,
+    }
     # Content disallowed
     has_content = False
 
@@ -125,43 +127,22 @@ class ItemMatrixDirective(TraceableBaseDirective):
         if self.options.get('class'):
             item_matrix_node.get('classes').extend(self.options.get('class'))
 
-        # Process title (optional argument)
-        if self.arguments:
-            item_matrix_node['title'] = self.arguments[0]
-        else:
-            item_matrix_node['title'] = 'Traceability matrix of items'
+        self.process_title(item_matrix_node, 'Traceability matrix of items')
 
         self.add_found_attributes(item_matrix_node)
 
-        self.process_options(item_matrix_node, ('target', 'source'))
-
-        # Process ``type`` option, given as a string with relationship types
-        # separated by space. It is converted to a list.
-        if 'type' in self.options:
-            item_matrix_node['type'] = self.options['type'].split()
-        else:
-            item_matrix_node['type'] = []
+        self.process_options(item_matrix_node,
+                             {'target': '',
+                              'source': '',
+                              'targettitle': 'Target',
+                              'sourcetitle': 'Source',
+                              'type': [],
+                              })
 
         self.check_relationships(item_matrix_node['type'], env)
 
-        # Check statistics flag
-        if 'stats' in self.options:
-            item_matrix_node['stats'] = True
-        else:
-            item_matrix_node['stats'] = False
+        self.check_option_presence(item_matrix_node, 'stats')
 
         self.check_no_captions_flag(item_matrix_node, app.config.traceability_matrix_no_captions)
-
-        # Check source title
-        if 'sourcetitle' in self.options:
-            item_matrix_node['sourcetitle'] = self.options['sourcetitle']
-        else:
-            item_matrix_node['sourcetitle'] = 'Source'
-
-        # Check target title
-        if 'targettitle' in self.options:
-            item_matrix_node['targettitle'] = self.options['targettitle']
-        else:
-            item_matrix_node['targettitle'] = 'Target'
 
         return [item_matrix_node]
