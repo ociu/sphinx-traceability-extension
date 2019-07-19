@@ -2,14 +2,14 @@ from docutils import nodes
 from docutils.parsers.rst import directives
 
 from mlx.traceability_exception import report_warning, TraceabilityException
-from mlx.traceability_item_element import ItemElement, REGEXP_EXTERNAL_RELATIONSHIP
-from mlx.traceable_base_directive import BaseDirective
+from mlx.traceable_base_directive import TraceableBaseDirective
+from mlx.traceable_base_node import TraceableBaseNode, REGEXP_EXTERNAL_RELATIONSHIP
 from mlx.traceable_item import TraceableItem
 
 
-class Item(ItemElement):
+class Item(TraceableBaseNode):
     '''Documentation item'''
-    item = None
+    _item = None
 
     def perform_replacement(self, app, collection):
         """
@@ -19,56 +19,56 @@ class Item(ItemElement):
             collection (TraceableCollection): Collection for which to generate the nodes.
         """
 
-        self.item = collection.get_item(self['id'])
-        header = self.item.get_id()
-        if self.item.caption:
-            header += ' : ' + self.item.caption
+        self._item = collection.get_item(self['id'])
+        header = self._item.get_id()
+        if self._item.caption:
+            header += ' : ' + self._item.caption
         top_node = self.create_top_node(header)
         par_node = nodes.paragraph()
         dl_node = nodes.definition_list()
         if app.config.traceability_render_attributes_per_item:
-            self.process_attributes(dl_node, app)
+            self._process_attributes(dl_node, app)
         if app.config.traceability_render_relationship_per_item:
-            self.process_relationships(collection, dl_node, app)
+            self._process_relationships(collection, dl_node, app)
         par_node.append(dl_node)
         top_node.append(par_node)
         # Note: content should be displayed during read of RST file, as it contains other RST objects
         self.replace_self(top_node)
 
-    def process_attributes(self, dl_node, app):
+    def _process_attributes(self, dl_node, app):
         """ Processes all attributes for the given item and adds the list of attributes to the given definition list.
 
         Args:
             dl_node (nodes.definition_list): Definition list of the item.
             app: Sphinx's application object to use.
         """
-        if self.item.iter_attributes():
+        if self._item.iter_attributes():
             li_node = nodes.definition_list_item()
             dt_node = nodes.term()
             txt = nodes.Text('Attributes')
             dt_node.append(txt)
             li_node.append(dt_node)
-            for attr in self.item.iter_attributes():
+            for attr in self._item.iter_attributes():
                 dd_node = nodes.definition()
                 p_node = nodes.paragraph()
-                link = self.make_attribute_ref(app, attr, self.item.get_attribute(attr))
+                link = self.make_attribute_ref(app, attr, self._item.get_attribute(attr))
                 p_node.append(link)
                 dd_node.append(p_node)
                 li_node.append(dd_node)
             dl_node.append(li_node)
 
-    def process_relationships(self, collection, *args):
+    def _process_relationships(self, collection, *args):
         """ Processes all relationships of the item. All targets get listed per relationship.
 
         Args:
             collection (TraceableCollection): Collection of all TraceableItems.
         """
         for rel in collection.iter_relations():
-            targets = self.item.iter_targets(rel)
+            targets = self._item.iter_targets(rel)
             if targets:
-                self.list_targets_for_relation(rel, targets, *args)
+                self._list_targets_for_relation(rel, targets, *args)
 
-    def list_targets_for_relation(self, relation, targets, dl_node, app):
+    def _list_targets_for_relation(self, relation, targets, dl_node, app):
         """ Add a list with all targets for a specific relation to the given definition list.
 
         Args:
@@ -104,7 +104,7 @@ class Item(ItemElement):
         dl_node.append(li_node)
 
 
-class ItemDirective(BaseDirective):
+class ItemDirective(TraceableBaseDirective):
     """
     Directive to declare items and their traceability relationships.
 
@@ -131,7 +131,6 @@ class ItemDirective(BaseDirective):
     required_arguments = 1
     # Optional argument: caption (whitespace allowed)
     optional_arguments = 1
-    final_argument_whitespace = True
     # Options: the typical ones plus every relationship (and reverse)
     # defined in env.config.traceability_relationships
     option_spec = {'class': directives.class_option,
@@ -150,7 +149,7 @@ class ItemDirective(BaseDirective):
         item_node['line'] = self.lineno
         item_node['id'] = target_id
 
-        target_node = self.store_item_info(target_id, env)
+        target_node = self._store_item_info(target_id, env)
 
         # Custom callback for modifying items
         if app.config.traceability_callback_per_item:
@@ -166,7 +165,7 @@ class ItemDirective(BaseDirective):
 
         return [target_node, item_node]
 
-    def store_item_info(self, target_id, env):
+    def _store_item_info(self, target_id, env):
         """ Stores item info and adds TraceableItem to the collection.
 
         Args:
@@ -187,18 +186,18 @@ class ItemDirective(BaseDirective):
         except TraceabilityException as err:
             report_warning(env, err, env.docname, self.lineno)
 
-        self.add_attributes(item, env)
+        self._add_attributes(item, env)
 
         # Add found relationships to item. All relationship data is a string of
         # item ids separated by space. It is split in a list of item ids.
         for rel in env.traceability_collection.iter_relations():
             if rel in self.options:
                 related_ids = self.options[rel].split()
-                self.add_relation_to_ids(rel, target_id, related_ids, env)
+                self._add_relation_to_ids(rel, target_id, related_ids, env)
 
         return target_node
 
-    def add_relation_to_ids(self, relation, source_id, related_ids, env):
+    def _add_relation_to_ids(self, relation, source_id, related_ids, env):
         """ Adds the given relation between the source id and all related ids.
 
         Both the forward and the automatic reverse relation are added.
@@ -215,7 +214,7 @@ class ItemDirective(BaseDirective):
             except TraceabilityException as err:
                 report_warning(env, err, env.docname, self.lineno)
 
-    def add_attributes(self, item, env):
+    def _add_attributes(self, item, env):
         """ Adds all specified attributes to the item. Attribute data is a single string.
 
         A warning is reported when an attribute's value doesn't match the attribute's regex.

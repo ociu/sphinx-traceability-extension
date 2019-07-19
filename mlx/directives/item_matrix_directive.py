@@ -1,10 +1,11 @@
 from docutils import nodes
 from docutils.parsers.rst import directives
 
-from mlx.traceability_item_element import ItemElement, REGEXP_EXTERNAL_RELATIONSHIP
-from mlx.traceable_base_directive import BaseDirective
+from mlx.traceable_base_directive import TraceableBaseDirective
+from mlx.traceable_base_node import TraceableBaseNode, REGEXP_EXTERNAL_RELATIONSHIP
 
-class ItemMatrix(ItemElement):
+
+class ItemMatrix(TraceableBaseNode):
     '''Matrix for cross referencing documentation items'''
 
     def perform_replacement(self, app, collection):
@@ -82,7 +83,7 @@ class ItemMatrix(ItemElement):
         self.replace_self(top_node)
 
 
-class ItemMatrixDirective(BaseDirective):
+class ItemMatrixDirective(TraceableBaseDirective):
     """
     Directive to generate a matrix of item cross-references, based on
     a given set of relationship types.
@@ -101,7 +102,6 @@ class ItemMatrixDirective(BaseDirective):
     """
     # Optional argument: title (whitespace allowed)
     optional_arguments = 1
-    final_argument_whitespace = True
     # Options
     option_spec = {'class': directives.class_option,
                    'target': directives.unchanged,

@@ -3,11 +3,11 @@ from docutils.parsers.rst import directives
 from sphinx.builders.latex import LaTeXBuilder
 
 from mlx.traceability import report_warning
-from mlx.traceability_item_element import ItemElement
-from mlx.traceable_base_directive import BaseDirective
+from mlx.traceable_base_directive import TraceableBaseDirective
+from mlx.traceable_base_node import TraceableBaseNode
 
 
-class ItemTree(ItemElement):
+class ItemTree(TraceableBaseNode):
     '''Tree-view on documentation items'''
 
     def perform_replacement(self, app, collection):
@@ -29,12 +29,40 @@ class ItemTree(ItemElement):
             ul_node.set_class('bonsai')
             for i in top_item_ids:
                 if self.is_item_top_level(app.env, i):
-                    ul_node.append(self.generate_bullet_list_tree(app, collection, i, showcaptions))
+                    ul_node.append(self._generate_bullet_list_tree(app, collection, i, showcaptions))
             top_node += ul_node
         self.replace_self(top_node)
 
+    def _generate_bullet_list_tree(self, app, collection, item_id, captions=True):
+        '''
+        Generates a bullet list tree for the given item ID.
 
-class ItemTreeDirective(BaseDirective):
+        This function returns the given item ID as a bullet item node, makes a child bulleted list, and adds all
+        of the matching child items to it.
+        '''
+        # First add current item_id
+        bullet_list_item = nodes.list_item()
+        bullet_list_item['id'] = nodes.make_id(item_id)
+        p_node = nodes.paragraph()
+        p_node.set_class('thumb')
+        bullet_list_item.append(p_node)
+        bullet_list_item.append(self.make_internal_item_ref(app, item_id, captions))
+        bullet_list_item.set_class('has-children')
+        bullet_list_item.set_class('collapsed')
+        childcontent = nodes.bullet_list()
+        childcontent.set_class('bonsai')
+        # Then recurse one level, and add dependencies
+        for relation in self['type']:
+            tgts = collection.get_item(item_id).iter_targets(relation)
+            for target in tgts:
+                # print('%s has child %s for relation %s' % (item_id, target, relation))
+                if collection.get_item(target).attributes_match(self['filter-attributes']):
+                    childcontent.append(self._generate_bullet_list_tree(app, collection, target, captions))
+        bullet_list_item.append(childcontent)
+        return bullet_list_item
+
+
+class ItemTreeDirective(TraceableBaseDirective):
     """
     Directive to generate a treeview of items, based on
     a given set of relationship types.
@@ -51,7 +79,6 @@ class ItemTreeDirective(BaseDirective):
     """
     # Optional argument: title (whitespace allowed)
     optional_arguments = 1
-    final_argument_whitespace = True
     # Options
     option_spec = {'class': directives.class_option,
                    'top': directives.unchanged,

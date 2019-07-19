@@ -10,8 +10,8 @@ if not environ.get('DISPLAY'):
 import matplotlib.pyplot as plt  # pylint: disable=wrong-import-order
 
 from mlx.traceability import report_warning
-from mlx.traceability_item_element import ItemElement
-from mlx.traceable_base_directive import BaseDirective
+from mlx.traceable_base_directive import TraceableBaseDirective
+from mlx.traceable_base_node import TraceableBaseNode
 from mlx.traceable_item import TraceableItem
 
 def pct_wrapper(sizes):
@@ -26,7 +26,7 @@ def pct_wrapper(sizes):
     return make_pct
 
 
-class ItemPieChart(ItemElement):
+class ItemPieChart(TraceableBaseNode):
     '''Pie chart on documentation items'''
     collection = None
     relationships = []
@@ -231,7 +231,7 @@ class ItemPieChart(ItemElement):
         return image_node
 
 
-class ItemPieChartDirective(BaseDirective):
+class ItemPieChartDirective(TraceableBaseDirective):
     """
     Directive to generate a pie chart for coverage of item cross-references.
 
@@ -245,7 +245,6 @@ class ItemPieChartDirective(BaseDirective):
     """
     # Optional argument: title (whitespace allowed)
     optional_arguments = 1
-    final_argument_whitespace = True
     # Options
     option_spec = {'class': directives.class_option,
                    'id_set': directives.unchanged,

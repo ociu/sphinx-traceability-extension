@@ -10,13 +10,14 @@ See readme for more details.
 from __future__ import print_function
 from collections import OrderedDict
 from os import path
+from sphinx import __version__ as sphinx_version
 from sphinx.roles import XRefRole
 from sphinx.util.nodes import make_refnode
 from sphinx.environment import NoUri
 from docutils import nodes
 from docutils.parsers.rst import directives
-from mlx.traceability_item_element import ItemElement
 from mlx.traceable_attribute import TraceableAttribute
+from mlx.traceable_base_node import TraceableBaseNode
 from mlx.traceable_item import TraceableItem
 from mlx.traceable_collection import TraceableCollection
 from mlx.traceability_exception import TraceabilityException, MultipleTraceabilityExceptions, report_warning
@@ -29,7 +30,6 @@ from mlx.directives.item_list_directive import ItemList, ItemListDirective
 from mlx.directives.item_matrix_directive import ItemMatrix, ItemMatrixDirective
 from mlx.directives.item_pie_chart_directive import ItemPieChart, ItemPieChartDirective
 from mlx.directives.item_tree_directive import ItemTree, ItemTreeDirective
-from sphinx import __version__ as sphinx_version
 
 
 def generate_color_css(app, hyperlink_colors):
@@ -93,7 +93,7 @@ def build_class_name(inputs, class_names):
 # Pending item cross reference node
 
 
-class PendingItemXref(ItemElement):
+class PendingItemXref(TraceableBaseNode):
     """Node for item cross-references that cannot be resolved without complete information about all documents."""
 
     def perform_replacement(self, app, collection):

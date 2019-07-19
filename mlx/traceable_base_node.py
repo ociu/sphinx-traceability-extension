@@ -15,7 +15,7 @@ REGEXP_EXTERNAL_RELATIONSHIP = re.compile('^ext_.*')
 EXTERNAL_LINK_FIELDNAME = 'field'
 
 
-class ItemElement(nodes.General, nodes.Element, ABC):
+class TraceableBaseNode(nodes.General, nodes.Element, ABC):
 
     @staticmethod
     def create_top_node(title):
@@ -74,7 +74,7 @@ class ItemElement(nodes.General, nodes.Element, ABC):
                 # ignore if no URI can be determined, e.g. for LaTeX output :(
                 pass
             # change text color if item_id matches a regex in traceability_hyperlink_colors
-            colors = self.find_colors_for_class(app.config.traceability_hyperlink_colors, item_id)
+            colors = self._find_colors_for_class(app.config.traceability_hyperlink_colors, item_id)
             if colors:
                 class_name = app.config.traceability_class_names[colors]
                 newnode['classes'].append(class_name)
@@ -83,43 +83,15 @@ class ItemElement(nodes.General, nodes.Element, ABC):
 
         return p_node
 
-    def generate_bullet_list_tree(self, app, collection, item_id, captions=True):
-        '''
-        Generates a bullet list tree for the given item ID.
-
-        This function returns the given item ID as a bullet item node, makes a child bulleted list, and adds all
-        of the matching child items to it.
-        '''
-        # First add current item_id
-        bullet_list_item = nodes.list_item()
-        bullet_list_item['id'] = nodes.make_id(item_id)
-        p_node = nodes.paragraph()
-        p_node.set_class('thumb')
-        bullet_list_item.append(p_node)
-        bullet_list_item.append(self.make_internal_item_ref(app, item_id, captions))
-        bullet_list_item.set_class('has-children')
-        bullet_list_item.set_class('collapsed')
-        childcontent = nodes.bullet_list()
-        childcontent.set_class('bonsai')
-        # Then recurse one level, and add dependencies
-        for relation in self['type']:
-            tgts = collection.get_item(item_id).iter_targets(relation)
-            for target in tgts:
-                # print('%s has child %s for relation %s' % (item_id, target, relation))
-                if collection.get_item(target).attributes_match(self['filter-attributes']):
-                    childcontent.append(self.generate_bullet_list_tree(app, collection, target, captions))
-        bullet_list_item.append(childcontent)
-        return bullet_list_item
-
     @staticmethod
-    def make_external_item_ref(app, targettext, relationship):
+    def make_external_item_ref(app, target_text, relationship):
         '''Generates a reference to an external item.'''
         if relationship not in app.config.traceability_external_relationship_to_url:
             return
         p_node = nodes.paragraph()
         link = nodes.reference()
-        txt = nodes.Text(targettext)
-        tgt_strs = targettext.split(':')  # syntax = field1:field2:field3:...
+        txt = nodes.Text(target_text)
+        tgt_strs = target_text.split(':')  # syntax = field1:field2:field3:...
         url = app.config.traceability_external_relationship_to_url[relationship]
         cnt = 0
         for tgt_str in tgt_strs:
@@ -127,7 +99,7 @@ class ItemElement(nodes.General, nodes.Element, ABC):
             url = url.replace(EXTERNAL_LINK_FIELDNAME + str(cnt), tgt_str)
         link['refuri'] = url
         link.append(txt)
-        targetid = nodes.make_id(targettext)
+        targetid = nodes.make_id(target_text)
         target = nodes.target('', '', ids=[targetid])
         p_node += target
         p_node += link
@@ -184,7 +156,7 @@ class ItemElement(nodes.General, nodes.Element, ABC):
         return p_node
 
     @staticmethod
-    def find_colors_for_class(hyperlink_colors, item_id):
+    def _find_colors_for_class(hyperlink_colors, item_id):
         """
         Returns CSS class identifier to change a node's text color if the item ID matches a regexp in hyperlink_colors.
         The regexp of the first item in the ordered dictionary has the highest priority.
