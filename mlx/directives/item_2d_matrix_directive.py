@@ -84,6 +84,7 @@ class Item2DMatrixDirective(TraceableBaseDirective):
     has_content = False
 
     def run(self):
+        """ Processes the contents of the directive. """
         env = self.state.document.settings.env
 
         node = Item2DMatrix('')
@@ -93,11 +94,7 @@ class Item2DMatrixDirective(TraceableBaseDirective):
         if self.options.get('class'):
             node.get('classes').extend(self.options.get('class'))
 
-        # Process title (optional argument)
-        if self.arguments:
-            node['title'] = self.arguments[0]
-        else:
-            node['title'] = '2D traceability matrix of items'
+        self.process_title(node, '2D traceability matrix of items')
 
         self.process_options(node,
                              {'target': '',

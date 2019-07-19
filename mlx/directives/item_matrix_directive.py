@@ -127,11 +127,7 @@ class ItemMatrixDirective(TraceableBaseDirective):
         if self.options.get('class'):
             item_matrix_node.get('classes').extend(self.options.get('class'))
 
-        # Process title (optional argument)
-        if self.arguments:
-            item_matrix_node['title'] = self.arguments[0]
-        else:
-            item_matrix_node['title'] = 'Traceability matrix of items'
+        self.process_title(item_matrix_node, 'Traceability matrix of items')
 
         self.add_found_attributes(item_matrix_node)
 

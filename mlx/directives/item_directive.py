@@ -141,6 +141,7 @@ class ItemDirective(TraceableBaseDirective):
     has_content = True
 
     def run(self):
+        """ Processes the contents of the directive. """
         env = self.state.document.settings.env
         app = env.app
 

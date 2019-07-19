@@ -262,9 +262,7 @@ class ItemPieChartDirective(TraceableBaseDirective):
         item_chart_node['document'] = env.docname
         item_chart_node['line'] = self.lineno
 
-        # Process title (optional argument)
-        if self.arguments:
-            item_chart_node['title'] = self.arguments[0]
+        self.process_title(item_chart_node)
 
         self._process_id_set(item_chart_node, env)
 
@@ -286,6 +284,7 @@ class ItemPieChartDirective(TraceableBaseDirective):
                            node['line'])
 
     def _process_label_set(self, node):
+        """ Processes label_set option. If not (fully) used, default labels are used. """
         default_labels = ['uncovered', 'covered', 'executed']
         if 'label_set' in self.options:
             node['label_set'] = [x.strip(' ') for x in self.options['label_set'].split(',')]

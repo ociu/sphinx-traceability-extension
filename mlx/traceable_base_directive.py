@@ -15,6 +15,18 @@ class TraceableBaseDirective(Directive, ABC):
     def run(self):
         """ Processes directive's contents. Called by Sphinx. """
 
+    def process_title(self, node, default_title=''):
+        """ Adds the title to the item. If no title is specified, the given default title is used.
+
+        Args:
+            node (TraceableBaseNode): Node object for which to add found attributes to.
+            default_title (str): Default title.
+        """
+        if self.arguments:
+            node['title'] = self.arguments[0]
+        else:
+            node['title'] = default_title
+
     def get_caption(self):
         """ Gets the item's caption.
 

@@ -91,6 +91,7 @@ class ItemTreeDirective(TraceableBaseDirective):
     has_content = False
 
     def run(self):
+        """ Processes the contents of the directive. """
         env = self.state.document.settings.env
         app = env.app
 
@@ -98,13 +99,8 @@ class ItemTreeDirective(TraceableBaseDirective):
         item_tree_node['document'] = env.docname
         item_tree_node['line'] = self.lineno
 
-        # Process title (optional argument)
-        if self.arguments:
-            item_tree_node['title'] = self.arguments[0]
-        else:
-            item_tree_node['title'] = 'Tree of items'
+        self.process_title(item_tree_node, 'Tree of items')
 
-        # Process ``top`` option
         self.process_options(item_tree_node,
                              {'top': '',
                               'top_relation_filter': [],

@@ -41,6 +41,7 @@ class ItemLinkDirective(TraceableBaseDirective):
     has_content = False
 
     def run(self):
+        """ Processes the contents of the directive. """
         env = self.state.document.settings.env
 
         node = ItemLink('')
