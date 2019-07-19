@@ -13,6 +13,19 @@ class BaseDirective(Directive, ABC):
     def run(self):
         """ Processes directive's contents. Called by Sphinx. """
 
+    def get_caption(self):
+        """ Gets the item's caption.
+
+        Item caption is the text following the mandatory id argument. Caption should be considered a to be line of text.
+        Remove line breaks.
+
+        Returns:
+            (str) Formatted caption.
+        """
+        if len(self.arguments) > 1:
+            return self.arguments[1].replace('\n', ' ')
+        return ''
+
     def add_found_attributes(self, node):
         """ Adds found attributes to item. Attribute data is a single string.
 
