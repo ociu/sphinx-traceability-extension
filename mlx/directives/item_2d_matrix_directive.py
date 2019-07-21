@@ -1,11 +1,11 @@
 from docutils import nodes
-from docutils.parsers.rst import Directive
 from docutils.parsers.rst import directives
-from mlx.traceability import report_warning
-from mlx.traceability_item_element import ItemElement
-from mlx.traceable_item import TraceableItem
 
-class Item2DMatrix(ItemElement):
+from mlx.traceable_base_directive import TraceableBaseDirective
+from mlx.traceable_base_node import TraceableBaseNode
+
+
+class Item2DMatrix(TraceableBaseNode):
     '''Matrix for cross referencing documentation items in 2 dimensions'''
 
     def perform_replacement(self, app, collection):
@@ -55,7 +55,7 @@ class Item2DMatrix(ItemElement):
         self.replace_self(top_node)
 
 
-class Item2DMatrixDirective(Directive):
+class Item2DMatrixDirective(TraceableBaseDirective):
     """
     Directive to generate a 2D-matrix of item cross-references, based on
     a given set of relationship types.
@@ -71,18 +71,20 @@ class Item2DMatrixDirective(Directive):
     """
     # Optional argument: title (whitespace allowed)
     optional_arguments = 1
-    final_argument_whitespace = True
     # Options
-    option_spec = {'class': directives.class_option,
-                   'target': directives.unchanged,
-                   'source': directives.unchanged,
-                   'hit': directives.unchanged,
-                   'miss': directives.unchanged,
-                   'type': directives.unchanged}
+    option_spec = {
+        'class': directives.class_option,
+        'target': directives.unchanged,
+        'source': directives.unchanged,
+        'hit': directives.unchanged,
+        'miss': directives.unchanged,
+        'type': directives.unchanged,  # a string with relationship types separated by space
+    }
     # Content disallowed
     has_content = False
 
     def run(self):
+        """ Processes the contents of the directive. """
         env = self.state.document.settings.env
 
         node = Item2DMatrix('')
@@ -92,48 +94,18 @@ class Item2DMatrixDirective(Directive):
         if self.options.get('class'):
             node.get('classes').extend(self.options.get('class'))
 
-        # Process title (optional argument)
-        if self.arguments:
-            node['title'] = self.arguments[0]
-        else:
-            node['title'] = '2D traceability matrix of items'
+        self.process_title(node, '2D traceability matrix of items')
 
-        # Process ``target`` & ``source`` options
-        for option in ('target', 'source'):
-            if option in self.options:
-                node[option] = self.options[option]
-            else:
-                node[option] = ''
+        self.process_options(node,
+                             {'target': '',
+                              'source': '',
+                              'type': [],
+                              'hit': 'x',
+                              'miss': '',
+                              })
 
-        # Add found attributes to item. Attribute data is a single string.
-        node['filter-attributes'] = {}
-        for attr in TraceableItem.defined_attributes.keys():
-            if attr in self.options:
-                node['filter-attributes'][attr] = self.options[attr]
+        self.add_found_attributes(node)
 
-        # Process ``type`` option, given as a string with relationship types
-        # separated by space. It is converted to a list.
-        if 'type' in self.options:
-            node['type'] = self.options['type'].split()
-        else:
-            node['type'] = []
-
-        # Check if given relationships are in configuration
-        for rel in node['type']:
-            if rel not in env.traceability_collection.iter_relations():
-                report_warning(env, 'Traceability: unknown relation for item-2d-matrix: %s' % rel,
-                               env.docname, self.lineno)
-
-        # Check hit string
-        if 'hit' in self.options:
-            node['hit'] = self.options['hit']
-        else:
-            node['hit'] = 'x'
-
-        # Check miss string
-        if 'miss' in self.options:
-            node['miss'] = self.options['miss']
-        else:
-            node['miss'] = ''
+        self.check_relationships(node['type'], env)
 
         return [node]

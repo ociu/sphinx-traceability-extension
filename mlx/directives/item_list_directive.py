@@ -1,10 +1,11 @@
 from docutils import nodes
-from docutils.parsers.rst import Directive
 from docutils.parsers.rst import directives
-from mlx.traceability_item_element import ItemElement
-from mlx.traceable_item import TraceableItem
 
-class ItemList(ItemElement):
+from mlx.traceable_base_directive import TraceableBaseDirective
+from mlx.traceable_base_node import TraceableBaseNode
+
+
+class ItemList(TraceableBaseNode):
     '''List of documentation items'''
 
     def perform_replacement(self, app, collection):
@@ -28,7 +29,7 @@ class ItemList(ItemElement):
         self.replace_self(top_node)
 
 
-class ItemListDirective(Directive):
+class ItemListDirective(TraceableBaseDirective):
     """
     Directive to generate a list of items.
 
@@ -42,15 +43,17 @@ class ItemListDirective(Directive):
     """
     # Optional argument: title (whitespace allowed)
     optional_arguments = 1
-    final_argument_whitespace = True
     # Options
-    option_spec = {'class': directives.class_option,
-                   'filter': directives.unchanged,
-                   'nocaptions': directives.flag}
+    option_spec = {
+        'class': directives.class_option,
+        'filter': directives.unchanged,
+        'nocaptions': directives.flag,
+    }
     # Content disallowed
     has_content = False
 
     def run(self):
+        """ Processes the contents of the directive. """
         env = self.state.document.settings.env
         app = env.app
 
@@ -58,30 +61,13 @@ class ItemListDirective(Directive):
         item_list_node['document'] = env.docname
         item_list_node['line'] = self.lineno
 
-        # Process title (optional argument)
-        if self.arguments:
-            item_list_node['title'] = self.arguments[0]
-        else:
-            item_list_node['title'] = 'List of items'
+        self.process_title(item_list_node, 'List of items')
 
         # Process ``filter`` option
-        if 'filter' in self.options:
-            item_list_node['filter'] = self.options['filter']
-        else:
-            item_list_node['filter'] = ''
+        self.process_options(item_list_node, {'filter': ''})
 
-        # Add found attributes to item. Attribute data is a single string.
-        item_list_node['filter-attributes'] = {}
-        for attr in TraceableItem.defined_attributes.keys():
-            if attr in self.options:
-                item_list_node['filter-attributes'][attr] = self.options[attr]
+        self.add_found_attributes(item_list_node)
 
-        # Check nocaptions flag
-        if 'nocaptions' in self.options:
-            item_list_node['nocaptions'] = True
-        elif app.config.traceability_list_no_captions:
-            item_list_node['nocaptions'] = True
-        else:
-            item_list_node['nocaptions'] = False
+        self.check_no_captions_flag(item_list_node, app.config.traceability_list_no_captions)
 
         return [item_list_node]

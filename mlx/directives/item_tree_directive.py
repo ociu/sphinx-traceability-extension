@@ -1,13 +1,13 @@
 from docutils import nodes
-from docutils.parsers.rst import Directive, directives
+from docutils.parsers.rst import directives
 from sphinx.builders.latex import LaTeXBuilder
 
 from mlx.traceability import report_warning
-from mlx.traceability_item_element import ItemElement
-from mlx.traceable_item import TraceableItem
+from mlx.traceable_base_directive import TraceableBaseDirective
+from mlx.traceable_base_node import TraceableBaseNode
 
 
-class ItemTree(ItemElement):
+class ItemTree(TraceableBaseNode):
     '''Tree-view on documentation items'''
 
     def perform_replacement(self, app, collection):
@@ -29,12 +29,40 @@ class ItemTree(ItemElement):
             ul_node.set_class('bonsai')
             for i in top_item_ids:
                 if self.is_item_top_level(app.env, i):
-                    ul_node.append(self.generate_bullet_list_tree(app, collection, i, showcaptions))
+                    ul_node.append(self._generate_bullet_list_tree(app, collection, i, showcaptions))
             top_node += ul_node
         self.replace_self(top_node)
 
+    def _generate_bullet_list_tree(self, app, collection, item_id, captions=True):
+        '''
+        Generates a bullet list tree for the given item ID.
 
-class ItemTreeDirective(Directive):
+        This function returns the given item ID as a bullet item node, makes a child bulleted list, and adds all
+        of the matching child items to it.
+        '''
+        # First add current item_id
+        bullet_list_item = nodes.list_item()
+        bullet_list_item['id'] = nodes.make_id(item_id)
+        p_node = nodes.paragraph()
+        p_node.set_class('thumb')
+        bullet_list_item.append(p_node)
+        bullet_list_item.append(self.make_internal_item_ref(app, item_id, captions))
+        bullet_list_item.set_class('has-children')
+        bullet_list_item.set_class('collapsed')
+        childcontent = nodes.bullet_list()
+        childcontent.set_class('bonsai')
+        # Then recurse one level, and add dependencies
+        for relation in self['type']:
+            tgts = collection.get_item(item_id).iter_targets(relation)
+            for target in tgts:
+                # print('%s has child %s for relation %s' % (item_id, target, relation))
+                if collection.get_item(target).attributes_match(self['filter-attributes']):
+                    childcontent.append(self._generate_bullet_list_tree(app, collection, target, captions))
+        bullet_list_item.append(childcontent)
+        return bullet_list_item
+
+
+class ItemTreeDirective(TraceableBaseDirective):
     """
     Directive to generate a treeview of items, based on
     a given set of relationship types.
@@ -51,17 +79,19 @@ class ItemTreeDirective(Directive):
     """
     # Optional argument: title (whitespace allowed)
     optional_arguments = 1
-    final_argument_whitespace = True
     # Options
-    option_spec = {'class': directives.class_option,
-                   'top': directives.unchanged,
-                   'top_relation_filter': directives.unchanged,
-                   'type': directives.unchanged,
-                   'nocaptions': directives.flag}
+    option_spec = {
+        'class': directives.class_option,
+        'top': directives.unchanged,
+        'top_relation_filter': directives.unchanged,  # a string with relationship types separated by space
+        'type': directives.unchanged,  # a string with relationship types separated by space
+        'nocaptions': directives.flag,
+    }
     # Content disallowed
     has_content = False
 
     def run(self):
+        """ Processes the contents of the directive. """
         env = self.state.document.settings.env
         app = env.app
 
@@ -69,42 +99,17 @@ class ItemTreeDirective(Directive):
         item_tree_node['document'] = env.docname
         item_tree_node['line'] = self.lineno
 
-        # Process title (optional argument)
-        if self.arguments:
-            item_tree_node['title'] = self.arguments[0]
-        else:
-            item_tree_node['title'] = 'Tree of items'
+        self.process_title(item_tree_node, 'Tree of items')
 
-        # Process ``top`` option
-        if 'top' in self.options:
-            item_tree_node['top'] = self.options['top']
-        else:
-            item_tree_node['top'] = ''
+        self.process_options(item_tree_node,
+                             {'top': '',
+                              'top_relation_filter': [],
+                              'type': [],
+                              })
 
-        # Process ``top_relation_filter`` option, given as a string with relationship types
-        # separated by space. It is converted to a list.
-        if 'top_relation_filter' in self.options:
-            item_tree_node['top_relation_filter'] = self.options['top_relation_filter'].split()
-        else:
-            item_tree_node['top_relation_filter'] = ''
+        self.add_found_attributes(item_tree_node)
 
-        # Add found attributes to item. Attribute data is a single string.
-        item_tree_node['filter-attributes'] = {}
-        for attr in TraceableItem.defined_attributes.keys():
-            if attr in self.options:
-                item_tree_node['filter-attributes'][attr] = self.options[attr]
-
-        # Check if given relationships are in configuration
-        for rel in item_tree_node['top_relation_filter']:
-            if rel not in env.traceability_collection.iter_relations():
-                report_warning(env, 'Traceability: unknown relation for item-tree: %s' % rel, env.docname, self.lineno)
-
-        # Process ``type`` option, given as a string with relationship types
-        # separated by space. It is converted to a list.
-        if 'type' in self.options:
-            item_tree_node['type'] = self.options['type'].split()
-        else:
-            item_tree_node['type'] = []
+        self.check_relationships(item_tree_node['top_relation_filter'], env)
 
         # Check if given relationships are in configuration
         # Combination of forward + matching reverse relationship cannot be in the same list, as it will give
@@ -118,12 +123,6 @@ class ItemTreeDirective(Directive):
                                env.docname, self.lineno)
                 raise ValueError('Traceability: combination of forward+reverse relations for item-tree: %s' % rel)
 
-        # Check nocaptions flag
-        if 'nocaptions' in self.options:
-            item_tree_node['nocaptions'] = True
-        elif app.config.traceability_tree_no_captions:
-            item_tree_node['nocaptions'] = True
-        else:
-            item_tree_node['nocaptions'] = False
+        self.check_no_captions_flag(item_tree_node, app.config.traceability_tree_no_captions)
 
         return [item_tree_node]

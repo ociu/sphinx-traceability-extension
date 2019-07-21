@@ -1,13 +1,13 @@
 from docutils import nodes
-from docutils.parsers.rst import Directive
 
 from mlx.traceability import report_warning
-from mlx.traceability_item_element import ItemElement
 from mlx.traceable_attribute import TraceableAttribute
+from mlx.traceable_base_directive import TraceableBaseDirective
+from mlx.traceable_base_node import TraceableBaseNode
 from mlx.traceable_item import TraceableItem
 
 
-class ItemAttribute(ItemElement):
+class ItemAttribute(TraceableBaseNode):
     '''Attribute to documentation item'''
 
     def perform_replacement(self, app, collection):
@@ -32,7 +32,7 @@ class ItemAttribute(ItemElement):
         self.replace_self(top_node)
 
 
-class ItemAttributeDirective(Directive):
+class ItemAttributeDirective(TraceableBaseDirective):
     """
     Directive to declare attribute for items
 
@@ -47,11 +47,11 @@ class ItemAttributeDirective(Directive):
     required_arguments = 1
     # Optional argument: caption (whitespace allowed)
     optional_arguments = 1
-    final_argument_whitespace = True
     # Content allowed
     has_content = True
 
     def run(self):
+        """ Processes the contents of the directive. """
         env = self.state.document.settings.env
 
         # Convert to lower-case as sphinx only allows lowercase arguments (attribute to item directive)
@@ -60,12 +60,6 @@ class ItemAttributeDirective(Directive):
         attribute_node = ItemAttribute('')
         attribute_node['document'] = env.docname
         attribute_node['line'] = self.lineno
-
-        # Item caption is the text following the mandatory id argument.
-        # Caption should be considered a line of text. Remove line breaks.
-        caption = ''
-        if len(self.arguments) > 1:
-            caption = self.arguments[1].replace('\n', ' ')
 
         stored_id = TraceableAttribute.to_id(attribute_id)
         if stored_id not in TraceableItem.defined_attributes.keys():
@@ -77,7 +71,7 @@ class ItemAttributeDirective(Directive):
             attribute_node['id'] = stored_id
         else:
             attr = TraceableItem.defined_attributes[stored_id]
-            attr.set_caption(caption)
+            attr.set_caption(self.get_caption())
             attr.set_document(env.docname, self.lineno)
             attribute_node['id'] = attr.get_id()
 

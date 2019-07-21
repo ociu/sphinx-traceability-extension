@@ -1,11 +1,11 @@
 from docutils import nodes
-from docutils.parsers.rst import Directive
 from docutils.parsers.rst import directives
-from mlx.traceability import report_warning
-from mlx.traceability_item_element import ItemElement
-from mlx.traceable_item import TraceableItem
 
-class ItemAttributesMatrix(ItemElement):
+from mlx.traceable_base_directive import TraceableBaseDirective
+from mlx.traceable_base_node import TraceableBaseNode
+
+
+class ItemAttributesMatrix(TraceableBaseNode):
     '''Matrix for referencing documentation items with their attributes'''
 
     def perform_replacement(self, app, collection):
@@ -16,9 +16,10 @@ class ItemAttributesMatrix(ItemElement):
             collection (TraceableCollection): Collection for which to generate the nodes.
         """
         showcaptions = not self['nocaptions']
-        item_ids = collection.get_items(self['filter'], self['filter-attributes'],
-                                                         sortattributes=self['sort'],
-                                                         reverse=self['reverse'])
+        item_ids = collection.get_items(self['filter'],
+                                        attributes=self['filter-attributes'],
+                                        sortattributes=self['sort'],
+                                        reverse=self['reverse'])
         top_node = self.create_top_node(self['title'])
         table = nodes.table()
         if self.get('classes'):
@@ -54,7 +55,7 @@ class ItemAttributesMatrix(ItemElement):
         self.replace_self(top_node)
 
 
-class ItemAttributesMatrixDirective(Directive):
+class ItemAttributesMatrixDirective(TraceableBaseDirective):
     """
     Directive to generate a matrix of items with their attribute values.
 
@@ -70,18 +71,20 @@ class ItemAttributesMatrixDirective(Directive):
     """
     # Optional argument: title (whitespace allowed)
     optional_arguments = 1
-    final_argument_whitespace = True
     # Options
-    option_spec = {'class': directives.class_option,
-                   'filter': directives.unchanged,
-                   'attributes': directives.unchanged,
-                   'sort': directives.unchanged,
-                   'reverse': directives.flag,
-                   'nocaptions': directives.flag}
+    option_spec = {
+        'class': directives.class_option,
+        'filter': directives.unchanged,
+        'attributes': directives.unchanged,
+        'sort': directives.unchanged,
+        'reverse': directives.flag,
+        'nocaptions': directives.flag,
+    }
     # Content disallowed
     has_content = False
 
     def run(self):
+        """ Processes the contents of the directive. """
         env = self.state.document.settings.env
         app = env.app
 
@@ -99,16 +102,9 @@ class ItemAttributesMatrixDirective(Directive):
             node['title'] = 'Matrix of items and attributes'
 
         # Process ``filter`` options
-        if 'filter' in self.options:
-            node['filter'] = self.options['filter']
-        else:
-            node['filter'] = ''
+        self.process_options(node, {'filter': ''})
 
-        # Add found attributes to item. Attribute data is a single string.
-        node['filter-attributes'] = {}
-        for attr in TraceableItem.defined_attributes.keys():
-            if attr in self.options:
-                node['filter-attributes'][attr] = self.options[attr]
+        self.add_found_attributes(node)
 
         # Process ``attributes`` option, given as a string with attributes
         # separated by space. It is converted to a list.
@@ -116,39 +112,19 @@ class ItemAttributesMatrixDirective(Directive):
             node['attributes'] = self.options['attributes'].split()
         else:
             node['attributes'] = list(app.config.traceability_attributes.keys())
-
-        # Check if given attributes are in configuration
-        for attr in node['attributes']:
-            if attr not in TraceableItem.defined_attributes.keys():
-                report_warning(env, 'Traceability: unknown attribute for item-attributes-matrix: %s' % attr,
-                               env.docname, self.lineno)
-                node['attributes'].remove(attr)
+        self.remove_unknown_attributes(node['attributes'], 'attribute', env)
 
         # Process ``sort`` option, given as a string with attributes
         # separated by space. It is converted to a list.
         if 'sort' in self.options and self.options['sort']:
             node['sort'] = self.options['sort'].split()
-            # Check if given sort-attributes are in configuration
-            for attr in node['sort']:
-                if attr not in TraceableItem.defined_attributes.keys():
-                    report_warning(env, 'Traceability: unknown sorting attribute for item-attributes-matrix: %s' % attr,
-                                   env.docname, self.lineno)
-                    node['sort'].remove(attr)
+            self.remove_unknown_attributes(node['sort'], 'sorting attribute', env)
         else:
-            node['sort'] = None
+            node['sort'] = []
 
         # Check reverse flag
-        if 'reverse' in self.options:
-            node['reverse'] = True
-        else:
-            node['reverse'] = False
+        self.check_option_presence(node, 'reverse')
 
-        # Check nocaptions flag
-        if 'nocaptions' in self.options:
-            node['nocaptions'] = True
-        elif app.config.traceability_attributes_matrix_no_captions:
-            node['nocaptions'] = True
-        else:
-            node['nocaptions'] = False
+        self.check_no_captions_flag(node, app.config.traceability_attributes_matrix_no_captions)
 
         return [node]

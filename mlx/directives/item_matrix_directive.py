@@ -1,11 +1,11 @@
 from docutils import nodes
-from docutils.parsers.rst import Directive
 from docutils.parsers.rst import directives
-from mlx.traceability import report_warning
-from mlx.traceability_item_element import ItemElement, REGEXP_EXTERNAL_RELATIONSHIP
-from mlx.traceable_item import TraceableItem
 
-class ItemMatrix(ItemElement):
+from mlx.traceable_base_directive import TraceableBaseDirective
+from mlx.traceable_base_node import TraceableBaseNode, REGEXP_EXTERNAL_RELATIONSHIP
+
+
+class ItemMatrix(TraceableBaseNode):
     '''Matrix for cross referencing documentation items'''
 
     def perform_replacement(self, app, collection):
@@ -17,7 +17,6 @@ class ItemMatrix(ItemElement):
             app: Sphinx application object to use.
             collection (TraceableCollection): Collection for which to generate the nodes.
         """
-        env = app.builder.env
         showcaptions = not self['nocaptions']
         source_ids = collection.get_items(self['source'], self['filter-attributes'])
         target_ids = collection.get_items(self['target'])
@@ -84,7 +83,7 @@ class ItemMatrix(ItemElement):
         self.replace_self(top_node)
 
 
-class ItemMatrixDirective(Directive):
+class ItemMatrixDirective(TraceableBaseDirective):
     """
     Directive to generate a matrix of item cross-references, based on
     a given set of relationship types.
@@ -103,16 +102,17 @@ class ItemMatrixDirective(Directive):
     """
     # Optional argument: title (whitespace allowed)
     optional_arguments = 1
-    final_argument_whitespace = True
     # Options
-    option_spec = {'class': directives.class_option,
-                   'target': directives.unchanged,
-                   'source': directives.unchanged,
-                   'targettitle': directives.unchanged,
-                   'sourcetitle': directives.unchanged,
-                   'type': directives.unchanged,
-                   'stats': directives.flag,
-                   'nocaptions': directives.flag}
+    option_spec = {
+        'class': directives.class_option,
+        'target': directives.unchanged,
+        'source': directives.unchanged,
+        'targettitle': directives.unchanged,
+        'sourcetitle': directives.unchanged,
+        'type': directives.unchanged,  # a string with relationship types separated by space
+        'stats': directives.flag,
+        'nocaptions': directives.flag,
+    }
     # Content disallowed
     has_content = False
 
@@ -127,62 +127,22 @@ class ItemMatrixDirective(Directive):
         if self.options.get('class'):
             item_matrix_node.get('classes').extend(self.options.get('class'))
 
-        # Process title (optional argument)
-        if self.arguments:
-            item_matrix_node['title'] = self.arguments[0]
-        else:
-            item_matrix_node['title'] = 'Traceability matrix of items'
+        self.process_title(item_matrix_node, 'Traceability matrix of items')
 
-        # Add found attributes to item. Attribute data is a single string.
-        item_matrix_node['filter-attributes'] = {}
-        for attr in TraceableItem.defined_attributes.keys():
-            if attr in self.options:
-                item_matrix_node['filter-attributes'][attr] = self.options[attr]
+        self.add_found_attributes(item_matrix_node)
 
-        # Process ``target`` & ``source`` options
-        for option in ('target', 'source'):
-            if option in self.options:
-                item_matrix_node[option] = self.options[option]
-            else:
-                item_matrix_node[option] = ''
+        self.process_options(item_matrix_node,
+                             {'target': '',
+                              'source': '',
+                              'targettitle': 'Target',
+                              'sourcetitle': 'Source',
+                              'type': [],
+                              })
 
-        # Process ``type`` option, given as a string with relationship types
-        # separated by space. It is converted to a list.
-        if 'type' in self.options:
-            item_matrix_node['type'] = self.options['type'].split()
-        else:
-            item_matrix_node['type'] = []
+        self.check_relationships(item_matrix_node['type'], env)
 
-        # Check if given relationships are in configuration
-        for rel in item_matrix_node['type']:
-            if rel not in env.traceability_collection.iter_relations():
-                report_warning(env, 'Traceability: unknown relation for item-matrix: %s' % rel,
-                               env.docname, self.lineno)
+        self.check_option_presence(item_matrix_node, 'stats')
 
-        # Check statistics flag
-        if 'stats' in self.options:
-            item_matrix_node['stats'] = True
-        else:
-            item_matrix_node['stats'] = False
-
-        # Check nocaptions flag
-        if 'nocaptions' in self.options:
-            item_matrix_node['nocaptions'] = True
-        elif app.config.traceability_matrix_no_captions:
-            item_matrix_node['nocaptions'] = True
-        else:
-            item_matrix_node['nocaptions'] = False
-
-        # Check source title
-        if 'sourcetitle' in self.options:
-            item_matrix_node['sourcetitle'] = self.options['sourcetitle']
-        else:
-            item_matrix_node['sourcetitle'] = 'Source'
-
-        # Check target title
-        if 'targettitle' in self.options:
-            item_matrix_node['targettitle'] = self.options['targettitle']
-        else:
-            item_matrix_node['targettitle'] = 'Target'
+        self.check_no_captions_flag(item_matrix_node, app.config.traceability_matrix_no_captions)
 
         return [item_matrix_node]

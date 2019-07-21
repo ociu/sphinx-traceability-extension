@@ -19,12 +19,247 @@ Design for mlx.traceability
     .. uml::
         :align: center
 
+        @startuml
+        class TraceableBaseClass {
+            + str id
+            + str name
+            + str caption
+            + str docname
+            + int lineno
+            + docutils.nodes.Node node
+            + str content
+
+            + __init__(name)
+            + update(other)
+            + to_dict()
+            + self_test()
+        }
+
+        class TraceableItem {
+            + dict explicit_relations
+            + dict implicit_relations
+            + dict attributes
+            # bool placeholder
+
+            + __init__(item_id, placeholder=False)
+            + __str__(explicit=True, implicit=True)
+            + is_placeholder()
+            + add_target(relation, target, implicit=False)
+            + remove_targets(target_id, explicit=False, implicit=True)
+            + iter_targets(relation, explicit=True, implicit=True)
+            + iter_relations()
+            + define_attribute(attr)
+            + add_attribute(attr, value, overwrite=True)
+            + remove_attribute(attr)
+            + get_attribute(attr)
+            + get_attributes(attrs)
+            + iter_attributes()
+            + is_match(regex)
+            + attributes_match(attributes)
+            + is_related(relations, target_id)
+        }
+
+        class TraceableAttribute {
+            + str value
+
+            + __init__(attr_id, value)
+            + can_accept(value)
+        }
+
+        class TraceableCollection {
+            + dict relations
+            + dict items
+
+            + __init__()
+            + __str__()
+            + add_relation_pair(forward, reverse='')
+            + get_reverse_relation(forward)
+            + iter_relations()
+            + add_item(item)
+            + get_item(item_id)
+            + iter_items()
+            + has_item(item_id)
+            + add_relation(source_id, relation, target_id)
+            + export(f_name)
+            + self_test(docname=None)
+            + are_related(source_id, relations, target_id)
+            + get_items(regex, attributes={}, sortattributes=None, reverse=False)
+        }
+
+        abstract class TraceableBaseDirective {
+            + {static} final_argument_whitespace = True
+
+            + {abstract} run()
+            + get_caption()
+            + add_found_attributes(node)
+            + remove_unknown_attributes(attributes, description, env)
+            + check_relationships(relationships, env)
+            + check_no_captions_flag(node, no_captions_config)
+            + process_options(node, options)
+        }
+
+        class Item2DMatrixDirective {
+            + {static} optional_arguments = 1
+            + {static} dict option_spec
+            + {static} has_content = False
+        }
+
+        class ItemAttributeDirective {
+            + {static} required_arguments = 1
+            + {static} optional_arguments = 1
+            + {static} has_content = True
+        }
+
+        class ItemAttributesMatrixDirective {
+            + {static} optional_arguments = 1
+            + {static} dict option_spec
+            + {static} has_content = False
+        }
+
+        class ItemDirective {
+            + {static} required_arguments = 1
+            + {static} optional_arguments = 1
+            + {static} dict option_spec
+            + {static} has_content = True
+
+            # store_item_info(target_id, env)
+            # add_relation_to_ids(relation, source_id, related_ids, env)
+            # add_attributes(item, env)
+        }
+
+        class ItemLinkDirective {
+            + {static} dict option_spec
+            + {static} has_content = False
+        }
+
+        class ItemListDirective {
+            + {static} optional_arguments = 1
+            + {static} dict option_spec
+            + {static} has_content = False
+        }
+
+        class ItemMatrixDirective {
+            + {static} optional_arguments = 1
+            + {static} dict option_spec
+            + {static} has_content = False
+        }
+
+        class ItemPieChartDirective {
+            + {static} optional_arguments = 1
+            + {static} dict option_spec
+            + {static} has_content = False
+
+            # process_id_set(node, env)
+            # process_label_set(node)
+            # process_attribute(node, env)
+        }
+
+        class ItemTreeDirective {
+            + {static} optional_arguments = 1
+            + {static} dict option_spec
+            + {static} has_content = False
+        }
+
+        abstract class TraceableBaseNode {
+            + {abstract} perform_replacement(app, collection)
+            + {static} create_top_node(title)
+            + make_internal_item_ref(app, item_id, caption=True)
+            + {static} make_external_item_ref(app, target_text, relationship)
+            + is_item_top_level(env, item_id)
+            + make_attribute_ref(app, attr_id, value='')
+            + has_warned_about_undefined(item_info, env)
+            # {static} find_colors_for_class(hyperlink_colors, item_id)
+        }
+
+        class Item2DMatrix {
+        }
+
+        class ItemAttribute {
+        }
+
+        class ItemAttributesMatrix {
+        }
+
+        class Item {
+            # {static} item = None
+
+            # process_attributes(dl_node, app)
+            # process_relationships(collection, *args)
+            # list_targets_for_relation(relation, targets, dl_node, app)
+        }
+
+        class ItemLink {
+        }
+
+        class ItemList {
+        }
+
+        class ItemMatrix {
+        }
+
+        class ItemPieChart {
+            + {static} collection = None
+            + {static} relationships = []
+            + {static} priorities = {}
+            + {static} attribute_id = ''
+            + {static} linked_attributes = {}
+
+            + loop_relationships(top_source_id, source_item, pattern, match_function)
+            + build_pie_chart(chart_labels, env)
+            # set_priorities()
+            # set_attribute_id()
+            # match_covered(top_source_id, nested_source_item)
+            # match_attribute_values(top_source_id, nested_target_item)
+            # prepare_labels_and_values(lower_labels, attributes)
+            # {static} get_statistics(count_uncovered, count_total)
+        }
+
+        class ItemTree {
+            # generate_bullet_list_tree(app, collection, item_id, captions=True)
+        }
+
+        class PendingItemXref {
+        }
+
         TraceableBaseClass <|-- TraceableItem
         TraceableBaseClass <|-- TraceableAttribute
-        TraceableItem "1" *-- "N" TraceableAttribute
-        TraceableCollection "1" *-- "N" TraceableItem
+        TraceableItem "1" o-- "N" TraceableAttribute
+        TraceableCollection "1" o-- "N" TraceableItem
+        sphinx.environment.BuildEnvironment "1" o-- "1" TraceableCollection
+        docutils.parsers.rst.Directive <|-- TraceableBaseDirective
+        TraceableBaseDirective <|-- Item2DMatrixDirective
+        TraceableBaseDirective <|-- ItemAttributeDirective
+        TraceableBaseDirective <|-- ItemAttributesMatrixDirective
+        TraceableBaseDirective <|-- ItemDirective
+        TraceableBaseDirective <|-- ItemLinkDirective
+        TraceableBaseDirective <|-- ItemListDirective
+        TraceableBaseDirective <|-- ItemMatrixDirective
+        TraceableBaseDirective <|-- ItemPieChartDirective
+        TraceableBaseDirective <|-- ItemTreeDirective
+        TraceableBaseNode <|-- docutils.nodes.General
+        TraceableBaseNode <|-- docutils.nodes.Element
+        TraceableBaseNode <|-- Item2DMatrix
+        TraceableBaseNode <|-- ItemAttribute
+        TraceableBaseNode <|-- ItemAttributesMatrix
+        TraceableBaseNode <|-- Item
+        TraceableBaseNode <|-- ItemLink
+        TraceableBaseNode <|-- ItemList
+        TraceableBaseNode <|-- ItemMatrix
+        TraceableBaseNode <|-- ItemPieChart
+        TraceableBaseNode <|-- ItemTree
+        TraceableBaseNode <|-- PendingItemXref
+        Item2DMatrixDirective "1" *-- "1" Item2DMatrix
+        ItemAttributeDirective "1" *-- "1" ItemAttribute
+        ItemAttributesMatrixDirective "1" *-- "1" ItemAttributesMatrix
+        ItemDirective "1" *-- "1" Item
+        ItemLinkDirective "1" *-- "1" ItemLink
+        ItemListDirective "1" *-- "1" ItemList
+        ItemMatrixDirective "1" *-- "1" ItemMatrix
+        ItemPieChartDirective "1" *-- "1" ItemPieChart
+        ItemTreeDirective "1" *-- "1" ItemTree
         Exception <|-- TraceabilityException
         Exception <|-- MultipleTraceabilityExceptions
+        @enduml
 
 .. item:: DESIGN-ITEMIZE Allow splitting the documentation in parts
     :depends_on: DESIGN-TRACEABILITY
@@ -141,4 +376,3 @@ Implementation coverage
     :targettitle: Implementation
     :nocaptions:
     :stats:
-

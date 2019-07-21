@@ -3,14 +3,15 @@ from hashlib import sha256
 from os import environ, mkdir, path
 
 from docutils import nodes
-from docutils.parsers.rst import Directive, directives
+from docutils.parsers.rst import directives
 import matplotlib as mpl
 if not environ.get('DISPLAY'):
     mpl.use('Agg')
 import matplotlib.pyplot as plt  # pylint: disable=wrong-import-order
 
 from mlx.traceability import report_warning
-from mlx.traceability_item_element import ItemElement
+from mlx.traceable_base_directive import TraceableBaseDirective
+from mlx.traceable_base_node import TraceableBaseNode
 from mlx.traceable_item import TraceableItem
 
 def pct_wrapper(sizes):
@@ -25,7 +26,7 @@ def pct_wrapper(sizes):
     return make_pct
 
 
-class ItemPieChart(ItemElement):
+class ItemPieChart(TraceableBaseNode):
     '''Pie chart on documentation items'''
     collection = None
     relationships = []
@@ -230,7 +231,7 @@ class ItemPieChart(ItemElement):
         return image_node
 
 
-class ItemPieChartDirective(Directive):
+class ItemPieChartDirective(TraceableBaseDirective):
     """
     Directive to generate a pie chart for coverage of item cross-references.
 
@@ -244,11 +245,12 @@ class ItemPieChartDirective(Directive):
     """
     # Optional argument: title (whitespace allowed)
     optional_arguments = 1
-    final_argument_whitespace = True
     # Options
-    option_spec = {'class': directives.class_option,
-                   'id_set': directives.unchanged,
-                   'label_set': directives.unchanged}
+    option_spec = {
+        'class': directives.class_option,
+        'id_set': directives.unchanged,
+        'label_set': directives.unchanged,
+    }
     # Content disallowed
     has_content = False
 
@@ -260,9 +262,7 @@ class ItemPieChartDirective(Directive):
         item_chart_node['document'] = env.docname
         item_chart_node['line'] = self.lineno
 
-        # Process title (optional argument)
-        if self.arguments:
-            item_chart_node['title'] = self.arguments[0]
+        self.process_title(item_chart_node)
 
         self._process_id_set(item_chart_node, env)
 
@@ -284,6 +284,7 @@ class ItemPieChartDirective(Directive):
                            node['line'])
 
     def _process_label_set(self, node):
+        """ Processes label_set option. If not (fully) used, default labels are used. """
         default_labels = ['uncovered', 'covered', 'executed']
         if 'label_set' in self.options:
             node['label_set'] = [x.strip(' ') for x in self.options['label_set'].split(',')]
