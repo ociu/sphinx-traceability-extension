@@ -90,12 +90,14 @@ Design for mlx.traceability
             + {static} final_argument_whitespace = True
 
             + {abstract} run()
+            + process_title(node, default_title='')
             + get_caption()
             + add_found_attributes(node)
             + remove_unknown_attributes(attributes, description, env)
             + check_relationships(relationships, env)
             + check_no_captions_flag(node, no_captions_config)
             + process_options(node, options)
+            + check_option_presence(node, option)
         }
 
         class Item2DMatrixDirective {
