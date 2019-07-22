@@ -58,7 +58,7 @@ class TraceableBaseDirective(Directive, ABC):
         Args:
             attributes (list): List of attributes (str).
             description (str): Description of an element in the attributes list.
-            env (sphinx.environment.BuildEnvironment): Sphinx' build environment.
+            env (sphinx.environment.BuildEnvironment): Sphinx's build environment.
         """
         for attr in attributes:
             if attr not in TraceableItem.defined_attributes.keys():
@@ -86,12 +86,19 @@ class TraceableBaseDirective(Directive, ABC):
         """
         node['nocaptions'] = bool(no_captions_config or 'nocaptions' in self.options)
 
-    def process_options(self, node, options):
+    def process_options(self, node, options, env=None):
         """ Processes given options.
+
+        If the environment variable is specified, all options are treated as required, a warning is reported for the
+        first missing option, and False is returned. If all goes well, True is returned.
 
         Args:
             node (TraceableBaseNode): Node object for which to set the target and source options.
             options (dict): Dictionary with options (str) as keys and default values (str) as values.
+            env (sphinx.environment.BuildEnvironment): Sphinx's build environment.
+
+        Returns:
+            (bool) False if a required option is missing, True otherwise.
         """
         for option, default_value in options.items():
             if option in self.options:
@@ -99,8 +106,15 @@ class TraceableBaseDirective(Directive, ABC):
                     node[option] = self.options[option].split()
                 else:
                     node[option] = self.options[option]
+            elif env:
+                report_warning(env,
+                               '%s argument required for %s directive' % (option, self.name),
+                               env.docname,
+                               self.lineno)
+                return False
             else:
                 node[option] = default_value
+        return True
 
     def check_option_presence(self, node, option):
         """ Checks the presence of the given option. Set the value to True if the option is present, False otherwise.
