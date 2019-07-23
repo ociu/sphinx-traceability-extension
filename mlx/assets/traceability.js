@@ -1,22 +1,31 @@
-$(document).ready(function () {
-    $('<a>', {
-        text: 'Hide links',
-        click: function () {
-            //alert($(this).siblings()[0].innerHTML);
-            var p = $(this).siblings()[0];
-            //alert(p.innerHTML);
-            var relations = $(this).siblings('dl.simple')
-            if (relations.is(':visible')) {
-                relations.hide();
-                $(this).text('Show links');
-            } else {
-                relations.show();
-                $(this).text('Hide links');
-            }
-        }
-    }).insertAfter('div.toggle_links div.admonition:first-child');
+jQuery(function () {
+    $('ul.bonsai').bonsai();
 });
 
-jQuery(function() {
-    $('ul.bonsai').bonsai();
+jQuery.fn.extend({
+    prependHideLinks: function () {
+        var relations = $(this)
+        var hideLinks = $('<a>', {
+            text: 'Hide links',
+            click: function () {
+                if (relations.is(':visible')) {
+                    relations.hide();
+                    $(this).text('Show links');
+                } else {
+                    relations.show();
+                    $(this).text('Hide links');
+                }
+            }
+        });
+        if (relations.children().length > 0) {
+            console.log(relations.children().length);
+            $(this).before(hideLinks);
+        }
+    }
+});
+
+$(document).ready(function () {
+    $('div.toggle_links div.admonition:first-child').each(function (i) {
+        $(this).siblings('dl.simple').prependHideLinks();
+    });
 });
