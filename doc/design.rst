@@ -96,7 +96,7 @@ Design for mlx.traceability
             + remove_unknown_attributes(attributes, description, env)
             + check_relationships(relationships, env)
             + check_no_captions_flag(node, no_captions_config)
-            + process_options(node, options)
+            + process_options(node, options, env=None)
             + check_option_presence(node, option)
         }
 

@@ -51,20 +51,7 @@ class ItemLinkDirective(TraceableBaseDirective):
         node['targets'] = []
         node['type'] = None
 
-        if 'sources' in self.options:
-            node['sources'] = self.options['sources'].split()
-        else:
-            report_warning(env, 'sources argument required for item-link directive', env.docname, self.lineno)
-            return []
-        if 'targets' in self.options:
-            node['targets'] = self.options['targets'].split()
-        else:
-            report_warning(env, 'targets argument required for item-link directive', env.docname, self.lineno)
-            return []
-        if 'type' in self.options:
-            node['type'] = self.options['type']
-        else:
-            report_warning(env, 'type argument required for item-link directive', env.docname, self.lineno)
+        if not self.process_options(node, {'sources': [], 'targets': [], 'type': ''}, env=env):
             return []
 
         # Processing of the item-link items. They get added as additional relationships
