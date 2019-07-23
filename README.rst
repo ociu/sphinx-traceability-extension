@@ -231,6 +231,19 @@ Example configuration of disabling per item attribute rendering:
 
     traceability_render_attributes_per_item = False
 
+Ability to collapse the list of relationships and attributes per documentation object
+=====================================================================================
+
+A button can be added to each documentation object that has rendered relationships and/or attributes to hide this
+traceablility information. This feature is disabled by default. It can be enabled through the *boolean* variable
+*traceability_collapsible_links* by setting it to 'True'.
+
+Example configuration to add a button per item to collapse traceability information:
+
+.. code-block:: python
+
+    traceability_collapsible_links = True
+
 .. _traceability_config_no_captions:
 
 No captions
