@@ -151,7 +151,8 @@ class ItemDirective(TraceableBaseDirective):
         item_node['document'] = env.docname
         item_node['line'] = self.lineno
         item_node['id'] = target_id
-        item_node['classes'].append('toggle_links')
+        if app.config.traceability_collapsible_links:
+            item_node['classes'].append('collapsible_links')  # traceability.js adds the 'Hide links' "button"
 
         target_node = self._store_item_info(target_id, env)
 

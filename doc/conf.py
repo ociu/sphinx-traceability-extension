@@ -325,6 +325,7 @@ traceability_relationships = {
 }
 
 traceability_render_relationship_per_item = True
+traceability_collapsible_links = True
 
 traceability_relationship_to_string = {
     'trace': 'Traces',

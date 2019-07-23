@@ -339,6 +339,10 @@ def setup(app):
     app.add_config_value('traceability_item_no_captions',
                          False, 'env')
 
+    # Configuration for enabling the ability to collapse the list of attributes and relations for item
+    app.add_config_value('traceability_collapsible_links',
+                         False, 'env')
+
     # Configuration for disabling the rendering of the captions for item-list
     app.add_config_value('traceability_list_no_captions',
                          False, 'env')
