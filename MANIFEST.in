@@ -19,3 +19,9 @@ recursive-include doc Makefile
 recursive-include tests *.py
 recursive-include tests *.rst
 recursive-include tests *.txt
+
+# added by check_manifest.py
+include .coveragerc
+
+# added by check_manifest.py
+include *.txt

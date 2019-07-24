@@ -1,0 +1,2 @@
+# Requirements file is made purely for GitHub to track dependencies. It should be automatically taken from setup.py
+.
