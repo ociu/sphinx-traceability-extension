@@ -325,7 +325,6 @@ traceability_relationships = {
 }
 
 traceability_render_relationship_per_item = True
-traceability_collapsible_links = True
 
 traceability_relationship_to_string = {
     'trace': 'Traces',
@@ -362,6 +361,7 @@ traceability_hyperlink_colors = OrderedDict([
 # traceability_matrix_no_captions = True
 # traceability_tree_no_captions = True
 # traceability_render_attributes_per_item = False
+# traceability_collapse_links = True
 
 # Point to plantuml jar file
 # confirm we have plantuml in the path

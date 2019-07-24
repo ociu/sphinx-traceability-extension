@@ -209,8 +209,8 @@ Rendering of relationships per documentation object
 
 When rendering the documentation objects, the user has the option to include/exclude the rendering of the
 relationships to other documentation objects. This can be done through the Python variable
-*traceability_render_relationship_per_item* which is *boolean*: a value of 'True' will enable rendering
-of relationships per documentation object, while a value of 'False' will disable this rendering.
+*traceability_render_relationship_per_item* which is *boolean*: a value of ``True`` will enable rendering
+of relationships per documentation object, while a value of ``False`` will disable this rendering.
 
 Example configuration of enable rendering relationships per item:
 
@@ -222,8 +222,8 @@ Rendering of attributes per documentation object
 ================================================
 
 The rendering of attributes of documentation objects can be controlled through the *boolean* variable
-*traceability_render_attributes_per_item*: rendering of attributes is enabled by setting it to 'True' (the default)
-while a value of 'False' will prevent the attribute list from being rendered.
+*traceability_render_attributes_per_item*: rendering of attributes is enabled by setting it to ``True`` (the default)
+while a value of ``False`` will prevent the attribute list from being rendered.
 
 Example configuration of disabling per item attribute rendering:
 
@@ -234,15 +234,17 @@ Example configuration of disabling per item attribute rendering:
 Ability to collapse the list of relationships and attributes per documentation object
 =====================================================================================
 
-A button can be added to each documentation object that has rendered relationships and/or attributes to hide this
-traceablility information. This feature is disabled by default. It can be enabled through the *boolean* variable
-*traceability_collapsible_links* by setting it to 'True'.
+A button is added to each documentation object that has rendered relationships and/or attributes to be able to show and
+hide these traceability links. The *boolean* configuration variable *traceability_collapse_links* allows selecting
+between hiding and showing the list of links for all items on page load: setting its value to ``True`` results in the
+list of links being hidden (collapsed) on page load, while a value of ``False`` results in the list being shown
+(uncollapsed)(the default).
 
-Example configuration to add a button per item to collapse traceability information:
+Example configuration of hiding the traceability links on page load:
 
 .. code-block:: python
 
-    traceability_collapsible_links = True
+    traceability_collapse_links = True
 
 .. _traceability_config_no_captions:
 
