@@ -29,8 +29,7 @@ class ItemAttributesMatrix(TraceableBaseNode):
         hrow = nodes.row('', nodes.entry('', nodes.paragraph('', '')))
         for attr in self['attributes']:
             colspecs.append(nodes.colspec(colwidth=5))
-            p_node = nodes.paragraph()
-            p_node += self.make_attribute_ref(app, attr)
+            p_node = self.make_attribute_ref(app, attr)
             hrow.append(nodes.entry('', p_node))
         tgroup += colspecs
         tgroup += nodes.thead('', hrow)
@@ -39,7 +38,7 @@ class ItemAttributesMatrix(TraceableBaseNode):
             item = collection.get_item(item_id)
             row = nodes.row()
             cell = nodes.entry()
-            cell += self.make_internal_item_ref(app, item_id, showcaptions)
+            cell += self.make_internal_item_ref(app, item_id, showcaptions)  # 1st col
             row += cell
             for attr in self['attributes']:
                 cell = nodes.entry()
@@ -79,6 +78,7 @@ class ItemAttributesMatrixDirective(TraceableBaseDirective):
         'sort': directives.unchanged,
         'reverse': directives.flag,
         'nocaptions': directives.flag,
+        'transpose': directives.flag,
     }
     # Content disallowed
     has_content = False
@@ -122,8 +122,8 @@ class ItemAttributesMatrixDirective(TraceableBaseDirective):
         else:
             node['sort'] = []
 
-        # Check reverse flag
         self.check_option_presence(node, 'reverse')
+        self.check_option_presence(node, 'transpose')
 
         self.check_no_captions_flag(node, app.config.traceability_attributes_matrix_no_captions)
 
