@@ -39,7 +39,6 @@ jQuery.fn.extend({
                 }
             });
             admonition.after(arrow);
-
         }
     }
 });
