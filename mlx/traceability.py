@@ -360,6 +360,9 @@ def setup(app):
     # Dictionary used by plugin to pass class names via application object
     app.add_config_value('traceability_class_names', {}, 'env')
 
+    # Configuration for checklist feature
+    app.add_config_value('traceability_checklist', {}, 'env')
+
     app.add_node(ItemTree)
     app.add_node(ItemMatrix)
     app.add_node(ItemPieChart)

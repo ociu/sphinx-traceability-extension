@@ -362,6 +362,19 @@ traceability_hyperlink_colors = OrderedDict([
 # traceability_tree_no_captions = True
 # traceability_render_attributes_per_item = False
 
+# -- Options for checklist feature ----------------------------------------
+from decouple import config
+
+traceability_checklist = {
+    'private_token': config('PRIVATE_TOKEN'),
+    'api_host_name': config('API_HOST_NAME'),
+    'project_id': config('PROJECT_ID'),
+    'merge_request_id': config('MERGE_REQUEST_ID'),
+    'attribute_name': config('TARGET_ATTRIBUTE_NAME'),
+    'attribute_to_str': config('TARGET_ATTRIBUTE_TO_STRING'),
+    'attribute_values': config('TARGET_ATTRIBUTE_VALUES'),
+}
+
 # Point to plantuml jar file
 # confirm we have plantuml in the path
 if 'nt' in os.name:
