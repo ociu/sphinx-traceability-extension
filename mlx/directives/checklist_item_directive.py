@@ -27,7 +27,7 @@ class ChecklistItemDirective(ItemDirective):
             report_warning(env, err, env.docname, self.lineno)
         except KeyError as err:
             report_warning(env,
-                           "Could not find {} as a checklist item, only {}."
+                           "Could not find item '{}' in a checklist; only {}."
                            .format(err, list(self.query_results.keys())),
                            env.docname,
                            self.lineno)

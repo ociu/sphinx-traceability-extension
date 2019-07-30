@@ -301,7 +301,7 @@ def define_attribute(attr, app):
 def query_checklist(settings, attr_values, env):
     """ Queries specified API host name for the description of the specified merge request.
 
-    Reports a warning if the response does not contain a description.
+    Reports a warning if the API host name is invalid or the response does not contain a description.
 
     Args:
         settings (dict): Dictionary with the environment variables specified for the checklist feature.
@@ -311,20 +311,34 @@ def query_checklist(settings, attr_values, env):
     Returns:
         (dict) The query results with zero or more key-value pairs in the form of {item ID: attribute value}.
     """
-    headers = {
-        'PRIVATE-TOKEN': settings['private_token'],
-    }
-    url = "{}/projects/{}/merge_requests/{}/".format(settings['api_host_name'].rstrip('/'),
-                                                     settings['project_id'],
-                                                     settings['merge_request_id'])
+    query_results = {}
+    headers = {}
+    if 'github' in settings['api_host_name']:
+        # explicitly request the v3 version of the REST API
+        headers['Accept'] = 'application/vnd.github.v3+json'
+        if settings['private_token']:
+            headers['Authorization'] = 'token {}'.format(settings['private_token'])
+        url = "{}/repos/{owner_and_repo}/pulls/{pull_number}".format(settings['api_host_name'].rstrip('/'),
+                                                                     owner_and_repo=settings['project_id'],
+                                                                     pull_number=settings['merge_request_id'])
+        key = 'body'
+    elif 'gitlab' in settings['api_host_name']:
+        headers['PRIVATE-TOKEN'] = settings['private_token']
+        url = "{}/projects/{}/merge_requests/{}/".format(settings['api_host_name'].rstrip('/'),
+                                                         settings['project_id'],
+                                                         settings['merge_request_id'])
+        key = 'description'
+    else:
+        report_warning(env, "Invalid API_HOST_NAME '{}'".format(settings['api_host_name']))
+        return query_results
     response = get(url, headers=headers).json()
 
-    query_results = {}
-    description = response.get('description')
+    description = response.get(key)
     if description:
         description_lines = description.split('\n')
         for line in description_lines:
-            match = search(r"^\* \[(?P<checkbox>[\sx])\]\s{2}(?P<target_id>[\w\-]+)", line)
+            # catch the content of checkbox and the item ID after the checkbox
+            match = search(r"^[\*-]\s+\[(?P<checkbox>[\sx])\]\s+(?P<target_id>[\w\-]+)", line)
             if match:
                 if match.group('checkbox') == 'x':
                     attr_value = attr_values[0]
