@@ -370,9 +370,9 @@ traceability_checklist = {
     'api_host_name': config('API_HOST_NAME'),
     'project_id': config('PROJECT_ID'),
     'merge_request_id': config('MERGE_REQUEST_ID'),
-    'attribute_name': config('TARGET_ATTRIBUTE_NAME'),
-    'attribute_to_str': config('TARGET_ATTRIBUTE_TO_STRING'),
-    'attribute_values': config('TARGET_ATTRIBUTE_VALUES'),
+    'attribute_name': config('ATTRIBUTE_NAME'),
+    'attribute_to_str': config('ATTRIBUTE_TO_STRING'),
+    'attribute_values': config('ATTRIBUTE_VALUES'),
 }
 
 # Point to plantuml jar file
