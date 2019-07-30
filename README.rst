@@ -820,7 +820,7 @@ In this default configuration the variables are fetched from the environment, e.
 
 - *ATTRIBUTE_NAME* is the identifier of the attribute to be added, e.g. *checked*.
 - *ATTRIBUTE_TO_STRING* is the string representation (as to be rendered in html) of the attribute name, e.g. *Answer*.
-- *ATTRIBUTE_VALUES* are two comma-separated attribute values, e.g. *yes/no*. The first value is used when the checkbox is checked and the second value when unchecked.
+- *ATTRIBUTE_VALUES* are two comma-separated attribute values, e.g. *yes,no*. The first value is used when the checkbox is checked and the second value when unchecked.
 
 A query is sent to the GitLab/GitHub API to retrieve the status of every checkbox in the description of the merge/pull
 request. The traceability item's ID is expected to follow the checkbox directly.
