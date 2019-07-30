@@ -185,7 +185,7 @@ class TraceableBaseNode(nodes.General, nodes.Element, ABC):
             env (sphinx.environment.BuildEnvironment): Sphinx' build environment.
         """
         if item_info.is_placeholder():
-            report_warning(env, 'Traceability: cannot link to %s, item is not defined' % item_info.get_id(),
+            report_warning(env, "Traceability: cannot link to '%s', item is not defined" % item_info.get_id(),
                            self['document'], self['line'])
             return True
         return False
