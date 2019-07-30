@@ -361,6 +361,7 @@ traceability_hyperlink_colors = OrderedDict([
 # traceability_matrix_no_captions = True
 # traceability_tree_no_captions = True
 # traceability_render_attributes_per_item = False
+# traceability_collapse_links = True
 
 # Point to plantuml jar file
 # confirm we have plantuml in the path
