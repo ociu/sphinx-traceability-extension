@@ -162,6 +162,10 @@ Design for mlx.traceability
             + {static} has_content = False
         }
 
+        class ChecklistItemDirective {
+            + {static} dict query_results
+        }
+
         abstract class TraceableBaseNode {
             + {abstract} perform_replacement(app, collection)
             + {static} create_top_node(title)
@@ -238,6 +242,7 @@ Design for mlx.traceability
         TraceableBaseDirective <|-- ItemMatrixDirective
         TraceableBaseDirective <|-- ItemPieChartDirective
         TraceableBaseDirective <|-- ItemTreeDirective
+        ItemDirective <|-- ChecklistItemDirective
         TraceableBaseNode <|-- docutils.nodes.General
         TraceableBaseNode <|-- docutils.nodes.Element
         TraceableBaseNode <|-- Item2DMatrix
