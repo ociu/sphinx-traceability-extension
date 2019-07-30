@@ -195,6 +195,7 @@ class ItemDirective(TraceableBaseDirective):
         # item ids separated by space. It is split in a list of item ids.
         for rel in env.traceability_collection.iter_relations():
             if rel in self.options:
+                self._warn_if_comma_separated(rel, env)
                 related_ids = self.options[rel].split()
                 self._add_relation_to_ids(rel, target_id, related_ids, env)
 

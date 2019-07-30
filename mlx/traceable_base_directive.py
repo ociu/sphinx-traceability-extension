@@ -103,6 +103,7 @@ class TraceableBaseDirective(Directive, ABC):
         for option, default_value in options.items():
             if option in self.options:
                 if isinstance(default_value, list):
+                    self._warn_if_comma_separated(option, env)
                     node[option] = self.options[option].split()
                 else:
                     node[option] = self.options[option]
@@ -127,3 +128,17 @@ class TraceableBaseDirective(Directive, ABC):
             node[option] = True
         else:
             node[option] = False
+
+    def _warn_if_comma_separated(self, option, env):
+        """ Reports a warning if the option's arguments are comma-separated.
+
+        Args:
+            option (str): Option name.
+            env (sphinx.environment.BuildEnvironment): Sphinx's build environment.
+        """
+        if len(self.options[option].split(',')) > 1:
+            report_warning(env,
+                           "The arguments of the '{}' option must be space-separated without commas; "
+                           "got '{}'.".format(option, self.options[option]),
+                           env.docname,
+                           self.lineno)

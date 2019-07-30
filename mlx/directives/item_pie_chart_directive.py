@@ -274,7 +274,8 @@ class ItemPieChartDirective(TraceableBaseDirective):
 
     def _process_id_set(self, node, env):
         """ Processes id_set option. At least two arguments are required. Otherwise, a warning is reported. """
-        if 'id_set' in self.options and len(self.options['id_set']) >= 2:
+        if 'id_set' in self.options and len(self.options['id_set'].split()) >= 2:
+            self._warn_if_comma_separated('id_set', env)
             node['id_set'] = self.options['id_set'].split()
         else:
             node['id_set'] = []
