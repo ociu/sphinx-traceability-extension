@@ -20,11 +20,11 @@ Checklist items
 
     Have you tested the package?
 
-.. checklist-item:: QUE-PROCESS Followed process
+.. checklist-item:: QUE-PROCESS Followed the process
 
     Did you follow the process?
 
-.. checklist-item:: ITEM_MISSING_FROM_CHECKLIST Should trigger a warning
+.. checklist-item:: ITEM_MISSING_FROM_CHECKLIST Triggers a warning
 
     This item ID is not present in the checklist of the pull request and should trigger a warning.
 
