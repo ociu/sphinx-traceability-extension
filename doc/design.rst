@@ -300,7 +300,7 @@ Design for mlx.traceability
 
     The content of the `item` directive is used as the content of the documentation part.
     The caption is stored in the `TraceableItem` object. The content is forwarded through the sphinx
-    parser. So other plugins and/or the native sphinx tool performs conversions from reStructured text
+    parser. So other plugins and/or the native sphinx tool performs conversions from reStructuredText
     (rst) syntax to docutils nodes.
 
 .. item:: DESIGN-ATTRIBUTES Documentation parts can have attributes
