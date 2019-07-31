@@ -1,7 +1,7 @@
 language: python
-sudo: false
+sudo: true
 cache: pip
-dist: trusty
+dist: xenial
 env:
   global:
     - LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
@@ -35,6 +35,8 @@ install:
   - easy_install --version
   - pip --version
   - tox --version
+  - sudo apt-get install graphviz
+  - sudo apt-get install plantuml
 
 script:
   - tox -v
