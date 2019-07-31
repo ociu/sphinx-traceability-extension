@@ -162,6 +162,10 @@ Design for mlx.traceability
             + {static} has_content = False
         }
 
+        class ChecklistItemDirective {
+            + {static} dict query_results
+        }
+
         abstract class TraceableBaseNode {
             + {abstract} perform_replacement(app, collection)
             + {static} create_top_node(title)
@@ -238,6 +242,7 @@ Design for mlx.traceability
         TraceableBaseDirective <|-- ItemMatrixDirective
         TraceableBaseDirective <|-- ItemPieChartDirective
         TraceableBaseDirective <|-- ItemTreeDirective
+        ItemDirective <|-- ChecklistItemDirective
         TraceableBaseNode <|-- docutils.nodes.General
         TraceableBaseNode <|-- docutils.nodes.Element
         TraceableBaseNode <|-- Item2DMatrix
@@ -295,7 +300,7 @@ Design for mlx.traceability
 
     The content of the `item` directive is used as the content of the documentation part.
     The caption is stored in the `TraceableItem` object. The content is forwarded through the sphinx
-    parser. So other plugins and/or the native sphinx tool performs conversions from reStructured text
+    parser. So other plugins and/or the native sphinx tool performs conversions from reStructuredText
     (rst) syntax to docutils nodes.
 
 .. item:: DESIGN-ATTRIBUTES Documentation parts can have attributes
