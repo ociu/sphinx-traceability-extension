@@ -363,17 +363,20 @@ traceability_hyperlink_colors = OrderedDict([
 # traceability_render_attributes_per_item = False
 
 # -- Options for checklist feature ----------------------------------------
-from decouple import config
+from decouple import config, UndefinedValueError
 
-traceability_checklist = {
-    'private_token': config('PRIVATE_TOKEN'),
-    'api_host_name': config('API_HOST_NAME'),
-    'project_id': config('PROJECT_ID'),
-    'merge_request_id': config('MERGE_REQUEST_ID'),
-    'attribute_name': config('ATTRIBUTE_NAME'),
-    'attribute_to_str': config('ATTRIBUTE_TO_STRING'),
-    'attribute_values': config('ATTRIBUTE_VALUES'),
-}
+try:
+    traceability_checklist = {
+        'private_token': config('PRIVATE_TOKEN'),
+        'api_host_name': config('API_HOST_NAME'),
+        'project_id': config('PROJECT_ID'),
+        'merge_request_id': config('MERGE_REQUEST_ID'),
+        'attribute_name': config('ATTRIBUTE_NAME'),
+        'attribute_to_str': config('ATTRIBUTE_TO_STRING'),
+        'attribute_values': config('ATTRIBUTE_VALUES'),
+    }
+except UndefinedValueError:
+    traceability_checklist = {}
 
 # Point to plantuml jar file
 # confirm we have plantuml in the path
