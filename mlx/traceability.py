@@ -311,7 +311,6 @@ def query_checklist(settings, attr_values, env):
     Returns:
         (dict) The query results with zero or more key-value pairs in the form of {item ID: attribute value}.
     """
-    query_results = {}
     headers = {}
     if 'github' in settings['api_host_name']:
         # explicitly request the v3 version of the REST API
@@ -330,24 +329,41 @@ def query_checklist(settings, attr_values, env):
         key = 'description'
     else:
         report_warning(env, "Invalid API_HOST_NAME '{}'".format(settings['api_host_name']))
-        return query_results
+        return {}
     response = get(url, headers=headers).json()
 
     description = response.get(key)
     if description:
-        description_lines = description.split('\n')
-        for line in description_lines:
-            # catch the content of checkbox and the item ID after the checkbox
-            match = search(r"^[\*-]\s+\[(?P<checkbox>[\sx])\]\s+(?P<target_id>[\w\-]+)", line)
-            if match:
-                if match.group('checkbox') == 'x':
-                    attr_value = attr_values[0]
-                else:
-                    attr_value = attr_values[1]
-                query_results[match.group('target_id')] = attr_value
+        return _parse_description(description, attr_values)
     else:
         report_warning(env, "The query did not return a description. URL = {}. Response = {}.".format(url, response))
+        return {}
 
+
+def _parse_description(description, attr_values):
+    """ Stores the relevant checklist information in the specified dictionary.
+
+    The item IDs are expected to follow checkboxes directly and the attribute value depends on the status of the
+    checkbox.
+
+    Args:
+        description (str): Description of the merge/pull request.
+        attr_values (list): List of the two possible attribute values (str).
+
+    Returns:
+        (dict) Dictionary with key-value pairs with item IDs (str) as keys and the attribute values (str) as values.
+    """
+    query_results = {}
+    description_lines = description.split('\n')
+    for line in description_lines:
+        # catch the content of checkbox and the item ID after the checkbox
+        match = search(r"^[\*-]\s+\[(?P<checkbox>[\sx])\]\s+(?P<target_id>[\w\-]+)", line)
+        if match:
+            if match.group('checkbox') == 'x':
+                attr_value = attr_values[0]
+            else:
+                attr_value = attr_values[1]
+            query_results[match.group('target_id')] = attr_value
     return query_results
 
 # -----------------------------------------------------------------------------
