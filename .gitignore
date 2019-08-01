@@ -15,6 +15,7 @@ tests/docs/autodoc/docs/_build
 .pytest_cache
 .coverage
 coverage.xml
+.env
 
 # Offline version file
 mlx/__traceability_version__.py

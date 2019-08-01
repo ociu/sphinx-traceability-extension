@@ -361,6 +361,20 @@ traceability_hyperlink_colors = OrderedDict([
 # traceability_matrix_no_captions = True
 # traceability_tree_no_captions = True
 # traceability_render_attributes_per_item = False
+# traceability_collapse_links = True
+
+# -- Options for checklist feature ----------------------------------------
+from decouple import config
+
+traceability_checklist = {
+    'private_token': config('PRIVATE_TOKEN', ''),
+    'api_host_name': config('API_HOST_NAME', 'https://api.github.com'),
+    'project_id': config('PROJECT_ID', 'melexis/sphinx-traceability-extension'),
+    'merge_request_id': config('MERGE_REQUEST_ID', '121'),
+    'attribute_name': config('ATTRIBUTE_NAME', 'checked'),
+    'attribute_to_str': config('ATTRIBUTE_TO_STRING', 'Answer'),
+    'attribute_values': config('ATTRIBUTE_VALUES', 'yes,no'),
+}
 
 # Point to plantuml jar file
 # confirm we have plantuml in the path

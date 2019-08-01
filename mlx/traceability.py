@@ -9,13 +9,17 @@ See readme for more details.
 
 from __future__ import print_function
 from collections import OrderedDict
+from re import search
 from os import path
+
+from requests import get
 from sphinx import __version__ as sphinx_version
 from sphinx.roles import XRefRole
 from sphinx.util.nodes import make_refnode
 from sphinx.environment import NoUri
 from docutils import nodes
 from docutils.parsers.rst import directives
+
 from mlx.traceable_attribute import TraceableAttribute
 from mlx.traceable_base_node import TraceableBaseNode
 from mlx.traceable_item import TraceableItem
@@ -25,6 +29,7 @@ from mlx.directives.item_directive import Item, ItemDirective
 from mlx.directives.item_2d_matrix_directive import Item2DMatrix, Item2DMatrixDirective
 from mlx.directives.item_attribute_directive import ItemAttribute, ItemAttributeDirective
 from mlx.directives.item_attributes_matrix_directive import ItemAttributesMatrix, ItemAttributesMatrixDirective
+from mlx.directives.checklist_item_directive import ChecklistItemDirective
 from mlx.directives.item_link_directive import ItemLink, ItemLinkDirective
 from mlx.directives.item_list_directive import ItemList, ItemListDirective
 from mlx.directives.item_matrix_directive import ItemMatrix, ItemMatrixDirective
@@ -212,12 +217,7 @@ def init_available_relationships(app):
         ItemAttributesMatrixDirective.option_spec[attr] = directives.unchanged
         Item2DMatrixDirective.option_spec[attr] = directives.unchanged
         ItemTreeDirective.option_spec[attr] = directives.unchanged
-        attrobject = TraceableAttribute(attr, app.config.traceability_attributes[attr])
-        if attr in app.config.traceability_attribute_to_string:
-            attrobject.set_name(app.config.traceability_attribute_to_string[attr])
-        else:
-            report_warning(env, 'Traceability: attribute {attr} cannot be translated to string'.format(attr=attr))
-        TraceableItem.define_attribute(attrobject)
+        define_attribute(attr, app)
 
     for rel in list(app.config.traceability_relationships.keys()):
         revrel = app.config.traceability_relationships[rel]
@@ -239,6 +239,12 @@ def initialize_environment(app):
     # database of items needs to be empty on every re-build.
     env.traceability_collection = TraceableCollection()
 
+    if app.config.traceability_checklist:
+        add_checklist_attribute(app.config.traceability_checklist,
+                                app.config.traceability_attributes,
+                                app.config.traceability_attribute_to_string,
+                                env)
+
     init_available_relationships(app)
 
     # LaTeX-support: since we generate empty tags, we need to relax the verbosity of that error
@@ -254,6 +260,111 @@ def initialize_environment(app):
         if app.config.traceability_json_export_path:
             report_warning(env, 'No export possible, try upgrading sphinx installation')
 
+
+# ----------------------------------------------------------------------------
+# Event handler helper functions
+
+def add_checklist_attribute(checklist_config, attributes_config, attribute_to_string_config, env):
+    """ Adds the specified attribute for checklist items to the application configuration variables.
+
+    Reports a warning when the TARGET_ATTRIBUTE_VALUES variable is not string of two comma-separated attribute values.
+
+    Args:
+        checklist_config (dict): Dictionary containing the attribute configuration parameters for checklist items.
+        attributes_config (dict): Dictionary containing the attribute configuration parameters for regular items.
+        attribute_to_string_config (dict): Dictionary mapping an attribute to its string representation.
+        env (sphinx.environment.BuildEnvironment): Sphinx's build environment.
+    """
+    attr_values = checklist_config['attribute_values'].split(',')
+    if len(attr_values) != 2:
+        report_warning(env,
+                       "Checklist attribute values must be two comma-separated strings; got '{}'."
+                       .format(checklist_config['attribute_values']))
+    else:
+        regexp = "[{}|{}]".format(attr_values[0], attr_values[1])
+        attributes_config[checklist_config['attribute_name']] = regexp
+        attribute_to_string_config[checklist_config['attribute_name']] = checklist_config['attribute_to_str']
+        ChecklistItemDirective.query_results = query_checklist(checklist_config, attr_values, env)
+
+
+def define_attribute(attr, app):
+    """ Defines a new attribute. """
+    env = app.builder.env
+    attrobject = TraceableAttribute(attr, app.config.traceability_attributes[attr])
+    if attr in app.config.traceability_attribute_to_string:
+        attrobject.set_name(app.config.traceability_attribute_to_string[attr])
+    else:
+        report_warning(env, 'Traceability: attribute {attr} cannot be translated to string'.format(attr=attr))
+    TraceableItem.define_attribute(attrobject)
+
+
+def query_checklist(settings, attr_values, env):
+    """ Queries specified API host name for the description of the specified merge request.
+
+    Reports a warning if the API host name is invalid or the response does not contain a description.
+
+    Args:
+        settings (dict): Dictionary with the environment variables specified for the checklist feature.
+        attr_values (list): List of the two possible attribute values (str).
+        env (sphinx.environment.BuildEnvironment): Sphinx's build environment.
+
+    Returns:
+        (dict) The query results with zero or more key-value pairs in the form of {item ID: attribute value}.
+    """
+    headers = {}
+    if 'github' in settings['api_host_name']:
+        # explicitly request the v3 version of the REST API
+        headers['Accept'] = 'application/vnd.github.v3+json'
+        if settings['private_token']:
+            headers['Authorization'] = 'token {}'.format(settings['private_token'])
+        url = "{}/repos/{owner_and_repo}/pulls/{pull_number}".format(settings['api_host_name'].rstrip('/'),
+                                                                     owner_and_repo=settings['project_id'],
+                                                                     pull_number=settings['merge_request_id'])
+        key = 'body'
+    elif 'gitlab' in settings['api_host_name']:
+        headers['PRIVATE-TOKEN'] = settings['private_token']
+        url = "{}/projects/{}/merge_requests/{}/".format(settings['api_host_name'].rstrip('/'),
+                                                         settings['project_id'],
+                                                         settings['merge_request_id'])
+        key = 'description'
+    else:
+        report_warning(env, "Invalid API_HOST_NAME '{}'".format(settings['api_host_name']))
+        return {}
+    response = get(url, headers=headers).json()
+
+    description = response.get(key)
+    if description:
+        return _parse_description(description, attr_values)
+    else:
+        report_warning(env, "The query did not return a description. URL = {}. Response = {}.".format(url, response))
+        return {}
+
+
+def _parse_description(description, attr_values):
+    """ Stores the relevant checklist information in the specified dictionary.
+
+    The item IDs are expected to follow checkboxes directly and the attribute value depends on the status of the
+    checkbox.
+
+    Args:
+        description (str): Description of the merge/pull request.
+        attr_values (list): List of the two possible attribute values (str).
+
+    Returns:
+        (dict) Dictionary with key-value pairs with item IDs (str) as keys and the attribute values (str) as values.
+    """
+    query_results = {}
+    description_lines = description.split('\n')
+    for line in description_lines:
+        # catch the content of checkbox and the item ID after the checkbox
+        match = search(r"^\s*[\*-]\s+\[(?P<checkbox>[\sx])\]\s+(?P<target_id>[\w\-]+)", line)
+        if match:
+            if match.group('checkbox') == 'x':
+                attr_value = attr_values[0]
+            else:
+                attr_value = attr_values[1]
+            query_results[match.group('target_id')] = attr_value
+    return query_results
 
 # -----------------------------------------------------------------------------
 # Extension setup
@@ -339,6 +450,10 @@ def setup(app):
     app.add_config_value('traceability_item_no_captions',
                          False, 'env')
 
+    # Configuration for enabling the ability to collapse the list of attributes and relations for item
+    app.add_config_value('traceability_collapse_links',
+                         False, 'env')
+
     # Configuration for disabling the rendering of the captions for item-list
     app.add_config_value('traceability_list_no_captions',
                          False, 'env')
@@ -360,6 +475,9 @@ def setup(app):
     # Dictionary used by plugin to pass class names via application object
     app.add_config_value('traceability_class_names', {}, 'env')
 
+    # Configuration for checklist feature
+    app.add_config_value('traceability_checklist', {}, 'env')
+
     app.add_node(ItemTree)
     app.add_node(ItemMatrix)
     app.add_node(ItemPieChart)
@@ -370,6 +488,7 @@ def setup(app):
     app.add_node(Item)
 
     app.add_directive('item', ItemDirective)
+    app.add_directive('checklist-item', ChecklistItemDirective)
     app.add_directive('item-attribute', ItemAttributeDirective)
     app.add_directive('item-list', ItemListDirective)
     app.add_directive('item-matrix', ItemMatrixDirective)

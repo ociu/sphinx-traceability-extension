@@ -209,8 +209,8 @@ Rendering of relationships per documentation object
 
 When rendering the documentation objects, the user has the option to include/exclude the rendering of the
 relationships to other documentation objects. This can be done through the Python variable
-*traceability_render_relationship_per_item* which is *boolean*: a value of 'True' will enable rendering
-of relationships per documentation object, while a value of 'False' will disable this rendering.
+*traceability_render_relationship_per_item* which is *boolean*: a value of ``True`` will enable rendering
+of relationships per documentation object, while a value of ``False`` will disable this rendering.
 
 Example configuration of enable rendering relationships per item:
 
@@ -222,14 +222,29 @@ Rendering of attributes per documentation object
 ================================================
 
 The rendering of attributes of documentation objects can be controlled through the *boolean* variable
-*traceability_render_attributes_per_item*: rendering of attributes is enabled by setting it to 'True' (the default)
-while a value of 'False' will prevent the attribute list from being rendered.
+*traceability_render_attributes_per_item*: rendering of attributes is enabled by setting it to ``True`` (the default)
+while a value of ``False`` will prevent the attribute list from being rendered.
 
 Example configuration of disabling per item attribute rendering:
 
 .. code-block:: python
 
     traceability_render_attributes_per_item = False
+
+Ability to collapse the list of relationships and attributes per documentation object
+=====================================================================================
+
+A button is added to each documentation object that has rendered relationships and/or attributes to be able to show and
+hide these traceability links. The *boolean* configuration variable *traceability_collapse_links* allows selecting
+between hiding and showing the list of links for all items on page load: setting its value to ``True`` results in the
+list of links being hidden (collapsed) on page load, while a value of ``False`` results in the list being shown
+(uncollapsed)(the default).
+
+Example configuration of hiding the traceability links on page load:
+
+.. code-block:: python
+
+    traceability_collapse_links = True
 
 .. _traceability_config_no_captions:
 
@@ -778,6 +793,76 @@ The optional *result* can be replaced by any configured attribute of the third i
 values of this attribute, ordered in priority from high to low. Using this option splits up the slice with the third
 label. In this example an RQT item with multiple TEST items, one with a *fail* and others a *pass* as *result* value in
 the TEST_REP item, will be added to the *fail* slice of the pie chart.
+
+
+Retrieving checklist values from GitLab/GitHub (advanced)
+=========================================================
+
+The plugin can add an additional attribute to a traceability item if its item ID exists in a checklist inside the
+description of a merge/pull request. Documentation items can be linked to a checklist by defining them with the
+*checklist-item* directive.
+
+.. code-block:: rest
+
+    .. checklist-item:: PLAN-UNIT_TESTS Have you added unit tests for regression detection?
+
+This directive gets treated the same as the *item* directive, except that an additional attribute gets added when the
+item's ID exists in the checklist. The attribute's value depends on the status of the checkbox. The plugin queries the
+API of GitLab/GitHub for the description of the configured merge request.
+
+The configuration of this feature is stored in the configuration variable *traceability_checklist*.
+
+.. code-block:: python
+
+    traceability_checklist = {
+        'private_token': config('PRIVATE_TOKEN'),
+        'api_host_name': config('API_HOST_NAME'),
+        'project_id': config('PROJECT_ID'),
+        'merge_request_id': config('MERGE_REQUEST_ID'),
+        'attribute_name': config('TARGET_ATTRIBUTE_NAME'),
+        'attribute_to_str': config('TARGET_ATTRIBUTE_TO_STRING'),
+        'attribute_values': config('TARGET_ATTRIBUTE_VALUES'),
+    }
+
+In this default configuration the variables are fetched from the environment, e.g. by using a ``.env`` file.
+
+.. code-block:: bash
+
+    # copy example .env to your .env
+    cp doc/.env.example .env
+
+    # add env variables by adjusting the template values in .env
+
+- *ATTRIBUTE_NAME* is the identifier of the attribute to be added, e.g. *checked*.
+- *ATTRIBUTE_TO_STRING* is the string representation (as to be rendered in html) of the attribute name, e.g. *Answer*.
+- *ATTRIBUTE_VALUES* are two comma-separated attribute values, e.g. *yes,no*. The first value is used when the checkbox is checked and the second value when unchecked.
+
+A query is sent to the GitLab/GitHub API to retrieve the status of every checkbox in the description of the merge/pull
+request. The traceability item's ID is expected to follow the checkbox directly.
+Example of a valid checklist in Markdown:
+
+.. code-block:: rest
+
+    - [x] PLAN-UNIT_TESTS Have you added unit tests for regression detection?
+    - [ ] PLAN-PACKAGE_TEST Have you tested the package?
+
+GitLab
+------
+
+- *PRIVATE_TOKEN* is your personal access token that has API access.
+- *API_HOST_NAME* is the host name of the API, e.g. *https://gitlab.example.com/api/v4*.
+- *PROJECT_ID* is the ID of the project.
+- *MERGE_REQUEST_ID* is the internal ID of the merge request.
+
+GitHub
+------
+
+- *PRIVATE_TOKEN* is not needed for public repositories. Otherwise, it must be a `personal access token`_ with the access to the targeted scope.
+- *API_HOST_NAME* is the host name of the GitHub REST API v3: *https://api.github.com*.
+- *PROJECT_ID* defines the repository by specifying *owner* and *repo* separated by a forward slash, e.g. *melexis/sphinx-traceability-extension*.
+- *MERGE_REQUEST_ID* is the pull request number.
+
+.. _`personal access token`: https://github.blog/2013-05-16-personal-api-tokens/
 
 .. _traceability_process:
 

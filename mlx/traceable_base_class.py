@@ -191,5 +191,5 @@ class TraceableBaseClass(object):
         '''
         # should hold a reference to a document
         if self.get_document() is None:
-            raise TraceabilityException('{identification} has no reference to source document'
+            raise TraceabilityException("Item '{identification}' has no reference to source document."
                                         .format(identification=self.get_id()))

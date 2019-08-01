@@ -151,6 +151,9 @@ class ItemDirective(TraceableBaseDirective):
         item_node['document'] = env.docname
         item_node['line'] = self.lineno
         item_node['id'] = target_id
+        item_node['classes'].append('collapsible_links')  # traceability.js adds the arrowhead button
+        if app.config.traceability_collapse_links:
+            item_node['classes'].append('collapse')
 
         target_node = self._store_item_info(target_id, env)
 
@@ -195,6 +198,7 @@ class ItemDirective(TraceableBaseDirective):
         # item ids separated by space. It is split in a list of item ids.
         for rel in env.traceability_collection.iter_relations():
             if rel in self.options:
+                self._warn_if_comma_separated(rel, env)
                 related_ids = self.options[rel].split()
                 self._add_relation_to_ids(rel, target_id, related_ids, env)
 
