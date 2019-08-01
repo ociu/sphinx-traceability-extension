@@ -7,7 +7,7 @@ jQuery(function () {
 // item
 $(document).ready(function () {
     $('div.collapsible_links div.admonition:first-child').each(function (i) {
-        $(this).siblings('dl.simple').addCollapseButton($(this));
+        $(this).siblings('dl').first().addCollapseButton($(this));
     });
 });
 
