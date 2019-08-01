@@ -11,8 +11,4 @@ Documentation mlx.traceability
     :maxdepth: 2
 
     readme
-    requirements
-    design
-    implementation
-    integration_test_report
-    checklist
+    example_usage
