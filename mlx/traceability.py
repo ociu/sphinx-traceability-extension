@@ -357,7 +357,7 @@ def _parse_description(description, attr_values):
     description_lines = description.split('\n')
     for line in description_lines:
         # catch the content of checkbox and the item ID after the checkbox
-        match = search(r"^[\*-]\s+\[(?P<checkbox>[\sx])\]\s+(?P<target_id>[\w\-]+)", line)
+        match = search(r"^\s*[\*-]\s+\[(?P<checkbox>[\sx])\]\s+(?P<target_id>[\w\-]+)", line)
         if match:
             if match.group('checkbox') == 'x':
                 attr_value = attr_values[0]
