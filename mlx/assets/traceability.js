@@ -24,14 +24,20 @@ jQuery.fn.extend({
                 arrowDirection = 'up';
             }
 
-            var linkColor = relations.children('dt').first().css('color');
+            var linkColor = admonition.children('p').first().css('color');
+            var translateX = '0rem'
+            var translateY = '-2.5rem'
+            if (relations.hasClass('simple')) {
+                translateX = '-0.5rem'
+                translateY = '-3.9rem'
+            }
             var arrow = $('<i>', {
                 class: "fa fa-angle-" + arrowDirection,
                 css: {
                     'font-size': '135%',
                     'color': linkColor,
                     'float': 'right',
-                    'transform': 'translate(-0.5rem, -1.4rem)'
+                    'transform': 'translate(' + translateX + ', ' + translateY + ')'
                 },
                 click: function () {
                     relations.toggle('fold');
