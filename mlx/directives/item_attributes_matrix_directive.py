@@ -25,19 +25,9 @@ class ItemAttributesMatrix(TraceableBaseNode):
         if self.get('classes'):
             table.get('classes').extend(self.get('classes'))
         tgroup = nodes.tgroup()
+        tbody = nodes.tbody()
         colspecs = [nodes.colspec(colwidth=5)]
         hrow = nodes.row('', nodes.entry('', nodes.paragraph('', '')))
-
-        #for attr in self['attributes']:
-        #    colspecs.append(nodes.colspec(colwidth=5))
-        #    p_node = nodes.paragraph()
-        #    p_node += self.make_attribute_ref(app, attr)
-        #    hrow.append(nodes.entry('', p_node))
-
-
-        tbody = nodes.tbody()
-
-        # fill header row
 
         for item_id in item_ids:
             p_node = self.make_internal_item_ref(app, item_id, showcaptions)  # 1st col
@@ -51,7 +41,6 @@ class ItemAttributesMatrix(TraceableBaseNode):
                 self.fill_item_row(row, item)
                 tbody += row
 
-
         for attr in self['attributes']:
             p_node = self.make_attribute_ref(app, attr)
             if self['transpose']:
@@ -63,26 +52,8 @@ class ItemAttributesMatrix(TraceableBaseNode):
                 colspecs.append(nodes.colspec(colwidth=5))
                 hrow.append(nodes.entry('', p_node))
 
-
-
-        #for item_id in item_ids:
-        #    item = collection.get_item(item_id)
-        #    row = nodes.row()
-        #    cell = nodes.entry()
-        #    cell += self.make_internal_item_ref(app, item_id, showcaptions)  # 1st col
-        #    row += cell
-        #    for attr in self['attributes']:
-        #        cell = nodes.entry()
-        #        p_node = nodes.paragraph()
-        #        txt = item.get_attribute(attr)
-        #        p_node += nodes.Text(txt)
-        #        cell += p_node
-        #        row += cell
-        #    tbody += row
-
         tgroup += colspecs
         tgroup += nodes.thead('', hrow)
-
         tgroup += tbody
         table += tgroup
         top_node += table
