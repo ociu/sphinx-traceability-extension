@@ -30,12 +30,16 @@
     :target: https://github.com/melexis/sphinx-traceability-extension/issues
     :alt: Contributions welcome
 
-===================================
-Sphinx Traceability plugin - README
-===================================
+==========================
+Sphinx Traceability plugin
+==========================
 
 Sphinx plugin that allows defining documentation items and relations between those items. Can be used
 as a requirements management tool for e.g. ISO26262 projects.
+
+.. contents:: `Contents`
+    :depth: 2
+    :local:
 
 .. _traceability_goal:
 
