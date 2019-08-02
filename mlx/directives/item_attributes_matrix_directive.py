@@ -27,31 +27,85 @@ class ItemAttributesMatrix(TraceableBaseNode):
         tgroup = nodes.tgroup()
         colspecs = [nodes.colspec(colwidth=5)]
         hrow = nodes.row('', nodes.entry('', nodes.paragraph('', '')))
+
+        #for attr in self['attributes']:
+        #    colspecs.append(nodes.colspec(colwidth=5))
+        #    p_node = nodes.paragraph()
+        #    p_node += self.make_attribute_ref(app, attr)
+        #    hrow.append(nodes.entry('', p_node))
+
+
+        tbody = nodes.tbody()
+
+        # fill header row
+
+        for item_id in item_ids:
+            p_node = self.make_internal_item_ref(app, item_id, showcaptions)  # 1st col
+            if self['transpose']:
+                colspecs.append(nodes.colspec(colwidth=5))
+                hrow.append(nodes.entry('', p_node))
+            else:
+                row = nodes.row()
+                row.append(nodes.entry('', p_node))
+                item = collection.get_item(item_id)
+                self.fill_item_row(row, item)
+                tbody += row
+
+
         for attr in self['attributes']:
-            colspecs.append(nodes.colspec(colwidth=5))
             p_node = self.make_attribute_ref(app, attr)
-            hrow.append(nodes.entry('', p_node))
+            if self['transpose']:
+                row = nodes.row()
+                row.append(nodes.entry('', p_node))
+                self.fill_attribute_row(row, attr, item_ids, collection)
+                tbody += row
+            else:
+                colspecs.append(nodes.colspec(colwidth=5))
+                hrow.append(nodes.entry('', p_node))
+
+
+
+        #for item_id in item_ids:
+        #    item = collection.get_item(item_id)
+        #    row = nodes.row()
+        #    cell = nodes.entry()
+        #    cell += self.make_internal_item_ref(app, item_id, showcaptions)  # 1st col
+        #    row += cell
+        #    for attr in self['attributes']:
+        #        cell = nodes.entry()
+        #        p_node = nodes.paragraph()
+        #        txt = item.get_attribute(attr)
+        #        p_node += nodes.Text(txt)
+        #        cell += p_node
+        #        row += cell
+        #    tbody += row
+
         tgroup += colspecs
         tgroup += nodes.thead('', hrow)
-        tbody = nodes.tbody()
-        for item_id in item_ids:
-            item = collection.get_item(item_id)
-            row = nodes.row()
-            cell = nodes.entry()
-            cell += self.make_internal_item_ref(app, item_id, showcaptions)  # 1st col
-            row += cell
-            for attr in self['attributes']:
-                cell = nodes.entry()
-                p_node = nodes.paragraph()
-                txt = item.get_attribute(attr)
-                p_node += nodes.Text(txt)
-                cell += p_node
-                row += cell
-            tbody += row
+
         tgroup += tbody
         table += tgroup
         top_node += table
         self.replace_self(top_node)
+
+    def fill_item_row(self, row, item):
+        for attr in self['attributes']:
+            cell = nodes.entry()
+            p_node = nodes.paragraph()
+            txt = item.get_attribute(attr)
+            p_node += nodes.Text(txt)
+            cell += p_node
+            row += cell
+
+    def fill_attribute_row(self, row, attr, item_ids, collection):
+        for item_id in item_ids:
+            item = collection.get_item(item_id)
+            cell = nodes.entry()
+            p_node = nodes.paragraph()
+            txt = item.get_attribute(attr)
+            p_node += nodes.Text(txt)
+            cell += p_node
+            row += cell
 
 
 class ItemAttributesMatrixDirective(TraceableBaseDirective):
