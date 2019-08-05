@@ -74,7 +74,8 @@ class ItemAttributesMatrix(TraceableBaseNode):
             cell += p_node
             row += cell
 
-    def fill_attribute_row(self, row, attr, item_ids, collection):
+    @staticmethod
+    def fill_attribute_row(row, attr, item_ids, collection):
         """ Fills the row for a particular attribute with attribute values from item IDs.
 
         Args:
