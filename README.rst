@@ -94,7 +94,7 @@ First the plugin needs to be enabled in the *extensions* variable:
 .. code-block:: bash
 
     extensions = [
-        'mlx.traceability.traceability',
+        'mlx.traceability',
         ...
     ]
 
@@ -614,6 +614,7 @@ A matrix listing the attributes of documentation items can be generated using:
         :attributes: status
         :sort: status
         :reverse:
+        :transpose:
         :nocaptions:
 
 where the *filter* argument can be replaced by any Python regular expression. Documentation items matching
@@ -637,6 +638,10 @@ caption can be omitted. This gives a smaller table, but also less details.
 By default, items are sorted naturally based on their name. With the *sort* argument it is possible to sort on one
 or more attribute values alphabetically. When providing multiple attributes to sort on, the attribute keys are
 space-separated. With the *reverse* argument, the sorting is reversed.
+
+By default, the attribute names are listed the header row and every item takes up a row. Depending on the number of
+items and attributes it could be better to transpose the generated matrix (swap columns for row) by providing the
+*transpose* flag.
 
 Optionally, the *class* attribute can be specified to customize table output, especially useful when rendering to
 LaTeX. Normally the *longtable* class is used when the number of rows is greater than 30 which allows long tables to

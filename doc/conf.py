@@ -42,7 +42,7 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
     'sphinx.ext.graphviz',
-    'traceability',
+    'mlx.traceability',
     'sphinx_selective_exclude.eager_only',
     'sphinx_selective_exclude.modindex_exclude',
     'sphinx_selective_exclude.search_auto_exclude',
