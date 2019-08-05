@@ -60,6 +60,12 @@ class ItemAttributesMatrix(TraceableBaseNode):
         self.replace_self(top_node)
 
     def fill_item_row(self, row, item):
+        """ Fills the row for one item with the specified attributes.
+
+        Args:
+            row (nodes.row): Row node to fill.
+            item (TraceableItem): TraceableItem object to get attributes from.
+        """
         for attr in self['attributes']:
             cell = nodes.entry()
             p_node = nodes.paragraph()
@@ -69,6 +75,14 @@ class ItemAttributesMatrix(TraceableBaseNode):
             row += cell
 
     def fill_attribute_row(self, row, attr, item_ids, collection):
+        """ Fills the row for a particular attribute with attribute values from item IDs.
+
+        Args:
+            row (nodes.row): Row node to fill.
+            attr (str): Attribute name.
+            item_ids (list): List of item IDs.
+            collection (TraceableCollection): Storage object for a collection of TraceableItems.
+        """
         for item_id in item_ids:
             item = collection.get_item(item_id)
             cell = nodes.entry()
