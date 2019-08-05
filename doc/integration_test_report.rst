@@ -356,7 +356,14 @@ All attributes for items having a non-empty attribute
     :asil: ^.+$
     :sort: asil
 
-.. item-attributes-matrix:: All attributes for items having a non-empty asil+aspice attribute; transposed
+.. item-attributes-matrix:: All attributes for items having a non-empty asil+aspice attribute
+    :asil: ^.+$
+    :aspice: ^.+$
+    :sort: asil aspice
+    :reverse:
+    :nocaptions:
+
+.. item-attributes-matrix:: Transposed version of the previous matrix
     :asil: ^.+$
     :aspice: ^.+$
     :sort: asil aspice
