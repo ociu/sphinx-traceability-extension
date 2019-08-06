@@ -25,34 +25,73 @@ class ItemAttributesMatrix(TraceableBaseNode):
         if self.get('classes'):
             table.get('classes').extend(self.get('classes'))
         tgroup = nodes.tgroup()
+        tbody = nodes.tbody()
         colspecs = [nodes.colspec(colwidth=5)]
         hrow = nodes.row('', nodes.entry('', nodes.paragraph('', '')))
+
+        for item_id in item_ids:
+            p_node = self.make_internal_item_ref(app, item_id, showcaptions)  # 1st col
+            if self['transpose']:
+                colspecs.append(nodes.colspec(colwidth=5))
+                hrow.append(nodes.entry('', p_node))
+            else:
+                row = nodes.row()
+                row.append(nodes.entry('', p_node))
+                item = collection.get_item(item_id)
+                self.fill_item_row(row, item)
+                tbody += row
+
         for attr in self['attributes']:
-            colspecs.append(nodes.colspec(colwidth=5))
-            p_node = nodes.paragraph()
-            p_node += self.make_attribute_ref(app, attr)
-            hrow.append(nodes.entry('', p_node))
+            p_node = self.make_attribute_ref(app, attr)
+            if self['transpose']:
+                row = nodes.row()
+                row.append(nodes.entry('', p_node))
+                self.fill_attribute_row(row, attr, item_ids, collection)
+                tbody += row
+            else:
+                colspecs.append(nodes.colspec(colwidth=5))
+                hrow.append(nodes.entry('', p_node))
+
         tgroup += colspecs
         tgroup += nodes.thead('', hrow)
-        tbody = nodes.tbody()
-        for item_id in item_ids:
-            item = collection.get_item(item_id)
-            row = nodes.row()
-            cell = nodes.entry()
-            cell += self.make_internal_item_ref(app, item_id, showcaptions)
-            row += cell
-            for attr in self['attributes']:
-                cell = nodes.entry()
-                p_node = nodes.paragraph()
-                txt = item.get_attribute(attr)
-                p_node += nodes.Text(txt)
-                cell += p_node
-                row += cell
-            tbody += row
         tgroup += tbody
         table += tgroup
         top_node += table
         self.replace_self(top_node)
+
+    def fill_item_row(self, row, item):
+        """ Fills the row for one item with the specified attributes.
+
+        Args:
+            row (nodes.row): Row node to fill.
+            item (TraceableItem): TraceableItem object to get attributes from.
+        """
+        for attr in self['attributes']:
+            cell = nodes.entry()
+            p_node = nodes.paragraph()
+            txt = item.get_attribute(attr)
+            p_node += nodes.Text(txt)
+            cell += p_node
+            row += cell
+
+    @staticmethod
+    def fill_attribute_row(row, attr, item_ids, collection):
+        """ Fills the row for a particular attribute with attribute values from item IDs.
+
+        Args:
+            row (nodes.row): Row node to fill.
+            attr (str): Attribute name.
+            item_ids (list): List of item IDs.
+            collection (TraceableCollection): Storage object for a collection of TraceableItems.
+        """
+        for item_id in item_ids:
+            item = collection.get_item(item_id)
+            cell = nodes.entry()
+            p_node = nodes.paragraph()
+            txt = item.get_attribute(attr)
+            p_node += nodes.Text(txt)
+            cell += p_node
+            row += cell
 
 
 class ItemAttributesMatrixDirective(TraceableBaseDirective):
@@ -79,6 +118,7 @@ class ItemAttributesMatrixDirective(TraceableBaseDirective):
         'sort': directives.unchanged,
         'reverse': directives.flag,
         'nocaptions': directives.flag,
+        'transpose': directives.flag,
     }
     # Content disallowed
     has_content = False
@@ -124,8 +164,8 @@ class ItemAttributesMatrixDirective(TraceableBaseDirective):
         else:
             node['sort'] = []
 
-        # Check reverse flag
         self.check_option_presence(node, 'reverse')
+        self.check_option_presence(node, 'transpose')
 
         self.check_no_captions_flag(node, app.config.traceability_attributes_matrix_no_captions)
 

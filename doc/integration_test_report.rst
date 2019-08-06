@@ -361,6 +361,15 @@ All attributes for items having a non-empty attribute
     :aspice: ^.+$
     :sort: asil aspice
     :reverse:
+    :nocaptions:
+
+.. item-attributes-matrix:: Transposed version of the previous matrix
+    :asil: ^.+$
+    :aspice: ^.+$
+    :sort: asil aspice
+    :reverse:
+    :transpose:
+    :nocaptions:
 
 All attributes for non-matching-filter
 --------------------------------------
