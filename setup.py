@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 project_url = 'https://github.com/melexis/sphinx-traceability-extension'
 
-requires = ['Sphinx>=0.6', 'docutils', 'natsort', 'matplotlib', 'python-decouple']
+requires = ['Sphinx>=0.6', 'docutils', 'natsort', 'matplotlib', 'python-decouple', 'requests']
 
 setup(
     name='mlx.traceability',
