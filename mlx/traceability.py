@@ -12,7 +12,7 @@ from collections import OrderedDict
 from re import search
 from os import path
 
-from requests import get
+from requests import Session
 from sphinx import __version__ as sphinx_version
 from sphinx.roles import XRefRole
 from sphinx.util.nodes import make_refnode
@@ -330,7 +330,10 @@ def query_checklist(settings, attr_values, env):
     else:
         report_warning(env, "Invalid API_HOST_NAME '{}'".format(settings['api_host_name']))
         return {}
-    response = get(url, headers=headers).json()
+
+    with Session() as session:
+        with session.get(url, headers=headers) as response:
+            response = response.json()
 
     description = response.get(key)
     if description:
