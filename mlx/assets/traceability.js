@@ -3,14 +3,44 @@ jQuery(function () {
     $('ul.bonsai').bonsai();
 });
 
-
-// item
 $(document).ready(function () {
     $('div.collapsible_links div.admonition:first-child').each(function (i) {
         $(this).siblings('dl').first().addCollapseButton($(this));
     });
+
+    // show an item's hidden caption on hover
+    $('em.has_hidden_caption').each(function (i) {
+        var caption = $(this).children('.popup_caption').first();
+        var tableCell = caption.parents('td').first();
+        var backgroundColor = caption.parents('td').first().css('background-color');
+        if ((typeof backgroundColor == 'undefined') || (backgroundColor == 'rgba(0, 0, 0, 0)')) {
+            backgroundColor = $('body').css('background-color');
+            if (typeof backgroundColor == 'undefined') {
+                backgroundColor = 'white';
+            }
+        }
+        $(this).css('position', 'relative');
+        caption.hide();  // hide on page load
+        caption.css({
+            'position': 'absolute',
+            'color': 'black',
+            'background-color': backgroundColor,
+            'padding': '5px',
+            'font-weight': 'normal',
+            'z-index': '99',
+            'white-space': 'pre'
+        });
+        $(this).hover(
+            function(event) {
+                caption.css('transform', 'translate(0.3rem, -5px)').show();
+            }, function() {
+                caption.hide();
+            }
+        );
+    });
 });
 
+// item
 jQuery.fn.extend({
     addCollapseButton: function (admonition) {
         var relations = $(this);
