@@ -25,7 +25,7 @@ $(document).ready(function () {
             'position': 'absolute',  // prevents allocation of space for caption
             'color': 'black',
             'background-color': backgroundColor,
-            'padding': '4px',
+            'padding': '3px',
             'font-weight': 'normal',  // prevents bold font in table header
             'z-index': '100',  // ensures that caption is on foreground
             'white-space': 'pre'  // prevents adding newlines
@@ -43,7 +43,7 @@ $(document).ready(function () {
                     caption.css('transform', 'translate(' + overflow + 'px, ' + '-1.5rem)');
                 } else {
                     // lines up the caption behind the item ID
-                    caption.css('transform', 'translate(0.3rem, -5px)');
+                    caption.css('transform', 'translate(0.3rem, -3px)');
                 }
             }, function() {
                 // leaving hover state
