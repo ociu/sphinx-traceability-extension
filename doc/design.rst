@@ -295,7 +295,7 @@ Design for mlx.traceability
     documentation part. This argument is allowed to have spaces. The caption is stored in
     the `TraceableItem` object.
 
-.. item:: DESIGN-CONTENT Conten of documentation part
+.. item:: DESIGN-CONTENT Content of documentation part
     :depends_on: DESIGN-ITEMIZE
 
     The content of the `item` directive is used as the content of the documentation part.
