@@ -160,6 +160,7 @@ def perform_consistency_check(app, doctree):
         env.traceability_collection.export(fname)
 
     if app.config.traceability_hyperlink_colors:
+        app.add_stylesheet('hyperlink_colors.css')
         generate_color_css(app, app.config.traceability_hyperlink_colors)
 
 
@@ -380,7 +381,6 @@ def setup(app):
     app.add_javascript('https://cdn.rawgit.com/aexmachina/jquery-bonsai/master/jquery.bonsai.js')
     app.add_stylesheet('https://cdn.rawgit.com/aexmachina/jquery-bonsai/master/jquery.bonsai.css')
     app.add_javascript('traceability.js')
-    app.add_stylesheet('hyperlink_colors.css')
 
     # Configuration for exporting collection to json
     app.add_config_value('traceability_json_export_path',
