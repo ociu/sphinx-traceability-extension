@@ -18,20 +18,17 @@ class Item(TraceableBaseNode):
             app: Sphinx's application object to use.
             collection (TraceableCollection): Collection for which to generate the nodes.
         """
-
         self._item = collection.get_item(self['id'])
         header = self._item.get_id()
         if self._item.caption:
             header += ' : ' + self._item.caption
         top_node = self.create_top_node(header)
-        par_node = nodes.paragraph()
         dl_node = nodes.definition_list()
         if app.config.traceability_render_attributes_per_item:
             self._process_attributes(dl_node, app)
         if app.config.traceability_render_relationship_per_item:
             self._process_relationships(collection, dl_node, app)
-        par_node.append(dl_node)
-        top_node.append(par_node)
+        top_node.append(dl_node)
         # Note: content should be displayed during read of RST file, as it contains other RST objects
         self.replace_self(top_node)
 
