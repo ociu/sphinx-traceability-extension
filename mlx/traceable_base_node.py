@@ -31,6 +31,7 @@ class TraceableBaseNode(nodes.General, nodes.Element, ABC):
         '''
         top_node = nodes.container()
         admon_node = nodes.admonition()
+        admon_node['classes'].append('item')
         title_node = nodes.title()
         title_node += nodes.Text(title)
         admon_node += title_node
