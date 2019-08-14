@@ -69,11 +69,9 @@ jQuery.fn.extend({
             }
 
             var linkColor = admonition.children('p').first().css('color');
-            var translateX = '0rem'
-            var translateY = '-2.5rem'
-            if (relations.hasClass('simple')) {
-                translateX = '-0.5rem'
-                translateY = '-3.9rem'
+            var paddingX = '1px'
+            if (admonition.css('padding') != '0px') {
+                paddingX = '0.5rem'
             }
             var arrow = $('<i>', {
                 class: "fa fa-angle-" + arrowDirection,
@@ -81,14 +79,14 @@ jQuery.fn.extend({
                     'font-size': '135%',
                     'color': linkColor,
                     'float': 'right',
-                    'transform': 'translate(' + translateX + ', ' + translateY + ')'
+                    'padding': '1px ' + paddingX
                 },
                 click: function () {
                     relations.toggle('fold');
                     $(this).toggleClass("fa-angle-up fa-angle-down");
                 }
             });
-            admonition.after(arrow);
+            admonition.before(arrow);
         }
     }
 });
