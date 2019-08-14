@@ -51,7 +51,6 @@ class TraceableBaseDirective(Directive, ABC):
             if attr in self.options:
                 node['filter-attributes'][attr] = self.options[attr]
 
-
     def remove_unknown_attributes(self, attributes, description, env):
         """ Removes any unknown attributes from the given list while reporting a warning.
 
