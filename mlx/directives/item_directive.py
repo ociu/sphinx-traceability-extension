@@ -28,7 +28,8 @@ class Item(TraceableBaseNode):
             self._process_attributes(dl_node, app)
         if app.config.traceability_render_relationship_per_item:
             self._process_relationships(collection, dl_node, app)
-        top_node.append(dl_node)
+        if dl_node.children:
+            top_node.append(dl_node)
         # Note: content should be displayed during read of RST file, as it contains other RST objects
         self.replace_self(top_node)
 
