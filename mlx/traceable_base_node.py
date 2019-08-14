@@ -55,16 +55,20 @@ class TraceableBaseNode(nodes.General, nodes.Element, ABC):
         item_info = env.traceability_collection.get_item(item_id)
 
         p_node = nodes.paragraph()
+        caption_on_hover = None
 
         # Only create link when target item exists, warn otherwise (in html and terminal)
         if self.has_warned_about_undefined(item_info, env):
             txt = nodes.Text('%s not defined, broken link' % item_id)
             p_node.append(txt)
         else:
-            if item_info.caption != '' and caption:
+            if item_info.caption and caption:
                 caption = ' : {}'.format(item_info.caption)
             else:
                 caption = ''
+                if item_info.caption:
+                    caption_on_hover = nodes.inline('', item_info.caption)
+                    caption_on_hover['classes'].append('popup_caption')
 
             newnode = nodes.reference('', '')
             innernode = nodes.emphasis(item_id + caption, item_id + caption)
@@ -80,6 +84,9 @@ class TraceableBaseNode(nodes.General, nodes.Element, ABC):
             if colors:
                 class_name = app.config.traceability_class_names[colors]
                 newnode['classes'].append(class_name)
+            if caption_on_hover:
+                innernode['classes'].append('has_hidden_caption')
+                innernode.append(caption_on_hover)  # set to hidden in traceability.js
             newnode.append(innernode)
             p_node += newnode
 
