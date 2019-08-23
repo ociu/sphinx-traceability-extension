@@ -18,14 +18,15 @@ class ItemList(TraceableBaseNode):
         item_ids = collection.get_items(self['filter'], self['filter-attributes'])
         showcaptions = not self['nocaptions']
         top_node = self.create_top_node(self['title'])
-        ul_node = nodes.bullet_list()
-        for i in item_ids:
-            bullet_list_item = nodes.list_item()
-            p_node = nodes.paragraph()
-            p_node.append(self.make_internal_item_ref(app, i, showcaptions))
-            bullet_list_item.append(p_node)
-            ul_node.append(bullet_list_item)
-        top_node += ul_node
+        if item_ids:
+            ul_node = nodes.bullet_list()
+            for i in item_ids:
+                bullet_list_item = nodes.list_item()
+                p_node = nodes.paragraph()
+                p_node.append(self.make_internal_item_ref(app, i, showcaptions))
+                bullet_list_item.append(p_node)
+                ul_node.append(bullet_list_item)
+            top_node += ul_node
         self.replace_self(top_node)
 
 
