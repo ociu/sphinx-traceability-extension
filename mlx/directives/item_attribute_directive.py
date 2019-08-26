@@ -25,10 +25,6 @@ class ItemAttribute(TraceableBaseNode):
         else:
             header = self['id']
         top_node = self.create_top_node(header)
-        par_node = nodes.paragraph()
-        dl_node = nodes.definition_list()
-        par_node.append(dl_node)
-        top_node.append(par_node)
         self.replace_self(top_node)
 
 
