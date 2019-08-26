@@ -62,7 +62,7 @@ Two kinds of relationships exist:
 - External relationships: Relationship from an object of the documentation (item), to an external reference (url of
   e.g. an external tool). As no item B exists, the reverse relationship is also not defined.
 
-Relationship are configurable.
+Relationships are configurable.
 
 The plugin can generate
 
