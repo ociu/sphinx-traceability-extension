@@ -44,15 +44,13 @@ extension-pkg-whitelist=
 # --enable=similarities". If you want to run only the classes checker, but have
 # no Warning level messages displayed, use"--disable=all --enable=classes
 # --disable=W"
-disable=C0301, C0325, W0403, C0201, R0913, R0911, E0401, R0205
+disable=C0301, C0325, W0403, R0913, R0911, E0401
 #C0325 - disabled because we want to use print with parenthesis
 #C0301 - because line limit is checked by pep8 plugin
 #W0403 - because relative-imports are key inside unit-tests
-#C0201 - because python 3.4 support
 #R0913 - because the amount of arguments is checked by code climate
 #R0911 - because the amount of return statements is checked by code climate
 #E0401 - ignore import error because in code climate dependencies aren't installed
-#R0205 - ignore inheritance from object for py2 compatibility
 
 [REPORTS]
 
