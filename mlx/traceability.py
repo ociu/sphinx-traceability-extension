@@ -271,7 +271,6 @@ def add_checklist_attribute(checklist_config, attributes_config, attribute_to_st
 
 def define_attribute(attr, app):
     """ Defines a new attribute. """
-    env = app.builder.env
     attrobject = TraceableAttribute(attr, app.config.traceability_attributes[attr])
     if attr in app.config.traceability_attribute_to_string:
         attrobject.set_name(app.config.traceability_attribute_to_string[attr])

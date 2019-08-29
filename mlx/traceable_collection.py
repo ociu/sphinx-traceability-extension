@@ -8,7 +8,7 @@ from mlx.traceable_item import TraceableItem
 from mlx.traceability_exception import TraceabilityException, MultipleTraceabilityExceptions
 
 
-class TraceableCollection(object):
+class TraceableCollection:
     '''
     Storage for a collection of TraceableItems
     '''
