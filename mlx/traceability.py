@@ -7,7 +7,6 @@ Sphinx extension for reStructuredText that added traceable documentation items.
 See readme for more details.
 '''
 
-from __future__ import print_function
 from collections import OrderedDict
 from re import search
 from os import path
