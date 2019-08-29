@@ -3,7 +3,7 @@ import re
 from abc import abstractmethod, ABC
 
 from docutils import nodes
-from sphinx.environment import NoUri
+from sphinx.errors import NoUri
 
 from mlx.traceability_exception import report_warning
 from mlx.traceable_item import TraceableItem

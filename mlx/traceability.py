@@ -15,7 +15,7 @@ from os import path
 from requests import Session
 from sphinx.roles import XRefRole
 from sphinx.util.nodes import make_refnode
-from sphinx.environment import NoUri
+from sphinx.errors import NoUri
 from docutils import nodes
 from docutils.parsers.rst import directives
 
