@@ -60,7 +60,7 @@ class ItemPieChart(TraceableBaseNode):
                 self.linked_attributes[source_id] = self['label_set'][0].lower()  # default is "uncovered"
                 self.loop_relationships(source_id, source_item, self['id_set'][1], self._match_covered)
 
-        chart_labels, statistics = self._prepare_labels_and_values(list(self.priorities.keys()),
+        chart_labels, statistics = self._prepare_labels_and_values(list(self.priorities),
                                                                    list(self.linked_attributes.values()))
         p_node = nodes.paragraph()
         p_node += nodes.Text(statistics)
@@ -132,10 +132,10 @@ class ItemPieChart(TraceableBaseNode):
         """
         # case-insensitivity
         attribute_value = nested_target_item.get_attribute(self['attribute']).lower()
-        if attribute_value not in self.priorities.keys():
+        if attribute_value not in self.priorities:
             attribute_value = self['label_set'][2].lower()  # default is "executed"
 
-        if top_source_id not in self.linked_attributes.keys():
+        if top_source_id not in self.linked_attributes:
             self.linked_attributes[top_source_id] = attribute_value
         else:
             # store newly encountered attribute value if it has a higher priority
@@ -168,7 +168,7 @@ class ItemPieChart(TraceableBaseNode):
         # removes labels with count value equal to 0
         chart_labels = {k: v for k, v in chart_labels.items() if v}
         for priority in self['priorities']:
-            if priority.lower() in chart_labels.keys():
+            if priority.lower() in chart_labels:
                 value = chart_labels.pop(priority.lower())
                 chart_labels[priority] = value
         return chart_labels, statistics
@@ -204,7 +204,7 @@ class ItemPieChart(TraceableBaseNode):
         Returns:
             (nodes.image) Image node containing the pie chart image.
         """
-        labels = list(chart_labels.keys())
+        labels = list(chart_labels)
         sizes = list(chart_labels.values())
         explode = [0] * len(labels)
         uncoverd_index = labels.index(self['label_set'][0])
@@ -221,7 +221,7 @@ class ItemPieChart(TraceableBaseNode):
             hash_string += str(pie_slice)
         hash_value = sha256(hash_string.encode()).hexdigest()  # create hash value based on chart parameters
         rel_file_path = path.join('_images', 'piechart-{}.png'.format(hash_value))
-        if rel_file_path not in env.images.keys():
+        if rel_file_path not in env.images:
             fig.savefig(path.join(env.app.srcdir, rel_file_path), format='png')
             env.images[rel_file_path] = ['_images', path.split(rel_file_path)[-1]]  # store file name in build env
 
@@ -264,23 +264,22 @@ class ItemPieChartDirective(TraceableBaseDirective):
 
         self.process_title(item_chart_node)
 
-        self._process_id_set(item_chart_node, env)
+        self._process_id_set(item_chart_node)
 
         self._process_label_set(item_chart_node)
 
-        self._process_attribute(item_chart_node, env)
+        self._process_attribute(item_chart_node)
 
         return [item_chart_node]
 
-    def _process_id_set(self, node, env):
+    def _process_id_set(self, node):
         """ Processes id_set option. At least two arguments are required. Otherwise, a warning is reported. """
         if 'id_set' in self.options and len(self.options['id_set'].split()) >= 2:
-            self._warn_if_comma_separated('id_set', env)
+            self._warn_if_comma_separated('id_set', node['document'])
             node['id_set'] = self.options['id_set'].split()
         else:
             node['id_set'] = []
-            report_warning(env,
-                           'Traceability: Expected at least two arguments in id_set.',
+            report_warning('Traceability: Expected at least two arguments in id_set.',
                            node['document'],
                            node['line'])
 
@@ -296,22 +295,21 @@ class ItemPieChartDirective(TraceableBaseDirective):
             id_amount = len(node['id_set'])
             node['label_set'] = default_labels[:id_amount]  # default labels
 
-    def _process_attribute(self, node, env):
+    def _process_attribute(self, node):
         """
         Processes the <<attribute>> option. Attribute data is a comma-separated list of attribute values.
         A warning is reported when this option is given while the id_set does not contan 3 IDs.
         """
         node['attribute'] = ''
         node['priorities'] = []
-        for attr in TraceableItem.defined_attributes.keys():
+        for attr in TraceableItem.defined_attributes:
             if attr in self.options:
                 if len(node['id_set']) == 3:
                     node['attribute'] = attr
                     node['priorities'] = [x.strip(' ') for x in self.options[attr].split(',')]
                 else:
-                    report_warning(env,
-                                   'Traceability: The <<attribute>> option is only viable with an id_set with 3 '
+                    report_warning('Traceability: The <<attribute>> option is only viable with an id_set with 3 '
                                    'arguments.',
-                                   env.docname,
-                                   self.lineno,)
+                                   node['document'],
+                                   node['line'],)
                 break

@@ -59,7 +59,7 @@ class TraceableBaseNode(nodes.General, nodes.Element, ABC):
         caption_on_hover = None
 
         # Only create link when target item exists, warn otherwise (in html and terminal)
-        if self.has_warned_about_undefined(item_info, env):
+        if self.has_warned_about_undefined(item_info):
             txt = nodes.Text('%s not defined, broken link' % item_id)
             p_node.append(txt)
         else:
@@ -143,7 +143,7 @@ class TraceableBaseNode(nodes.General, nodes.Element, ABC):
         if value:
             value = ': ' + value
 
-        if attr_id in TraceableItem.defined_attributes.keys():
+        if attr_id in TraceableItem.defined_attributes:
             attr_info = TraceableItem.defined_attributes[attr_id]
             attr_name = attr_info.get_name()
             if attr_info.docname:
@@ -184,16 +184,15 @@ class TraceableBaseNode(nodes.General, nodes.Element, ABC):
                 return tuple(colors)
         return None
 
-    def has_warned_about_undefined(self, item_info, env):
+    def has_warned_about_undefined(self, item_info):
         """
         Reports a warning if the given node is a placeholder node. Returns True if this is the case, False otherwise.
 
         Args:
             item_info (TraceableItem): TraceableItem object.
-            env (sphinx.environment.BuildEnvironment): Sphinx' build environment.
         """
         if item_info.is_placeholder():
-            report_warning(env, "Traceability: cannot link to '%s', item is not defined" % item_info.get_id(),
+            report_warning("Traceability: cannot link to '%s', item is not defined" % item_info.get_id(),
                            self['document'], self['line'])
             return True
         return False

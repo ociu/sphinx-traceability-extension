@@ -3,7 +3,7 @@
 '''
 Traceability plugin
 
-Sphinx extension for restructured text that added traceable documentation items.
+Sphinx extension for reStructuredText that added traceable documentation items.
 See readme for more details.
 '''
 
@@ -13,7 +13,6 @@ from re import search
 from os import path
 
 from requests import Session
-from sphinx import __version__ as sphinx_version
 from sphinx.roles import XRefRole
 from sphinx.util.nodes import make_refnode
 from sphinx.environment import NoUri
@@ -49,8 +48,7 @@ def generate_color_css(app, hyperlink_colors):
         for regex, colors in hyperlink_colors.items():
             colors = tuple(colors)
             if len(colors) > 3:
-                report_warning(app.env,
-                               "Regex '%s' can take a maximum of 3 colors in traceability_hyperlink_colors." % regex)
+                report_warning("Regex '%s' can take a maximum of 3 colors in traceability_hyperlink_colors." % regex)
             else:
                 build_class_name(colors, class_names)
                 write_color_commands(css_file, colors, class_names[colors])
@@ -118,7 +116,7 @@ class PendingItemXref(TraceableBaseNode):
         # If target exists, try to create the reference
         item_info = collection.get_item(self['reftarget'])
         if item_info:
-            if not self.has_warned_about_undefined(item_info, app.env):
+            if not self.has_warned_about_undefined(item_info):
                 try:
                     new_node = make_refnode(app.builder,
                                             self['document'],
@@ -130,8 +128,7 @@ class PendingItemXref(TraceableBaseNode):
                     # ignore if no URI can be determined, e.g. for LaTeX output :(
                     pass
         else:
-            report_warning(app.env, 'Traceability: item %s not found' % self['reftarget'],
-                           self['document'], self['line'])
+            report_warning('Traceability: item %s not found' % self['reftarget'], self['document'], self['line'])
         self.replace_self(new_node)
 
 
@@ -150,10 +147,10 @@ def perform_consistency_check(app, doctree):
     try:
         env.traceability_collection.self_test()
     except TraceabilityException as err:
-        report_warning(env, err, err.get_document())
+        report_warning(str(err), err.get_document())
     except MultipleTraceabilityExceptions as errs:
         for err in errs.iter():
-            report_warning(env, err, err.get_document())
+            report_warning(str(err), err.get_document())
 
     if app.config.traceability_json_export_path:
         fname = app.config.traceability_json_export_path
@@ -173,15 +170,6 @@ def process_item_nodes(app, doctree, fromdocname):
 
     """
     env = app.builder.env
-
-    if sphinx_version < '1.6.0':
-        try:
-            env.traceability_collection.self_test(fromdocname)
-        except TraceabilityException as err:
-            report_warning(env, err, fromdocname)
-        except MultipleTraceabilityExceptions as errs:
-            for err in errs.iter():
-                report_warning(env, err, err.get_document())
 
     for node_class in (ItemLink, ItemMatrix, ItemPieChart, ItemAttributesMatrix, Item2DMatrix, ItemList, ItemTree,
                        ItemAttribute, Item):
@@ -210,7 +198,7 @@ def init_available_relationships(app):
     """
     env = app.builder.env
 
-    for attr in app.config.traceability_attributes.keys():
+    for attr in app.config.traceability_attributes:
         ItemDirective.option_spec[attr] = directives.unchanged
         ItemListDirective.option_spec[attr] = directives.unchanged
         ItemMatrixDirective.option_spec[attr] = directives.unchanged
@@ -220,7 +208,7 @@ def init_available_relationships(app):
         ItemTreeDirective.option_spec[attr] = directives.unchanged
         define_attribute(attr, app)
 
-    for rel in list(app.config.traceability_relationships.keys()):
+    for rel in app.config.traceability_relationships:
         revrel = app.config.traceability_relationships[rel]
         env.traceability_collection.add_relation_pair(rel, revrel)
         ItemDirective.option_spec[rel] = directives.unchanged
@@ -256,12 +244,6 @@ def initialize_environment(app):
 \\let\@noitemerr\\relax
 \\makeatother'''
 
-    # Older sphinx versions don't have the 'env-check-consistency' callback: no export possible
-    if sphinx_version < '1.6.0':
-        if app.config.traceability_json_export_path:
-            report_warning(env, 'No export possible, try upgrading sphinx installation')
-
-
 # ----------------------------------------------------------------------------
 # Event handler helper functions
 
@@ -278,8 +260,7 @@ def add_checklist_attribute(checklist_config, attributes_config, attribute_to_st
     """
     attr_values = checklist_config['attribute_values'].split(',')
     if len(attr_values) != 2:
-        report_warning(env,
-                       "Checklist attribute values must be two comma-separated strings; got '{}'."
+        report_warning("Checklist attribute values must be two comma-separated strings; got '{}'."
                        .format(checklist_config['attribute_values']))
     else:
         regexp = "[{}|{}]".format(attr_values[0], attr_values[1])
@@ -295,7 +276,7 @@ def define_attribute(attr, app):
     if attr in app.config.traceability_attribute_to_string:
         attrobject.set_name(app.config.traceability_attribute_to_string[attr])
     else:
-        report_warning(env, 'Traceability: attribute {attr} cannot be translated to string'.format(attr=attr))
+        report_warning('Traceability: attribute {attr} cannot be translated to string'.format(attr=attr))
     TraceableItem.define_attribute(attrobject)
 
 
@@ -329,7 +310,7 @@ def query_checklist(settings, attr_values, env):
                                                          settings['merge_request_id'])
         key = 'description'
     else:
-        report_warning(env, "Invalid API_HOST_NAME '{}'".format(settings['api_host_name']))
+        report_warning("Invalid API_HOST_NAME '{}'".format(settings['api_host_name']))
         return {}
 
     with Session() as session:
@@ -340,7 +321,7 @@ def query_checklist(settings, attr_values, env):
     if description:
         return _parse_description(description, attr_values)
     else:
-        report_warning(env, "The query did not return a description. URL = {}. Response = {}.".format(url, response))
+        report_warning("The query did not return a description. URL = {}. Response = {}.".format(url, response))
         return {}
 
 
@@ -502,8 +483,7 @@ def setup(app):
     app.add_directive('item-link', ItemLinkDirective)
 
     app.connect('doctree-resolved', process_item_nodes)
-    if sphinx_version >= '1.6.0':
-        app.connect('env-check-consistency', perform_consistency_check)
+    app.connect('env-check-consistency', perform_consistency_check)
     app.connect('builder-inited', initialize_environment)
 
     app.add_role('item', XRefRole(nodeclass=PendingItemXref,

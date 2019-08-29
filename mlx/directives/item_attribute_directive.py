@@ -17,7 +17,7 @@ class ItemAttribute(TraceableBaseNode):
             app: Sphinx application object to use.
             collection (TraceableCollection): Collection for which to generate the nodes.
         """
-        if self['id'] in TraceableItem.defined_attributes.keys():
+        if self['id'] in TraceableItem.defined_attributes:
             attr = TraceableItem.defined_attributes[self['id']]
             header = attr.get_name()
             if attr.get_caption():
@@ -58,9 +58,8 @@ class ItemAttributeDirective(TraceableBaseDirective):
         attribute_node['line'] = self.lineno
 
         stored_id = TraceableAttribute.to_id(attribute_id)
-        if stored_id not in TraceableItem.defined_attributes.keys():
-            report_warning(env,
-                           'Found attribute description which is not defined in configuration ({})'
+        if stored_id not in TraceableItem.defined_attributes:
+            report_warning('Found attribute description which is not defined in configuration ({})'
                            .format(attribute_id),
                            env.docname,
                            self.lineno)

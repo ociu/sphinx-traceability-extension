@@ -51,7 +51,7 @@ class ItemLinkDirective(TraceableBaseDirective):
         node['targets'] = []
         node['type'] = None
 
-        if not self.process_options(node, {'sources': [], 'targets': [], 'type': ''}, env=env):
+        if not self.process_options(node, {'sources': [], 'targets': [], 'type': ''}, docname=env.docname):
             return []
 
         # Processing of the item-link items. They get added as additional relationships
@@ -61,7 +61,7 @@ class ItemLinkDirective(TraceableBaseDirective):
                 try:
                     env.traceability_collection.add_relation(source, node['type'], target)
                 except TraceabilityException as err:
-                    report_warning(env, err, env.docname, self.lineno)
+                    report_warning(err, env.docname, self.lineno)
 
         # The ItemLink node has no final representation, so is removed from the tree
         return [node]
