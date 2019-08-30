@@ -1,29 +1,23 @@
 '''
 Exception classes for traceability
 '''
-from sphinx import __version__ as sphinx_version
-if sphinx_version >= '1.6.0':
-    from sphinx.util.logging import getLogger
+from sphinx.util.logging import getLogger
 
 
-def report_warning(env, msg, docname=None, lineno=None):
+def report_warning(msg, docname=None, lineno=None):
     '''Convenience function for logging a warning
 
     Args:
-        env (sphinx.environment.BuildEnvironment): Sphinx' build environment.
         msg (any __str__): Message of the warning, gets converted to str.
         docname (str): Relative path to the document on which the error occured, without extension.
         lineno (int): Line number in the document on which the error occured.
     '''
     msg = str(msg)
-    if sphinx_version >= '1.6.0':
-        logger = getLogger(__name__)
-        if lineno is not None:
-            logger.warning(msg, location=(docname, str(lineno)))
-        else:
-            logger.warning(msg, location=docname)
+    logger = getLogger(__name__)
+    if lineno is not None:
+        logger.warning(msg, location=(docname, str(lineno)))
     else:
-        env.warn(docname, msg, lineno=lineno)
+        logger.warning(msg, location=docname)
 
 
 class MultipleTraceabilityExceptions(Exception):
@@ -53,7 +47,7 @@ class TraceabilityException(Exception):
             message (str): Message for the exception
             docname (str): Name of the document triggering the exception
         '''
-        super(TraceabilityException, self).__init__(message)
+        super().__init__(message)
         self.docname = docname
 
     def get_document(self):

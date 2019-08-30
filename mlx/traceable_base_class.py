@@ -5,7 +5,7 @@ Base class for traceable stuff
 from mlx.traceability_exception import TraceabilityException
 
 
-class TraceableBaseClass(object):
+class TraceableBaseClass:
     '''
     Storage for a traceable base class
     '''

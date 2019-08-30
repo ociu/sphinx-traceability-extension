@@ -81,8 +81,7 @@ class Item(TraceableBaseNode):
         if relation in app.config.traceability_relationship_to_string:
             relstr = app.config.traceability_relationship_to_string[relation]
         else:
-            report_warning(env,
-                           'Traceability: relation {rel} cannot be translated to string'
+            report_warning('Traceability: relation {rel} cannot be translated to string'
                            .format(rel=relation),
                            env.docname, self.line)
             relstr = relation
@@ -188,15 +187,15 @@ class ItemDirective(TraceableBaseDirective):
         try:
             env.traceability_collection.add_item(item)
         except TraceabilityException as err:
-            report_warning(env, err, env.docname, self.lineno)
+            report_warning(err, env.docname, self.lineno)
 
-        self._add_attributes(item, env)
+        self._add_attributes(item, env.docname)
 
         # Add found relationships to item. All relationship data is a string of
         # item ids separated by space. It is split in a list of item ids.
         for rel in env.traceability_collection.iter_relations():
             if rel in self.options:
-                self._warn_if_comma_separated(rel, env)
+                self._warn_if_comma_separated(rel, env.docname)
                 related_ids = self.options[rel].split()
                 self._add_relation_to_ids(rel, target_id, related_ids, env)
 
@@ -217,20 +216,20 @@ class ItemDirective(TraceableBaseDirective):
             try:
                 env.traceability_collection.add_relation(source_id, relation, related_id)
             except TraceabilityException as err:
-                report_warning(env, err, env.docname, self.lineno)
+                report_warning(err, env.docname, self.lineno)
 
-    def _add_attributes(self, item, env):
+    def _add_attributes(self, item, docname):
         """ Adds all specified attributes to the item. Attribute data is a single string.
 
         A warning is reported when an attribute's value doesn't match the attribute's regex.
 
         Args:
             item (TraceableItem): Item to add the attributes to.
-            env (sphinx.environment.BuildEnvironment): Sphinx' build environment.
+            docname (str): Document name.
         """
-        for attribute in TraceableItem.defined_attributes.keys():
+        for attribute in TraceableItem.defined_attributes:
             if attribute in self.options:
                 try:
                     item.add_attribute(attribute, self.options[attribute])
                 except TraceabilityException as err:
-                    report_warning(env, err, env.docname, self.lineno)
+                    report_warning(err, docname, self.lineno)

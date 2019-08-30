@@ -33,8 +33,8 @@ Requirements for mlx.traceability
 .. item:: RQT-CONTENT Content of documentation part
     :depends_on: RQT-ITEMIZE
 
-    A documentation part shall have optional content. The content shall be parseable reStructured
-    text (rst), and passed through the configured sphinx parser/renderer.
+    A documentation part shall have optional content. The content shall be parseable reStructuredText (RST), and passed
+    through the configured sphinx parser/renderer.
 
 .. item:: RQT-ATTRIBUTES Documentation parts can have attributes
     :depends_on: RQT-ITEMIZE

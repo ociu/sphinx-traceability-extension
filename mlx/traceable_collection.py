@@ -8,7 +8,7 @@ from mlx.traceable_item import TraceableItem
 from mlx.traceability_exception import TraceabilityException, MultipleTraceabilityExceptions
 
 
-class TraceableCollection(object):
+class TraceableCollection:
     '''
     Storage for a collection of TraceableItems
     '''
@@ -54,7 +54,7 @@ class TraceableCollection(object):
         Returns:
             Naturally sorted list over available relations in the collection
         '''
-        return natsorted(self.relations.keys())
+        return natsorted(self.relations)
 
     def add_item(self, item):
         '''
@@ -96,7 +96,7 @@ class TraceableCollection(object):
         Returns:
             Sorted iterator over identification of the items in the collection
         '''
-        return natsorted(self.items.keys())
+        return natsorted(self.items)
 
     def has_item(self, itemid):
         '''

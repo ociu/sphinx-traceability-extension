@@ -116,10 +116,10 @@ class ItemTreeDirective(TraceableBaseDirective):
         # endless treeview (and endless recursion in python --> exception)
         for rel in item_tree_node['type']:
             if rel not in env.traceability_collection.iter_relations():
-                report_warning(env, 'Traceability: unknown relation for item-tree: %s' % rel, env.docname, self.lineno)
+                report_warning('Traceability: unknown relation for item-tree: %s' % rel, env.docname, self.lineno)
                 continue
             if env.traceability_collection.get_reverse_relation(rel) in item_tree_node['type']:
-                report_warning(env, 'Traceability: combination of forward+reverse relations for item-tree: %s' % rel,
+                report_warning('Traceability: combination of forward+reverse relations for item-tree: %s' % rel,
                                env.docname, self.lineno)
                 raise ValueError('Traceability: combination of forward+reverse relations for item-tree: %s' % rel)
 

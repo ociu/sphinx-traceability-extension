@@ -859,7 +859,7 @@ GitLab
 ------
 
 - *PRIVATE_TOKEN* is your personal access token that has API access.
-- *API_HOST_NAME* is the host name of the API, e.g. *https://gitlab.example.com/api/v4*.
+- *API_HOST_NAME* is the host name of the API, e.g. *https://gitlab.example.com/api/v4*
 - *PROJECT_ID* is the ID of the project.
 - *MERGE_REQUEST_ID* is the internal ID of the merge request.
 
@@ -867,7 +867,7 @@ GitHub
 ------
 
 - *PRIVATE_TOKEN* is not needed for public repositories. Otherwise, it must be a `personal access token`_ with the access to the targeted scope.
-- *API_HOST_NAME* is the host name of the GitHub REST API v3: *https://api.github.com*.
+- *API_HOST_NAME* is the host name of the GitHub REST API v3: *https://api.github.com*
 - *PROJECT_ID* defines the repository by specifying *owner* and *repo* separated by a forward slash, e.g. *melexis/sphinx-traceability-extension*.
 - *MERGE_REQUEST_ID* is the pull request number.
 
@@ -879,6 +879,6 @@ GitHub
 Process
 -------
 
-The Melexis.SWCC process has a Guideline for documenting in Restructured Text (RST). It holds guidelines for using
+The Melexis.SWCC process has a Guideline for documenting in reStructuredText (RST). It holds guidelines for using
 the traceability plugin with naming conventions, templates, etc.
 

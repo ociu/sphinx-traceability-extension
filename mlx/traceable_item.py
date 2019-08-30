@@ -40,7 +40,7 @@ class TraceableItem(TraceableBaseClass):
         self._add_relations(self.explicit_relations, other.explicit_relations)
         self._add_relations(self.implicit_relations, other.implicit_relations)
         # Remainder of fields: update if they improve the quality of the item
-        for attr in other.attributes.keys():
+        for attr in other.attributes:
             self.add_attribute(attr, other.attributes[attr], False)
         if not other.is_placeholder():
             self._placeholder = False
@@ -53,7 +53,7 @@ class TraceableItem(TraceableBaseClass):
             relations_of_self (dict): Dictionary used to add relations to.
             relations_of_other (dict): Dictionary used to fetch relations from.
         '''
-        for relation in relations_of_other.keys():
+        for relation in relations_of_other:
             if relation not in relations_of_self:
                 relations_of_self[relation] = []
             relations_of_self[relation].extend(relations_of_other[relation])
@@ -111,7 +111,7 @@ class TraceableItem(TraceableBaseClass):
             relation (str): Name of the relation.
             target (str): Item identification of the targeted traceable item.
         '''
-        if relation not in database.keys():
+        if relation not in database:
             database[relation] = []
         if target not in database[relation]:
             database[relation].append(target)
@@ -143,7 +143,7 @@ class TraceableItem(TraceableBaseClass):
         if implicit:
             source_databases.append(self.implicit_relations)
         for database in source_databases:
-            for relation in database.keys():
+            for relation in database:
                 if target_id in database[relation]:
                     database[relation].remove(target_id)
 
@@ -159,9 +159,9 @@ class TraceableItem(TraceableBaseClass):
             (list) Naturally sorted list of targets to other traceable item(s).
         '''
         relations = []
-        if explicit and relation in self.explicit_relations.keys():
+        if explicit and relation in self.explicit_relations:
             relations.extend(self.explicit_relations[relation])
-        if implicit and relation in self.implicit_relations.keys():
+        if implicit and relation in self.implicit_relations:
             relations.extend(self.implicit_relations[relation])
         return natsorted(relations)
 
@@ -171,7 +171,7 @@ class TraceableItem(TraceableBaseClass):
         Returns:
             (list) Naturally sorted list containing available relations in the item.
         '''
-        return natsorted(list(self.explicit_relations) + list(self.implicit_relations.keys()))
+        return natsorted(list(self.explicit_relations) + list(self.implicit_relations))
 
     @staticmethod
     def define_attribute(attr):
@@ -308,7 +308,7 @@ class TraceableItem(TraceableBaseClass):
         Returns:
             (bool) True if the given attributes match the item attributes.
         '''
-        for attr in attributes.keys():
+        for attr in attributes:
             if not re.match(attributes[attr], self.get_attribute(attr)):
                 return False
         return True
