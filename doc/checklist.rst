@@ -42,9 +42,9 @@ Checklist items
     The item ID is present in the queried PR description, but won't get the configured checklist-attribute added since
     its defined with the regular item directive.
 
--------------------------
+---------------------------
 Matrices of checklist items
--------------------------
+---------------------------
 
 .. item-attributes-matrix:: Questions and answers
     :filter: QUE-
