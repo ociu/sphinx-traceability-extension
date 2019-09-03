@@ -265,7 +265,7 @@ def add_checklist_attribute(checklist_config, attributes_config, attribute_to_st
         regexp = "[{}|{}]".format(attr_values[0], attr_values[1])
         attributes_config[checklist_config['attribute_name']] = regexp
         attribute_to_string_config[checklist_config['attribute_name']] = checklist_config['attribute_to_str']
-        ChecklistItemDirective.query_results = query_checklist(checklist_config, attr_values, env)
+        ChecklistItemDirective.query_results = query_checklists(checklist_config, attr_values, env)
 
 
 def define_attribute(attr, app):
@@ -278,8 +278,8 @@ def define_attribute(attr, app):
     TraceableItem.define_attribute(attrobject)
 
 
-def query_checklist(settings, attr_values, env):
-    """ Queries specified API host name for the description of the specified merge request.
+def query_checklists(settings, attr_values, env):
+    """ Queries specified API host name for the description of the specified merge request(s).
 
     Reports a warning if the API host name is invalid or the response does not contain a description.
 
@@ -291,40 +291,41 @@ def query_checklist(settings, attr_values, env):
     Returns:
         (dict) The query results with zero or more key-value pairs in the form of {item ID: attribute value}.
     """
+    query_results = {}
     headers = {}
     if 'github' in settings['api_host_name']:
         # explicitly request the v3 version of the REST API
         headers['Accept'] = 'application/vnd.github.v3+json'
         if settings['private_token']:
             headers['Authorization'] = 'token {}'.format(settings['private_token'])
-        url = "{}/repos/{owner_and_repo}/pulls/{pull_number}".format(settings['api_host_name'].rstrip('/'),
-                                                                     owner_and_repo=settings['project_id'],
-                                                                     pull_number=settings['merge_request_id'])
+        base_url = "{}/repos/{}/pulls/".format(settings['api_host_name'].rstrip('/'),
+                                               settings['project_id'],)
         key = 'body'
     elif 'gitlab' in settings['api_host_name']:
         headers['PRIVATE-TOKEN'] = settings['private_token']
-        url = "{}/projects/{}/merge_requests/{}/".format(settings['api_host_name'].rstrip('/'),
-                                                         settings['project_id'],
-                                                         settings['merge_request_id'])
+        base_url = "{}/projects/{}/merge_requests/".format(settings['api_host_name'].rstrip('/'),
+                                                           settings['project_id'],)
         key = 'description'
     else:
         report_warning("Invalid API_HOST_NAME '{}'".format(settings['api_host_name']))
         return {}
 
-    with Session() as session:
-        with session.get(url, headers=headers) as response:
-            response = response.json()
+    for merge_request_id in str(settings['merge_request_id']).split(','):
+        url = base_url + merge_request_id.strip()
+        with Session() as session:
+            with session.get(url, headers=headers) as response:
+                response = response.json()
 
-    description = response.get(key)
-    if description:
-        return _parse_description(description, attr_values)
-    else:
-        report_warning("The query did not return a description. URL = {}. Response = {}.".format(url, response))
-        return {}
+        description = response.get(key)
+        if description:
+            query_results = {**query_results, **_parse_description(description, attr_values)}
+        else:
+            report_warning("The query did not return a description. URL = {}. Response = {}.".format(url, response))
+    return query_results
 
 
 def _parse_description(description, attr_values):
-    """ Stores the relevant checklist information in the specified dictionary.
+    """ Returns the relevant checklist information.
 
     The item IDs are expected to follow checkboxes directly and the attribute value depends on the status of the
     checkbox.
@@ -337,8 +338,7 @@ def _parse_description(description, attr_values):
         (dict) Dictionary with key-value pairs with item IDs (str) as keys and the attribute values (str) as values.
     """
     query_results = {}
-    description_lines = description.split('\n')
-    for line in description_lines:
+    for line in description.split('\n'):
         # catch the content of checkbox and the item ID after the checkbox
         match = search(r"^\s*[\*-]\s+\[(?P<checkbox>[\sx])\]\s+(?P<target_id>[\w\-]+)", line)
         if match:
