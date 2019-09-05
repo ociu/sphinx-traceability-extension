@@ -230,8 +230,7 @@ def initialize_environment(app):
     if app.config.traceability_checklist:
         add_checklist_attribute(app.config.traceability_checklist,
                                 app.config.traceability_attributes,
-                                app.config.traceability_attribute_to_string,
-                                env)
+                                app.config.traceability_attribute_to_string)
 
     init_available_relationships(app)
 
@@ -246,7 +245,7 @@ def initialize_environment(app):
 # ----------------------------------------------------------------------------
 # Event handler helper functions
 
-def add_checklist_attribute(checklist_config, attributes_config, attribute_to_string_config, env):
+def add_checklist_attribute(checklist_config, attributes_config, attribute_to_string_config):
     """ Adds the specified attribute for checklist items to the application configuration variables.
 
     Reports a warning when the TARGET_ATTRIBUTE_VALUES variable is not string of two comma-separated attribute values.
@@ -255,7 +254,6 @@ def add_checklist_attribute(checklist_config, attributes_config, attribute_to_st
         checklist_config (dict): Dictionary containing the attribute configuration parameters for checklist items.
         attributes_config (dict): Dictionary containing the attribute configuration parameters for regular items.
         attribute_to_string_config (dict): Dictionary mapping an attribute to its string representation.
-        env (sphinx.environment.BuildEnvironment): Sphinx's build environment.
     """
     attr_values = checklist_config['attribute_values'].split(',')
     if len(attr_values) != 2:
@@ -265,7 +263,7 @@ def add_checklist_attribute(checklist_config, attributes_config, attribute_to_st
         regexp = "[{}|{}]".format(attr_values[0], attr_values[1])
         attributes_config[checklist_config['attribute_name']] = regexp
         attribute_to_string_config[checklist_config['attribute_name']] = checklist_config['attribute_to_str']
-        ChecklistItemDirective.query_results = query_checklists(checklist_config, attr_values, env)
+        ChecklistItemDirective.query_results = query_checklist(checklist_config, attr_values)
 
 
 def define_attribute(attr, app):
@@ -278,15 +276,14 @@ def define_attribute(attr, app):
     TraceableItem.define_attribute(attrobject)
 
 
-def query_checklists(settings, attr_values, env):
-    """ Queries specified API host name for the description of the specified merge request(s).
+def query_checklist(settings, attr_values):
+    """ Queries specified API host name for the description of the specified merge request.
 
     Reports a warning if the API host name is invalid or the response does not contain a description.
 
     Args:
         settings (dict): Dictionary with the environment variables specified for the checklist feature.
         attr_values (list): List of the two possible attribute values (str).
-        env (sphinx.environment.BuildEnvironment): Sphinx's build environment.
 
     Returns:
         (dict) The query results with zero or more key-value pairs in the form of {item ID: attribute value}.

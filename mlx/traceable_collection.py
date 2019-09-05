@@ -185,20 +185,20 @@ class TraceableCollection:
                 for tgt in item.iter_targets(relation):
                     # Target item exists?
                     if tgt not in self.items:
-                        errors.append(TraceabilityException('''{source} {relation} {target},
-                                      but {target} is not known'''.format(source=itemid,
-                                                                          relation=relation,
-                                                                          target=tgt),
-                                      item.get_document()))
+                        errors.append(TraceabilityException("{source} {relation} {target}, but {target} is not known"
+                                                            .format(source=itemid,
+                                                                    relation=relation,
+                                                                    target=tgt),
+                                                            item.get_document()))
                         continue
                     # Reverse relation exists?
                     target = self.get_item(tgt)
                     if itemid not in target.iter_targets(rev_relation):
-                        errors.append(TraceabilityException('''No automatic reverse relation:
-                                      {source} {relation} {target}'''.format(source=tgt,
-                                                                             relation=rev_relation,
-                                                                             target=itemid),
-                                      item.get_document()))
+                        errors.append(TraceabilityException("No automatic reverse relation: {source} {relation} "
+                                                            "{target}".format(source=tgt,
+                                                                              relation=rev_relation,
+                                                                              target=itemid),
+                                                            item.get_document()))
         if errors:
             raise MultipleTraceabilityExceptions(errors)
 
