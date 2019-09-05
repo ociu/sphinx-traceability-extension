@@ -25,9 +25,7 @@ class TraceableBaseNode(nodes.General, nodes.Element, ABC):
 
         Args:
             title (str): Title of the top node
-
-        Returns:
-            Top level replacement node to which other nodes can be appended
+        Returns: Top level replacement node to which other nodes can be appended
         '''
         top_node = nodes.container()
         admon_node = nodes.admonition()
