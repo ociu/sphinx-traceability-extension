@@ -288,40 +288,41 @@ def query_checklist(settings, attr_values):
     Returns:
         (dict) The query results with zero or more key-value pairs in the form of {item ID: attribute value}.
     """
+    query_results = {}
     headers = {}
     if 'github' in settings['api_host_name']:
         # explicitly request the v3 version of the REST API
         headers['Accept'] = 'application/vnd.github.v3+json'
         if settings['private_token']:
             headers['Authorization'] = 'token {}'.format(settings['private_token'])
-        url = "{}/repos/{owner_and_repo}/pulls/{pull_number}".format(settings['api_host_name'].rstrip('/'),
-                                                                     owner_and_repo=settings['project_id'],
-                                                                     pull_number=settings['merge_request_id'])
+        base_url = "{}/repos/{}/pulls/".format(settings['api_host_name'].rstrip('/'),
+                                               settings['project_id'],)
         key = 'body'
     elif 'gitlab' in settings['api_host_name']:
         headers['PRIVATE-TOKEN'] = settings['private_token']
-        url = "{}/projects/{}/merge_requests/{}/".format(settings['api_host_name'].rstrip('/'),
-                                                         settings['project_id'],
-                                                         settings['merge_request_id'])
+        base_url = "{}/projects/{}/merge_requests/".format(settings['api_host_name'].rstrip('/'),
+                                                           settings['project_id'],)
         key = 'description'
     else:
         report_warning("Invalid API_HOST_NAME '{}'".format(settings['api_host_name']))
         return {}
 
-    with Session() as session:
-        with session.get(url, headers=headers) as response:
-            response = response.json()
+    for merge_request_id in str(settings['merge_request_id']).split(','):
+        url = base_url + merge_request_id.strip()
+        with Session() as session:
+            with session.get(url, headers=headers) as response:
+                response = response.json()
 
-    description = response.get(key)
-    if description:
-        return _parse_description(description, attr_values)
-    else:
-        report_warning("The query did not return a description. URL = {}. Response = {}.".format(url, response))
-        return {}
+        description = response.get(key)
+        if description:
+            query_results = {**query_results, **_parse_description(description, attr_values)}
+        else:
+            report_warning("The query did not return a description. URL = {}. Response = {}.".format(url, response))
+    return query_results
 
 
 def _parse_description(description, attr_values):
-    """ Stores the relevant checklist information in the specified dictionary.
+    """ Returns the relevant checklist information.
 
     The item IDs are expected to follow checkboxes directly and the attribute value depends on the status of the
     checkbox.
@@ -334,8 +335,7 @@ def _parse_description(description, attr_values):
         (dict) Dictionary with key-value pairs with item IDs (str) as keys and the attribute values (str) as values.
     """
     query_results = {}
-    description_lines = description.split('\n')
-    for line in description_lines:
+    for line in description.split('\n'):
         # catch the content of checkbox and the item ID after the checkbox
         match = search(r"^\s*[\*-]\s+\[(?P<checkbox>[\sx])\]\s+(?P<target_id>[\w\-]+)", line)
         if match:
