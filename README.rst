@@ -855,6 +855,14 @@ Example of a valid checklist in Markdown:
     - [x] PLAN-UNIT_TESTS Have you added unit tests for regression detection?
     - [ ] PLAN-PACKAGE_TEST Have you tested the package?
 
+The checkboxes can be checked/unchecked from RST as well by using the *checkbox-result* directive. The item ID should be
+of a checklist item and is expected to be present in a configured merge/pull request description. The caption should be
+one of two configured values in *attribute_values*.
+
+.. code-block:: rest
+
+    .. checkbox-result:: QUE-UNIT_TESTS yes
+
 GitLab
 ------
 
