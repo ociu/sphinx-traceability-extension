@@ -12,6 +12,7 @@ Checklist items
 
 .. checklist-item:: QUE-UNIT_TESTS Added unit tests
     :depends_on: QUE-PROCESS
+    :asil: B
 
     Have you written unit tests for regression detection?
 

@@ -23,11 +23,12 @@ from mlx.traceable_base_node import TraceableBaseNode
 from mlx.traceable_item import TraceableItem
 from mlx.traceable_collection import TraceableCollection
 from mlx.traceability_exception import TraceabilityException, MultipleTraceabilityExceptions, report_warning
+from mlx.directives.checkbox_result_directive import CheckboxResultDirective
+from mlx.directives.checklist_item_directive import ChecklistItemDirective
 from mlx.directives.item_directive import Item, ItemDirective
 from mlx.directives.item_2d_matrix_directive import Item2DMatrix, Item2DMatrixDirective
 from mlx.directives.item_attribute_directive import ItemAttribute, ItemAttributeDirective
 from mlx.directives.item_attributes_matrix_directive import ItemAttributesMatrix, ItemAttributesMatrixDirective
-from mlx.directives.checklist_item_directive import ChecklistItemDirective
 from mlx.directives.item_link_directive import ItemLink, ItemLinkDirective
 from mlx.directives.item_list_directive import ItemList, ItemListDirective
 from mlx.directives.item_matrix_directive import ItemMatrix, ItemMatrixDirective
@@ -468,6 +469,7 @@ def setup(app):
 
     app.add_directive('item', ItemDirective)
     app.add_directive('checklist-item', ChecklistItemDirective)
+    app.add_directive('checkbox-result', CheckboxResultDirective)
     app.add_directive('item-attribute', ItemAttributeDirective)
     app.add_directive('item-list', ItemListDirective)
     app.add_directive('item-matrix', ItemMatrixDirective)
