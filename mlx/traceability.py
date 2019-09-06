@@ -8,7 +8,6 @@ See readme for more details.
 '''
 
 from collections import OrderedDict, namedtuple
-from copy import copy
 from re import match, search
 from os import path
 
@@ -349,13 +348,13 @@ def _parse_description(description, attr_values, merge_request_id):
     query_results = {}
     for line in description.split('\n'):
         # catch the content of checkbox and the item ID after the checkbox
-        match = search(r"^\s*[\*-]\s+\[(?P<checkbox>[\sx])\]\s+(?P<target_id>[\w\-]+)", line)
-        if match:
-            if match.group('checkbox') == 'x':
+        cli_match = search(r"^\s*[\*-]\s+\[(?P<checkbox>[\sx])\]\s+(?P<target_id>[\w\-]+)", line)
+        if cli_match:
+            if cli_match.group('checkbox') == 'x':
                 item_info = ItemInfo(attr_values[0], merge_request_id)
             else:
                 item_info = ItemInfo(attr_values[1], merge_request_id)
-            query_results[match.group('target_id')] = item_info
+            query_results[cli_match.group('target_id')] = item_info
     return query_results
 
 # -----------------------------------------------------------------------------
