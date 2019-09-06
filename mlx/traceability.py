@@ -261,7 +261,7 @@ def add_checklist_attribute(checklist_config, attributes_config, attribute_to_st
         report_warning("Checklist attribute values must be two comma-separated strings; got '{}'."
                        .format(checklist_config['attribute_values']))
     else:
-        regexp = "[{}|{}]".format(attr_values[0], attr_values[1])
+        regexp = "({}|{})".format(attr_values[0], attr_values[1])
         attributes_config[checklist_config['attribute_name']] = regexp
         attribute_to_string_config[checklist_config['attribute_name']] = checklist_config['attribute_to_str']
         ChecklistItemDirective.query_results = query_checklist(checklist_config, attr_values)
