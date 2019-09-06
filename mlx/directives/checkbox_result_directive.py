@@ -1,4 +1,6 @@
 """ Module for the directive used to set the checklist attribute. """
+from re import match
+
 from mlx.traceable_base_directive import TraceableBaseDirective
 from mlx.traceability_exception import report_warning, TraceabilityException
 
@@ -28,6 +30,11 @@ class CheckboxResultDirective(TraceableBaseDirective):
             report_warning(err, env.docname, self.lineno)
 
         checklist_attribute_name = app.config.traceability_checklist['attribute_name']
-        checklist_item.add_attribute(checklist_attribute_name, attribute_value, overwrite=True)
+        regexp = app.config.traceability_attributes[checklist_attribute_name]
+        if match(regexp, attribute_value):
+            checklist_item.add_attribute(checklist_attribute_name, attribute_value, overwrite=True)
+        else:
+            report_warning("Checkbox value invalid: {!r} does not match regex {}".format(attribute_value, regexp),
+                           env.docname, self.lineno)
 
         return []
