@@ -14,7 +14,7 @@ Checklist items
     :depends_on: QUE-PROCESS
     :asil: B
 
-    Have you written unit tests for regression detection?
+    For this item the checkbox value is overwritten by the checkbox-result directive in meeting_notes.rst.
 
 .. checklist-item:: QUE-PACKAGE_TEST Tested the package
     :depends_on: QUE-PROCESS
@@ -24,6 +24,16 @@ Checklist items
 .. checklist-item:: QUE-PROCESS Followed the process
 
     Did you follow the process?
+
+.. checklist-item:: QUE-DOCUMENTATION Added documentation
+
+    Did you add documentation?
+
+.. checklist-item:: QUE_MEETING-UNIQUE_NAME Does every test case have a unique name?
+
+.. checklist-item:: QUE_MEETING-HW_EXECUTION Did the test cases execute on actual hardware?
+
+.. checklist-item:: QUE_MEETING-TEST_GUIDELINES Does the test report follow the guidelines?
 
 .. checklist-item:: ITEM_MISSING_FROM_CHECKLIST Triggers a warning
 
@@ -38,10 +48,10 @@ Checklist items
 
     Checklist items inherit from regular items.
 
-.. item:: CL-LUCKY_ONE Item that should be a checklist-item
+.. item:: CL-UNDEFINED_CL_ITEM Item that should be a checklist-item
 
     The item ID is present in the queried PR description, but won't get the configured checklist-attribute added since
-    its defined with the regular item directive.
+    it's defined with the regular *item* directive.
 
 ---------------------------
 Matrices of checklist items

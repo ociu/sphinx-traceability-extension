@@ -9,10 +9,10 @@ Meeting notes
 
 .. checkbox-result:: QUE-UNIT_TESTS yes
 
-.. checkbox-result:: QUE-PACKAGE_TEST no
+.. checkbox-result:: QUE_MEETING-UNIQUE_NAME yes
 
-.. checkbox-result:: QUE-PROCESS no
+.. checkbox-result:: QUE_MEETING-HW_EXECUTION no
 
-.. item-attributes-matrix::
-    :filter: QUE-
+.. item-attributes-matrix:: Matrix of all checklist questions
+    :filter: QUE(_MEETING)?-
     :attributes: checked

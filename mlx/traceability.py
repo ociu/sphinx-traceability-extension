@@ -7,8 +7,9 @@ Sphinx extension for reStructuredText that added traceable documentation items.
 See readme for more details.
 '''
 
-from collections import OrderedDict
-from re import search
+from collections import OrderedDict, namedtuple
+from copy import copy
+from re import match, search
 from os import path
 
 from requests import Session
@@ -34,6 +35,8 @@ from mlx.directives.item_list_directive import ItemList, ItemListDirective
 from mlx.directives.item_matrix_directive import ItemMatrix, ItemMatrixDirective
 from mlx.directives.item_pie_chart_directive import ItemPieChart, ItemPieChartDirective
 from mlx.directives.item_tree_directive import ItemTree, ItemTreeDirective
+
+ItemInfo = namedtuple('ItemInfo', 'attr_val mr_id')
 
 
 def generate_color_css(app, hyperlink_colors):
@@ -181,6 +184,12 @@ def process_item_nodes(app, doctree, fromdocname):
         node['line'] = node.line
         node.perform_replacement(app, env.traceability_collection)
 
+    for item_id, item_info in ChecklistItemDirective.query_results.copy().items():
+        if match(r"[A-Z\d_]+-[A-Z\d_]+", item_id):
+            report_warning("List item {!r} in merge/pull request {} is not defined as a checklist-item."
+                           .format(item_id, item_info.mr_id))
+            ChecklistItemDirective.query_results.pop(item_id)
+
 
 def init_available_relationships(app):
     """
@@ -287,7 +296,7 @@ def query_checklist(settings, attr_values):
         attr_values (list): List of the two possible attribute values (str).
 
     Returns:
-        (dict) The query results with zero or more key-value pairs in the form of {item ID: attribute value}.
+        (dict) The query results with zero or more key-value pairs in the form of {item ID: ItemInfo}.
     """
     query_results = {}
     headers = {}
@@ -316,13 +325,13 @@ def query_checklist(settings, attr_values):
 
         description = response.get(key)
         if description:
-            query_results = {**query_results, **_parse_description(description, attr_values)}
+            query_results = {**query_results, **_parse_description(description, attr_values, merge_request_id)}
         else:
             report_warning("The query did not return a description. URL = {}. Response = {}.".format(url, response))
     return query_results
 
 
-def _parse_description(description, attr_values):
+def _parse_description(description, attr_values, merge_request_id):
     """ Returns the relevant checklist information.
 
     The item IDs are expected to follow checkboxes directly and the attribute value depends on the status of the
@@ -331,9 +340,11 @@ def _parse_description(description, attr_values):
     Args:
         description (str): Description of the merge/pull request.
         attr_values (list): List of the two possible attribute values (str).
+        merge_request_id (int): Merge/Pull request ID.
 
     Returns:
-        (dict) Dictionary with key-value pairs with item IDs (str) as keys and the attribute values (str) as values.
+        (dict) Dictionary with key-value pairs with item IDs (str) as keys and ItemInfo (attr_val, mr_id) (namedtuple)
+            as values.
     """
     query_results = {}
     for line in description.split('\n'):
@@ -341,10 +352,10 @@ def _parse_description(description, attr_values):
         match = search(r"^\s*[\*-]\s+\[(?P<checkbox>[\sx])\]\s+(?P<target_id>[\w\-]+)", line)
         if match:
             if match.group('checkbox') == 'x':
-                attr_value = attr_values[0]
+                item_info = ItemInfo(attr_values[0], merge_request_id)
             else:
-                attr_value = attr_values[1]
-            query_results[match.group('target_id')] = attr_value
+                item_info = ItemInfo(attr_values[1], merge_request_id)
+            query_results[match.group('target_id')] = item_info
     return query_results
 
 # -----------------------------------------------------------------------------
