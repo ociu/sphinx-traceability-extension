@@ -371,6 +371,7 @@ traceability_checklist = {
     'api_host_name': config('API_HOST_NAME', 'https://api.github.com'),
     'project_id': config('PROJECT_ID', 'melexis/sphinx-traceability-extension'),
     'merge_request_id': config('MERGE_REQUEST_ID', '121,138'),
+    'checklist_item_regex': r"[A-Z\d_\-]+",
     'attribute_name': config('ATTRIBUTE_NAME', 'checked'),
     'attribute_to_str': config('ATTRIBUTE_TO_STRING', 'Answer'),
     'attribute_values': config('ATTRIBUTE_VALUES', 'yes,no'),

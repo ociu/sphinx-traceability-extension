@@ -183,8 +183,9 @@ def process_item_nodes(app, doctree, fromdocname):
         node['line'] = node.line
         node.perform_replacement(app, env.traceability_collection)
 
+    regex = app.config.traceability_checklist['checklist_item_regex']
     for item_id, item_info in ChecklistItemDirective.query_results.copy().items():
-        if match(r"[A-Z\d_]+-[A-Z\d_]+", item_id):
+        if match(regex, item_id):
             report_warning("List item {!r} in merge/pull request {} is not defined as a checklist-item."
                            .format(item_id, item_info.mr_id))
             ChecklistItemDirective.query_results.pop(item_id)
@@ -196,7 +197,7 @@ def init_available_relationships(app):
     configuration file ``traceability_attributes`` variable.
 
     Update directive option_spec with custom relationships defined in
-    configuration file ``traceability_relationships`` variable.  Both
+    configuration file ``traceability_relationships`` variable. Both
     keys (relationships) and values (reverse relationships) are added.
 
     This handler should be called upon builder initialization, before
@@ -255,7 +256,9 @@ def initialize_environment(app):
 # Event handler helper functions
 
 def add_checklist_attribute(checklist_config, attributes_config, attribute_to_string_config):
-    """ Adds the specified attribute for checklist items to the application configuration variables.
+    """
+    Adds the specified attribute for checklist items to the application configuration variables.
+    Sets the checklist_item_regex if it's not configured.
 
     Reports a warning when the TARGET_ATTRIBUTE_VALUES variable is not string of two comma-separated attribute values.
 
@@ -264,6 +267,9 @@ def add_checklist_attribute(checklist_config, attributes_config, attribute_to_st
         attributes_config (dict): Dictionary containing the attribute configuration parameters for regular items.
         attribute_to_string_config (dict): Dictionary mapping an attribute to its string representation.
     """
+    if checklist_config.get('checklist_item_regex') is None:
+        checklist_config['checklist_item_regex'] = r"\S+"
+
     attr_values = checklist_config['attribute_values'].split(',')
     if len(attr_values) != 2:
         report_warning("Checklist attribute values must be two comma-separated strings; got '{}'."
@@ -324,13 +330,14 @@ def query_checklist(settings, attr_values):
 
         description = response.get(key)
         if description:
-            query_results = {**query_results, **_parse_description(description, attr_values, merge_request_id)}
+            query_results = {**query_results, **_parse_description(description, attr_values, merge_request_id,
+                                                                   settings['checklist_item_regex'])}
         else:
             report_warning("The query did not return a description. URL = {}. Response = {}.".format(url, response))
     return query_results
 
 
-def _parse_description(description, attr_values, merge_request_id):
+def _parse_description(description, attr_values, merge_request_id, regex):
     """ Returns the relevant checklist information.
 
     The item IDs are expected to follow checkboxes directly and the attribute value depends on the status of the
@@ -340,6 +347,7 @@ def _parse_description(description, attr_values, merge_request_id):
         description (str): Description of the merge/pull request.
         attr_values (list): List of the two possible attribute values (str).
         merge_request_id (int): Merge/Pull request ID.
+        regex (str): Regular expression for matching the item ID.
 
     Returns:
         (dict) Dictionary with key-value pairs with item IDs (str) as keys and ItemInfo (attr_val, mr_id) (namedtuple)
@@ -348,7 +356,7 @@ def _parse_description(description, attr_values, merge_request_id):
     query_results = {}
     for line in description.split('\n'):
         # catch the content of checkbox and the item ID after the checkbox
-        cli_match = search(r"^\s*[\*-]\s+\[(?P<checkbox>[\sx])\]\s+(?P<target_id>[\w\-]+)", line)
+        cli_match = search(r"^\s*[\*\-]\s+\[(?P<checkbox>[\sx])\]\s+(?P<target_id>{})".format(regex), line)
         if cli_match:
             if cli_match.group('checkbox') == 'x':
                 item_info = ItemInfo(attr_values[0], merge_request_id)
