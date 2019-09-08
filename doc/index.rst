@@ -12,4 +12,3 @@ Documentation mlx.traceability
 
     readme
     example_usage
-    meeting_notes

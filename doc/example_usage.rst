@@ -10,3 +10,4 @@ Example usage
     implementation
     integration_test_report
     checklist
+    meeting_notes
