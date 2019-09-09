@@ -35,9 +35,9 @@ Checklist items
 
 .. checklist-item:: QUE_MEETING-TEST_GUIDELINES Does the test report follow the guidelines?
 
-.. checklist-item:: ITEM_MISSING_FROM_CHECKLIST Triggers a warning
+.. checklist-item:: ITEM_MISSING_FROM_CHECKLIST Does not trigger a warning
 
-    This item ID is not present in the checklist of the pull request and should trigger a warning.
+    This item ID is not present in the checklist of the pull request, but this should not trigger a warning.
 
 .. checklist-item:: CL-SOME_ITEM A checklist item from a different PR
     :nocaptions:
