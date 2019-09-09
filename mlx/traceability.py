@@ -7,8 +7,8 @@ Sphinx extension for reStructuredText that added traceable documentation items.
 See readme for more details.
 '''
 
-from collections import OrderedDict
-from re import search
+from collections import OrderedDict, namedtuple
+from re import match, search
 from os import path
 
 from requests import Session
@@ -23,16 +23,19 @@ from mlx.traceable_base_node import TraceableBaseNode
 from mlx.traceable_item import TraceableItem
 from mlx.traceable_collection import TraceableCollection
 from mlx.traceability_exception import TraceabilityException, MultipleTraceabilityExceptions, report_warning
+from mlx.directives.checkbox_result_directive import CheckboxResultDirective
+from mlx.directives.checklist_item_directive import ChecklistItemDirective
 from mlx.directives.item_directive import Item, ItemDirective
 from mlx.directives.item_2d_matrix_directive import Item2DMatrix, Item2DMatrixDirective
 from mlx.directives.item_attribute_directive import ItemAttribute, ItemAttributeDirective
 from mlx.directives.item_attributes_matrix_directive import ItemAttributesMatrix, ItemAttributesMatrixDirective
-from mlx.directives.checklist_item_directive import ChecklistItemDirective
 from mlx.directives.item_link_directive import ItemLink, ItemLinkDirective
 from mlx.directives.item_list_directive import ItemList, ItemListDirective
 from mlx.directives.item_matrix_directive import ItemMatrix, ItemMatrixDirective
 from mlx.directives.item_pie_chart_directive import ItemPieChart, ItemPieChartDirective
 from mlx.directives.item_tree_directive import ItemTree, ItemTreeDirective
+
+ItemInfo = namedtuple('ItemInfo', 'attr_val mr_id')
 
 
 def generate_color_css(app, hyperlink_colors):
@@ -180,6 +183,13 @@ def process_item_nodes(app, doctree, fromdocname):
         node['line'] = node.line
         node.perform_replacement(app, env.traceability_collection)
 
+    regex = app.config.traceability_checklist['checklist_item_regex']
+    for item_id, item_info in ChecklistItemDirective.query_results.copy().items():
+        if match(regex, item_id):
+            report_warning("List item {!r} in merge/pull request {} is not defined as a checklist-item."
+                           .format(item_id, item_info.mr_id))
+            ChecklistItemDirective.query_results.pop(item_id)
+
 
 def init_available_relationships(app):
     """
@@ -187,7 +197,7 @@ def init_available_relationships(app):
     configuration file ``traceability_attributes`` variable.
 
     Update directive option_spec with custom relationships defined in
-    configuration file ``traceability_relationships`` variable.  Both
+    configuration file ``traceability_relationships`` variable. Both
     keys (relationships) and values (reverse relationships) are added.
 
     This handler should be called upon builder initialization, before
@@ -246,7 +256,9 @@ def initialize_environment(app):
 # Event handler helper functions
 
 def add_checklist_attribute(checklist_config, attributes_config, attribute_to_string_config):
-    """ Adds the specified attribute for checklist items to the application configuration variables.
+    """
+    Adds the specified attribute for checklist items to the application configuration variables.
+    Sets the checklist_item_regex if it's not configured.
 
     Reports a warning when the TARGET_ATTRIBUTE_VALUES variable is not string of two comma-separated attribute values.
 
@@ -255,12 +267,15 @@ def add_checklist_attribute(checklist_config, attributes_config, attribute_to_st
         attributes_config (dict): Dictionary containing the attribute configuration parameters for regular items.
         attribute_to_string_config (dict): Dictionary mapping an attribute to its string representation.
     """
+    if checklist_config.get('checklist_item_regex') is None:
+        checklist_config['checklist_item_regex'] = r"\S+"
+
     attr_values = checklist_config['attribute_values'].split(',')
     if len(attr_values) != 2:
         report_warning("Checklist attribute values must be two comma-separated strings; got '{}'."
                        .format(checklist_config['attribute_values']))
     else:
-        regexp = "[{}|{}]".format(attr_values[0], attr_values[1])
+        regexp = "({}|{})".format(attr_values[0], attr_values[1])
         attributes_config[checklist_config['attribute_name']] = regexp
         attribute_to_string_config[checklist_config['attribute_name']] = checklist_config['attribute_to_str']
         ChecklistItemDirective.query_results = query_checklist(checklist_config, attr_values)
@@ -286,7 +301,7 @@ def query_checklist(settings, attr_values):
         attr_values (list): List of the two possible attribute values (str).
 
     Returns:
-        (dict) The query results with zero or more key-value pairs in the form of {item ID: attribute value}.
+        (dict) The query results with zero or more key-value pairs in the form of {item ID: ItemInfo}.
     """
     query_results = {}
     headers = {}
@@ -315,13 +330,14 @@ def query_checklist(settings, attr_values):
 
         description = response.get(key)
         if description:
-            query_results = {**query_results, **_parse_description(description, attr_values)}
+            query_results = {**query_results, **_parse_description(description, attr_values, merge_request_id,
+                                                                   settings['checklist_item_regex'])}
         else:
             report_warning("The query did not return a description. URL = {}. Response = {}.".format(url, response))
     return query_results
 
 
-def _parse_description(description, attr_values):
+def _parse_description(description, attr_values, merge_request_id, regex):
     """ Returns the relevant checklist information.
 
     The item IDs are expected to follow checkboxes directly and the attribute value depends on the status of the
@@ -330,20 +346,23 @@ def _parse_description(description, attr_values):
     Args:
         description (str): Description of the merge/pull request.
         attr_values (list): List of the two possible attribute values (str).
+        merge_request_id (int): Merge/Pull request ID.
+        regex (str): Regular expression for matching the item ID.
 
     Returns:
-        (dict) Dictionary with key-value pairs with item IDs (str) as keys and the attribute values (str) as values.
+        (dict) Dictionary with key-value pairs with item IDs (str) as keys and ItemInfo (attr_val, mr_id) (namedtuple)
+            as values.
     """
     query_results = {}
     for line in description.split('\n'):
         # catch the content of checkbox and the item ID after the checkbox
-        match = search(r"^\s*[\*-]\s+\[(?P<checkbox>[\sx])\]\s+(?P<target_id>[\w\-]+)", line)
-        if match:
-            if match.group('checkbox') == 'x':
-                attr_value = attr_values[0]
+        cli_match = search(r"^\s*[\*\-]\s+\[(?P<checkbox>[\sx])\]\s+(?P<target_id>{})".format(regex), line)
+        if cli_match:
+            if cli_match.group('checkbox') == 'x':
+                item_info = ItemInfo(attr_values[0], merge_request_id)
             else:
-                attr_value = attr_values[1]
-            query_results[match.group('target_id')] = attr_value
+                item_info = ItemInfo(attr_values[1], merge_request_id)
+            query_results[cli_match.group('target_id')] = item_info
     return query_results
 
 # -----------------------------------------------------------------------------
@@ -468,6 +487,7 @@ def setup(app):
 
     app.add_directive('item', ItemDirective)
     app.add_directive('checklist-item', ChecklistItemDirective)
+    app.add_directive('checkbox-result', CheckboxResultDirective)
     app.add_directive('item-attribute', ItemAttributeDirective)
     app.add_directive('item-list', ItemListDirective)
     app.add_directive('item-matrix', ItemMatrixDirective)

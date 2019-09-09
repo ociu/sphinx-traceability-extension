@@ -22,13 +22,12 @@ class ChecklistItemDirective(ItemDirective):
 
         try:
             item = env.traceability_collection.get_item(target_id)
-            item.add_attribute(app.config.traceability_checklist['attribute_name'], self.query_results[target_id])
+            item.add_attribute(app.config.traceability_checklist['attribute_name'],
+                               self.query_results.pop(target_id).attr_val)
         except TraceabilityException as err:
             report_warning(err, env.docname, self.lineno)
         except KeyError as err:
-            report_warning("Could not find item {} in a checklist; only {}."
-                           .format(err, list(self.query_results)),
-                           env.docname,
-                           self.lineno)
+            # the checklist-item can still get the checklist_attribute by the checkbox-result directive
+            pass
 
         return [target_node, item_node]
