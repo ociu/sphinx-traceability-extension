@@ -824,14 +824,18 @@ The configuration of this feature is stored in the configuration variable *trace
 .. code-block:: python
 
     traceability_checklist = {
-        'private_token': config('PRIVATE_TOKEN'),
-        'api_host_name': config('API_HOST_NAME'),
-        'project_id': config('PROJECT_ID'),
-        'merge_request_id': config('MERGE_REQUEST_ID'),
-        'attribute_name': config('TARGET_ATTRIBUTE_NAME'),
-        'attribute_to_str': config('TARGET_ATTRIBUTE_TO_STRING'),
-        'attribute_values': config('TARGET_ATTRIBUTE_VALUES'),
+        'private_token': config('PRIVATE_TOKEN', ''),
+        'api_host_name': config('API_HOST_NAME', 'https://api.github.com'),
+        'project_id': config('PROJECT_ID', 'melexis/sphinx-traceability-extension'),
+        'merge_request_id': config('MERGE_REQUEST_ID', '121,138'),
+        'checklist_item_regex': r"[A-Z\d_\-]+",
+        'attribute_name': config('ATTRIBUTE_NAME', 'checked'),
+        'attribute_to_str': config('ATTRIBUTE_TO_STRING', 'Answer'),
+        'attribute_values': config('ATTRIBUTE_VALUES', 'yes,no'),
     }
+
+If the *checklist_item_regex* is configured, a warning is reported for each item ID that matches it and is not defined
+with the *checklist-item* directive.
 
 In this default configuration the variables are fetched from the environment, e.g. by using a ``.env`` file.
 
