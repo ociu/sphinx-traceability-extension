@@ -8,7 +8,7 @@ See readme for more details.
 '''
 
 from collections import OrderedDict, namedtuple
-from re import match, search
+from re import match
 from os import path
 
 from requests import Session
@@ -184,11 +184,11 @@ def process_item_nodes(app, doctree, fromdocname):
         node.perform_replacement(app, env.traceability_collection)
 
     regex = app.config.traceability_checklist['checklist_item_regex']
-    for item_id, item_info in ChecklistItemDirective.query_results.copy().items():
+    for item_id in list(ChecklistItemDirective.query_results):
         if match(regex, item_id):
+            item_info = ChecklistItemDirective.query_results.pop(item_id)
             report_warning("List item {!r} in merge/pull request {} is not defined as a checklist-item."
                            .format(item_id, item_info.mr_id))
-            ChecklistItemDirective.query_results.pop(item_id)
 
 
 def init_available_relationships(app):
@@ -356,7 +356,7 @@ def _parse_description(description, attr_values, merge_request_id, regex):
     query_results = {}
     for line in description.split('\n'):
         # catch the content of checkbox and the item ID after the checkbox
-        cli_match = search(r"^\s*[\*\-]\s+\[(?P<checkbox>[\sx])\]\s+(?P<target_id>{})".format(regex), line)
+        cli_match = match(r"\s*[\*\-]\s+\[(?P<checkbox>[\sx])\]\s+(?P<target_id>{})".format(regex), line)
         if cli_match:
             if cli_match.group('checkbox') == 'x':
                 item_info = ItemInfo(attr_values[0], merge_request_id)
