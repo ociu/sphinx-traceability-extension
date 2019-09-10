@@ -170,6 +170,8 @@ def process_item_nodes(app, doctree, fromdocname):
     Replace all ItemList nodes with a list of the collected items.
     Augment each item with a backlink to the original location.
 
+    If the ``checklist_item_regex`` is configured, a warning is reported
+    for each item ID that matches it and is not defined as a checklist-item.
     """
     env = app.builder.env
 
@@ -183,12 +185,13 @@ def process_item_nodes(app, doctree, fromdocname):
         node['line'] = node.line
         node.perform_replacement(app, env.traceability_collection)
 
-    regex = app.config.traceability_checklist['checklist_item_regex']
-    for item_id in list(ChecklistItemDirective.query_results):
-        if fullmatch(regex, item_id):
-            item_info = ChecklistItemDirective.query_results.pop(item_id)
-            report_warning("List item {!r} in merge/pull request {} is not defined as a checklist-item."
-                           .format(item_id, item_info.mr_id))
+    regex = app.config.traceability_checklist.get('checklist_item_regex')
+    if regex is not None:
+        for item_id in list(ChecklistItemDirective.query_results):
+            if fullmatch(regex, item_id):
+                item_info = ChecklistItemDirective.query_results.pop(item_id)
+                report_warning("List item {!r} in merge/pull request {} is not defined as a checklist-item."
+                               .format(item_id, item_info.mr_id))
 
 
 def init_available_relationships(app):
