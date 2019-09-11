@@ -24,10 +24,14 @@ class CheckboxResultDirective(TraceableBaseDirective):
 
         target_id = self.arguments[0]
         attribute_value = self.arguments[1]
-        try:
-            checklist_item = env.traceability_collection.get_item(target_id)
-        except TraceabilityException as err:
-            report_warning(err, env.docname, self.lineno)
+        checklist_item = env.traceability_collection.get_item(target_id)
+        if not checklist_item:
+            report_warning("Could not find item ID {!r}".format(target_id), env.docname, self.lineno)
+            return []
+
+        if not app.config.traceability_checklist.get('configured'):
+            raise TraceabilityException("The checklist attribute in 'traceability_checklist' is not configured "
+                                        "properly. See documentation for more details.")
 
         checklist_attribute_name = app.config.traceability_checklist['attribute_name']
         regexp = app.config.traceability_attributes[checklist_attribute_name]

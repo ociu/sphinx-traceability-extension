@@ -19,7 +19,11 @@ class ChecklistItemDirective(ItemDirective):
 
         [target_node, item_node] = super().run()
         target_id = self.arguments[0]
+        app.config.traceability_checklist['has_checklist_items'] = True
 
+        if not app.config.traceability_checklist.get('configured'):
+            raise TraceabilityException("The checklist attribute in 'traceability_checklist' is not configured "
+                                        "properly. See documentation for more details.")
         try:
             item = env.traceability_collection.get_item(target_id)
             item.add_attribute(app.config.traceability_checklist['attribute_name'],
