@@ -819,25 +819,26 @@ This directive gets treated the same as the *item* directive, except that an add
 item's ID exists in the checklist. The attribute's value depends on the status of the checkbox. The plugin queries the
 API of GitLab/GitHub for the description of the configured merge request.
 
-The configuration of this feature is stored in the configuration variable *traceability_checklist*.
+The configuration of this feature is stored in the configuration variable *traceability_checklist*. Only the
+*attribute_*-keys are mandatory to use the *checklist-item* directive.
 
 .. code-block:: python
 
     traceability_checklist = {
-        'private_token': config('PRIVATE_TOKEN', ''),
-        'api_host_name': config('API_HOST_NAME', 'https://api.github.com'),
-        'project_id': config('PROJECT_ID', 'melexis/sphinx-traceability-extension'),
-        'merge_request_id': config('MERGE_REQUEST_ID', '121,138'),
-        'checklist_item_regex': r"[A-Z\d_\-]+",
-        'attribute_name': config('ATTRIBUTE_NAME', 'checked'),
-        'attribute_to_str': config('ATTRIBUTE_TO_STRING', 'Answer'),
-        'attribute_values': config('ATTRIBUTE_VALUES', 'yes,no'),
+        'private_token': 'your_private_token',  # optional, depending on accessibility
+        'api_host_name': 'https://api.github.com' or 'https://gitlab.example.com/api/v4',
+        'project_id': 'the_owner/your_repo' or 'your_project_id',
+        'merge_request_id': 'your_merge_request_id(s)'),  # comma-separated if more than one
+        'checklist_item_regex': 'your_item_id_regex',  # optional, the default is r"\S+"
+        'attribute_name': 'your_attribute_name',
+        'attribute_to_str': 'your_attribute_to_string'),
+        'attribute_values': 'your_attribute_values',  # two values, comma-separated
     }
 
 If the *checklist_item_regex* is configured, a warning is reported for each item ID that matches it and is not defined
 with the *checklist-item* directive.
 
-In this default configuration the variables are fetched from the environment, e.g. by using a ``.env`` file.
+In our *conf.py* the variables are looked for in the environment first, e.g. in a ``.env`` file.
 
 .. code-block:: bash
 
