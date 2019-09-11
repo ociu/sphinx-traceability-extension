@@ -186,7 +186,7 @@ def process_item_nodes(app, doctree, fromdocname):
         node.perform_replacement(app, env.traceability_collection)
 
     regex = app.config.traceability_checklist.get('checklist_item_regex')
-    if regex is not None:
+    if regex is not None and app.config.traceability_checklist['has_checklist_items']:
         for item_id in list(ChecklistItemDirective.query_results):
             if fullmatch(regex, item_id):
                 item_info = ChecklistItemDirective.query_results.pop(item_id)
@@ -240,10 +240,10 @@ def initialize_environment(app):
     # database of items needs to be empty on every re-build.
     env.traceability_collection = TraceableCollection()
 
-    if app.config.traceability_checklist:
-        add_checklist_attribute(app.config.traceability_checklist,
-                                app.config.traceability_attributes,
-                                app.config.traceability_attribute_to_string)
+    app.config.traceability_checklist['has_checklist_items'] = False
+    add_checklist_attribute(app.config.traceability_checklist,
+                            app.config.traceability_attributes,
+                            app.config.traceability_attribute_to_string)
 
     init_available_relationships(app)
 
@@ -263,25 +263,35 @@ def add_checklist_attribute(checklist_config, attributes_config, attribute_to_st
     Adds the specified attribute for checklist items to the application configuration variables.
     Sets the checklist_item_regex if it's not configured.
 
-    Reports a warning when the TARGET_ATTRIBUTE_VALUES variable is not string of two comma-separated attribute values.
+    Reports a warning if the value for 'attribute_values' is not a string of two comma-separated attribute values.
 
     Args:
         checklist_config (dict): Dictionary containing the attribute configuration parameters for checklist items.
         attributes_config (dict): Dictionary containing the attribute configuration parameters for regular items.
         attribute_to_string_config (dict): Dictionary mapping an attribute to its string representation.
     """
-    if checklist_config.get('checklist_item_regex') is None:
-        checklist_config['checklist_item_regex'] = r"\S+"
+    missing_keys = 0
+    for key in ('attribute_name', 'attribute_to_str', 'attribute_values'):
+        missing_keys += 1 if not checklist_config.get(key) else 0
 
-    attr_values = checklist_config['attribute_values'].split(',')
-    if len(attr_values) != 2:
-        report_warning("Checklist attribute values must be two comma-separated strings; got '{}'."
-                       .format(checklist_config['attribute_values']))
+    if missing_keys:
+        checklist_config['configured'] = False
     else:
-        regexp = "({}|{})".format(attr_values[0], attr_values[1])
-        attributes_config[checklist_config['attribute_name']] = regexp
-        attribute_to_string_config[checklist_config['attribute_name']] = checklist_config['attribute_to_str']
-        ChecklistItemDirective.query_results = query_checklist(checklist_config, attr_values)
+        checklist_config['configured'] = True
+        if not checklist_config.get('checklist_item_regex'):
+            checklist_config['checklist_item_regex'] = r"\S+"
+
+        attr_values = checklist_config['attribute_values'].split(',')
+        if len(attr_values) != 2:
+            raise TraceabilityException("Checklist attribute values must be two comma-separated strings; got '{}'."
+                                        .format(checklist_config['attribute_values']))
+        else:
+            regexp = "({}|{})".format(attr_values[0], attr_values[1])
+            attributes_config[checklist_config['attribute_name']] = regexp
+            attribute_to_string_config[checklist_config['attribute_name']] = checklist_config['attribute_to_str']
+            if checklist_config.get('api_host_name') and checklist_config.get('project_id') and \
+                checklist_config.get('merge_request_id'):
+                ChecklistItemDirective.query_results = query_checklist(checklist_config, attr_values)
 
 
 def define_attribute(attr, app):
@@ -308,6 +318,8 @@ def query_checklist(settings, attr_values):
     """
     query_results = {}
     headers = {}
+    if not settings.get('private_token'):
+        settings['private_token'] = ''
     if 'github' in settings['api_host_name']:
         # explicitly request the v3 version of the REST API
         headers['Accept'] = 'application/vnd.github.v3+json'
@@ -322,7 +334,6 @@ def query_checklist(settings, attr_values):
                                                            settings['project_id'],)
         key = 'description'
     else:
-        report_warning("Invalid API_HOST_NAME '{}'".format(settings['api_host_name']))
         return {}
 
     for merge_request_id in str(settings['merge_request_id']).split(','):
