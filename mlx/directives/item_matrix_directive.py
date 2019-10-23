@@ -19,7 +19,7 @@ class ItemMatrix(TraceableBaseNode):
             app: Sphinx application object to use.
             collection (TraceableCollection): Collection for which to generate the nodes.
         """
-        Rows = namedtuple('Rows', "covered uncovered", defaults=([], []))
+        Rows = namedtuple('Rows', "covered uncovered")
         showcaptions = not self['nocaptions']
         source_ids = collection.get_items(self['source'], self['filter-attributes'])
         target_ids = collection.get_items(self['target'])
@@ -45,7 +45,7 @@ class ItemMatrix(TraceableBaseNode):
 
         count_total = 0
         count_covered = 0
-        rows_container = Rows()
+        rows_container = Rows([], [])
         for source_id in source_ids:
             source_item = collection.get_item(source_id)
             count_total += 1
