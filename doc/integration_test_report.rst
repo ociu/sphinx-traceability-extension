@@ -253,6 +253,7 @@ All relationships
 .. item-matrix:: All (no captions)
     :nocaptions:
     :stats:
+    :group: bottom
 
 All relationships with items having ASIL-C/D attribute
 ------------------------------------------------------

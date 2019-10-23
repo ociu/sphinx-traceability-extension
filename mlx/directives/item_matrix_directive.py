@@ -1,6 +1,8 @@
+from collections import namedtuple
 from docutils import nodes
 from docutils.parsers.rst import directives
 
+from mlx.traceability_exception import report_warning
 from mlx.traceable_base_directive import TraceableBaseDirective
 from mlx.traceable_base_node import TraceableBaseNode, REGEXP_EXTERNAL_RELATIONSHIP
 
@@ -17,6 +19,7 @@ class ItemMatrix(TraceableBaseNode):
             app: Sphinx application object to use.
             collection (TraceableCollection): Collection for which to generate the nodes.
         """
+        Rows = namedtuple('Rows', "covered uncovered", defaults=([], []))
         showcaptions = not self['nocaptions']
         source_ids = collection.get_items(self['source'], self['filter-attributes'])
         target_ids = collection.get_items(self['target'])
@@ -42,7 +45,7 @@ class ItemMatrix(TraceableBaseNode):
 
         count_total = 0
         count_covered = 0
-
+        rows_container = Rows()
         for source_id in source_ids:
             source_item = collection.get_item(source_id)
             count_total += 1
@@ -60,11 +63,25 @@ class ItemMatrix(TraceableBaseNode):
                 if collection.are_related(source_id, relationships, target_id):
                     right += self.make_internal_item_ref(app, target_id, showcaptions)
                     covered = True
-            if covered:
-                count_covered += 1
+
             row += left
             row += right
-            tbody += row
+
+            if covered:
+                count_covered += 1
+                rows_container.covered.append(row)
+            else:
+                rows_container.uncovered.append(row)
+
+            if not self['group']:
+                tbody += row
+
+        if self['group'] == 'top':
+            tbody += rows_container.uncovered
+            tbody += rows_container.covered
+        elif self['group'] == 'bottom':
+            tbody += rows_container.covered
+            tbody += rows_container.uncovered
 
         try:
             percentage = int(100 * count_covered / count_total)
@@ -97,6 +114,7 @@ class ItemMatrixDirective(TraceableBaseDirective):
          :targettitle: Target column header
          :sourcetitle: Source column header
          :type: <<relationship>> ...
+         :group: top | bottom
          :stats:
          :nocaptions:
     """
@@ -110,6 +128,7 @@ class ItemMatrixDirective(TraceableBaseDirective):
         'targettitle': directives.unchanged,
         'sourcetitle': directives.unchanged,
         'type': directives.unchanged,  # a string with relationship types separated by space
+        'group': directives.unchanged,
         'stats': directives.flag,
         'nocaptions': directives.flag,
     }
@@ -138,6 +157,19 @@ class ItemMatrixDirective(TraceableBaseDirective):
                               'sourcetitle': 'Source',
                               'type': [],
                               })
+
+        # Process ``group`` option, given as a string that is either top or bottom or empty ().
+        if 'group' in self.options:
+            group_attr = self.options['group']
+            if group_attr == 'bottom':
+                item_matrix_node['group'] = 'bottom'
+            else:
+                if group_attr and group_attr != 'top':
+                    report_warning("Argument for 'group' attribute should be 'top' or 'bottom'; got '{}'. "
+                                   "Using default 'top'.".format(group_attr), env.docname, self.lineno)
+                item_matrix_node['group'] = 'top'
+        else:
+            item_matrix_node['group'] = ''
 
         self.check_relationships(item_matrix_node['type'], env)
 
