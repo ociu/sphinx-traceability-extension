@@ -4,7 +4,7 @@
 
 .. image:: https://badge.fury.io/py/mlx.traceability.png
     :target: https://badge.fury.io/py/mlx.traceability
-    :alt: Pypi packaged release
+    :alt: PyPI packaged release
 
 .. image:: https://travis-ci.org/melexis/sphinx-traceability-extension.png?branch=master
     :target: https://travis-ci.org/melexis/sphinx-traceability-extension
@@ -665,6 +665,7 @@ A traceability matrix of documentation items can be generated using:
         :type: validated_by
         :nocaptions:
         :stats:
+        :group: bottom
 
 where the *source* and *target* arguments can be replaced by any Python regular expression.
 
@@ -688,6 +689,9 @@ matrix. The plugin counts the number of items having a target item in the target
 and the number of items having no target in the target-column (=not covered or allocated). And calculates a
 coverage/allocation percentage from these counts. If the *stats* flag is not given, this percentage is not
 displayed.
+
+The *group* argument can be used to group source items that don't have any target items. You can explicitly specify to
+have them grouped at the *top* or *bottom* of the matrix. If no argument is given, they will be grouped at the top.
 
 Optionally, the *class* attribute can be specified to customize table output, especially useful when rendering to
 LaTeX. Normally the *longtable* class is used when the number of rows is greater than 30 which allows long tables to
