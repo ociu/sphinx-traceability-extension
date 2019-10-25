@@ -363,7 +363,8 @@ traceability_hyperlink_colors = OrderedDict([
 # traceability_render_attributes_per_item = False
 # traceability_collapse_links = True
 
-# -- Options for checklist feature ----------------------------------------
+# Options for checklist-item directive
+# Documentation: https://melexis.github.io/sphinx-traceability-extension/readme.html#id2
 from decouple import config
 
 traceability_checklist = {

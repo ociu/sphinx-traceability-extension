@@ -803,62 +803,27 @@ values of this attribute, ordered in priority from high to low. Using this optio
 label. In this example an RQT item with multiple TEST items, one with a *fail* and others a *pass* as *result* value in
 the TEST_REP item, will be added to the *fail* slice of the pie chart.
 
+.. _traceability_checklist:
 
-Retrieving checklist values from GitLab/GitHub (advanced)
-=========================================================
+Defining items with a custom checklist attribute (advanced)
+===========================================================
 
 The plugin can add an additional attribute to a traceability item if its item ID exists in a checklist inside the
-description of a merge/pull request. Documentation items can be linked to a checklist by defining them with the
-*checklist-item* directive.
+description of a merge/pull request or its item ID is used in a *checklist-result* directive. Documentation items can be
+linked to a checklist by defining them with the *checklist-item* directive. This custom directive inherits all
+functionality of the regular *item* directive.
 
 .. code-block:: rest
 
     .. checklist-item:: PLAN-UNIT_TESTS Have you added unit tests for regression detection?
 
-This directive gets treated the same as the *item* directive, except that an additional attribute gets added when the
-item's ID exists in the checklist. The attribute's value depends on the status of the checkbox. The plugin queries the
-API of GitLab/GitHub for the description of the configured merge request.
+Setting the additional attribute's value
+----------------------------------------
 
-The configuration of this feature is stored in the configuration variable *traceability_checklist*. Only the
-*attribute_*-keys are mandatory to use the *checklist-item* directive.
+There are two different ways to set the value of the additional attribute. They can be combined, and the first has
+priority over the second:
 
-.. code-block:: python
-
-    traceability_checklist = {
-        'private_token': 'your_private_token',  # optional, depending on accessibility
-        'api_host_name': 'https://api.github.com' or 'https://gitlab.example.com/api/v4',
-        'project_id': 'the_owner/your_repo' or 'your_project_id',
-        'merge_request_id': 'your_merge_request_id(s)'),  # comma-separated if more than one
-        'checklist_item_regex': 'your_item_id_regex',  # optional, the default is r"\S+"
-        'attribute_name': 'your_attribute_name',
-        'attribute_to_str': 'your_attribute_to_string'),
-        'attribute_values': 'your_attribute_values',  # two values, comma-separated
-    }
-
-If the *checklist_item_regex* is configured, a warning is reported for each item ID that matches it and is not defined
-with the *checklist-item* directive.
-
-In our *conf.py* the variables are looked for in the environment first, e.g. in a ``.env`` file.
-
-.. code-block:: bash
-
-    # copy example .env to your .env
-    cp doc/.env.example .env
-
-    # add env variables by adjusting the template values in .env
-
-- *ATTRIBUTE_NAME* is the identifier of the attribute to be added, e.g. *checked*.
-- *ATTRIBUTE_TO_STRING* is the string representation (as to be rendered in html) of the attribute name, e.g. *Answer*.
-- *ATTRIBUTE_VALUES* are two comma-separated attribute values, e.g. *yes,no*. The first value is used when the checkbox is checked and the second value when unchecked.
-
-A query is sent to the GitLab/GitHub API to retrieve the status of every checkbox in the description of the merge/pull
-request. The traceability item's ID is expected to follow the checkbox directly.
-Example of a valid checklist in Markdown:
-
-.. code-block:: rest
-
-    - [x] PLAN-UNIT_TESTS Have you added unit tests for regression detection?
-    - [ ] PLAN-PACKAGE_TEST Have you tested the package?
+1. Use of *checkbox-result* directive
 
 The checkboxes can be checked/unchecked from RST as well by using the *checkbox-result* directive. The item ID should be
 of a checklist item and is expected to be present in a configured merge/pull request description. The caption should be
@@ -868,17 +833,69 @@ one of two configured values in *attribute_values*.
 
     .. checkbox-result:: QUE-UNIT_TESTS yes
 
-GitLab
-------
+2. Querying GitLab/GitHub
 
+A query is sent to the GitLab/GitHub API to retrieve the status of every checkbox in the description of the configured
+merge/pull request. The traceability item's ID is expected to follow the checkbox directly.
+Example of a valid checklist in Markdown:
+
+.. code-block:: rest
+
+    - [x] PLAN-UNIT_TESTS Have you added unit tests for regression detection?
+    - [ ] PLAN-PACKAGE_TEST Have you tested the package?
+
+Configuration
+-------------
+
+The configuration of this feature is stored in the configuration variable *traceability_checklist*. Only the
+*attribute_*-keys are mandatory to use the *checklist-item* directive. The other configuration variables are only used
+for querying GitLab/GitHub.
+
+.. code-block:: python
+
+    traceability_checklist = {
+        'attribute_name': 'your_attribute_name',
+        'attribute_to_str': 'your_attribute_to_string'),
+        'attribute_values': 'your_attribute_values',  # two values, comma-separated
+        'private_token': 'your_private_token',  # optional, depending on accessibility
+        'api_host_name': 'https://api.github.com' or 'https://gitlab.example.com/api/v4',
+        'project_id': 'the_owner/your_repo' or 'your_project_id',
+        'merge_request_id': 'your_merge_request_id(s)'),  # comma-separated if more than one
+        'checklist_item_regex': 'your_item_id_regex',  # optional, the default is r"\S+"
+    }
+
+If the *checklist_item_regex* is configured, a warning is reported for each item ID that matches it and is not defined
+with the *checklist-item* directive.
+
+Configuration via .env file
+```````````````````````````
+In our *conf.py* the variables are looked for in the environment first, e.g. in a ``.env`` file (by using the Python
+*decouple* module).
+
+.. code-block:: bash
+
+    # copy example .env to your .env
+    cp doc/.env.example .env
+
+    # add env variables by adjusting the template values in .env
+
+Common variables
+````````````````
+- *ATTRIBUTE_NAME* is the identifier of the attribute to be added, e.g. *checked*.
+- *ATTRIBUTE_TO_STRING* is the string representation (as to be rendered in html) of the attribute name, e.g. *Answer*.
+- *ATTRIBUTE_VALUES* are two comma-separated attribute values, e.g. *yes,no*. The first value is used when the checkbox is checked and the second value when unchecked.
+
+Query-specific variables
+````````````````````````
+GitLab
+''''''
 - *PRIVATE_TOKEN* is your personal access token that has API access.
 - *API_HOST_NAME* is the host name of the API, e.g. *https://gitlab.example.com/api/v4*
 - *PROJECT_ID* is the ID of the project.
 - *MERGE_REQUEST_ID* is the internal ID of the merge request.
 
 GitHub
-------
-
+''''''
 - *PRIVATE_TOKEN* is not needed for public repositories. Otherwise, it must be a `personal access token`_ with the access to the targeted scope.
 - *API_HOST_NAME* is the host name of the GitHub REST API v3: *https://api.github.com*
 - *PROJECT_ID* defines the repository by specifying *owner* and *repo* separated by a forward slash, e.g. *melexis/sphinx-traceability-extension*.
@@ -894,4 +911,3 @@ Process
 
 The Melexis.SWCC process has a Guideline for documenting in reStructuredText (RST). It holds guidelines for using
 the traceability plugin with naming conventions, templates, etc.
-
