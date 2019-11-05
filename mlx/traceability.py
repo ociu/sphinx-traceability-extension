@@ -198,6 +198,9 @@ def init_available_relationships(app):
     """
     Update directive option_spec with custom attributes defined in
     configuration file ``traceability_attributes`` variable.
+    Report a warning when the custom attribute overlaps with a
+    predefined directive attribute, in which case the custom attribute
+    will be ignored in that directive.
 
     Update directive option_spec with custom relationships defined in
     configuration file ``traceability_relationships`` variable. Both
@@ -209,16 +212,28 @@ def init_available_relationships(app):
     Function also passes relationships to traceability collection.
     """
     env = app.builder.env
+    directive_classes = (
+        ItemDirective,
+        ItemListDirective,
+        ItemMatrixDirective,
+        ItemPieChartDirective,
+        ItemAttributesMatrixDirective,
+        Item2DMatrixDirective,
+        ItemTreeDirective,
+    )
 
     for attr in app.config.traceability_attributes:
-        ItemDirective.option_spec[attr] = directives.unchanged
-        ItemListDirective.option_spec[attr] = directives.unchanged
-        ItemMatrixDirective.option_spec[attr] = directives.unchanged
-        ItemPieChartDirective.option_spec[attr] = directives.unchanged
-        ItemAttributesMatrixDirective.option_spec[attr] = directives.unchanged
-        Item2DMatrixDirective.option_spec[attr] = directives.unchanged
-        ItemTreeDirective.option_spec[attr] = directives.unchanged
+        conflicting_directives = []
+        for directive_class in directive_classes:
+            if attr in directive_class.option_spec:
+                conflicting_directives.append(directive_class.__name__)
+                directive_class.conflicting_options.append(attr)
+            else:
+                directive_class.option_spec[attr] = directives.unchanged
         define_attribute(attr, app)
+        if conflicting_directives:
+            report_warning("Your custom attribute {!r} is an attribute of directive(s) {!r} in which your attribute "
+                           "definition will be ignored.".format(attr, conflicting_directives))
 
     for rel in app.config.traceability_relationships:
         revrel = app.config.traceability_relationships[rel]
