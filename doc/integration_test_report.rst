@@ -179,7 +179,7 @@ Attribute details
 
 .. item-attribute:: ASIL The level for ASIL
 
-    In ISO26262 ASIL is defined as Automotive Safety Integrety Level. The level can be
+    In ISO26262 ASIL is defined as Automotive Safety Integrity Level. The level can be
     at A/B/C/D for increasing safety requirements.
 
 .. item-attribute:: ASPICE The level for A-SPICE
