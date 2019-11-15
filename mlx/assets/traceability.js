@@ -52,6 +52,10 @@ $(document).ready(function () {
             }
         );
     });
+
+    $('p.admonition-title').each(function (i) {
+        $(this).children('a').first().denyPermalinkStyling($(this));
+    });
 });
 
 // item
@@ -88,5 +92,11 @@ jQuery.fn.extend({
             });
             admonition.before(arrow);
         }
+    },
+
+    denyPermalinkStyling: function (admonition) {
+        $(this).css("color", admonition.css("color"));
+        $(this).css("text-decoration", admonition.css("text-decoration"));
+        $(this).children('em').first().css("font-style", admonition.css("font-style"));
     }
 });
