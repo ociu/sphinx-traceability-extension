@@ -34,7 +34,8 @@ class TraceableBaseNode(nodes.General, nodes.Element, ABC):
         admon_node['classes'].append('item')
         title_node = nodes.title()
         if app:
-            title_node += self.make_internal_item_ref(app, title).children[0]
+            showcaptions = not self['nocaptions']
+            title_node += self.make_internal_item_ref(app, title, showcaptions).children[0]
         else:
             title_node += nodes.Text(title)
         admon_node += title_node
