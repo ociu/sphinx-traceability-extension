@@ -4,6 +4,7 @@ from abc import abstractmethod, ABC
 
 from docutils import nodes
 from sphinx.errors import NoUri
+from sphinx.builders.latex import LaTeXBuilder
 
 from mlx.traceability_exception import report_warning
 from mlx.traceable_item import TraceableItem
@@ -89,7 +90,7 @@ class TraceableBaseNode(nodes.General, nodes.Element, ABC):
             if colors:
                 class_name = app.config.traceability_class_names[colors]
                 newnode['classes'].append(class_name)
-            if caption_on_hover:
+            if caption_on_hover and not isinstance(app.builder, LaTeXBuilder):
                 innernode['classes'].append('has_hidden_caption')
                 innernode.append(caption_on_hover)  # set to hidden in traceability.js
             newnode.append(innernode)
