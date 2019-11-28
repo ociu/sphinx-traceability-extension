@@ -103,7 +103,6 @@ Design coverage
     :target: DESIGN
     :sourcetitle: Requirement
     :targettitle: Design
-    :nocaptions:
     :stats:
 
 .. item-piechart:: Design coverage chart

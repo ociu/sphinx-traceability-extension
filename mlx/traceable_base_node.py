@@ -4,6 +4,7 @@ from abc import abstractmethod, ABC
 
 from docutils import nodes
 from sphinx.errors import NoUri
+from sphinx.builders.latex import LaTeXBuilder
 
 from mlx.traceability_exception import report_warning
 from mlx.traceable_item import TraceableItem
@@ -51,7 +52,7 @@ class TraceableBaseNode(nodes.General, nodes.Element, ABC):
             collection (TraceableCollection): Collection for which to generate the nodes.
         """
 
-    def make_internal_item_ref(self, app, item_id, caption=True):
+    def make_internal_item_ref(self, app, item_id, show_caption=True):
         """
         Creates a reference node for an item, embedded in a
         paragraph. Reference text adds also a caption if it exists.
@@ -60,18 +61,18 @@ class TraceableBaseNode(nodes.General, nodes.Element, ABC):
         item_info = env.traceability_collection.get_item(item_id)
 
         p_node = nodes.paragraph()
-        caption_on_hover = None
 
         # Only create link when target item exists, warn otherwise (in html and terminal)
         if self.has_warned_about_undefined(item_info):
             txt = nodes.Text('%s not defined, broken link' % item_id)
             p_node.append(txt)
         else:
-            if item_info.caption and caption:
-                caption = ' : {}'.format(item_info.caption)
-            else:
-                caption = ''
-                if item_info.caption:
+            caption_on_hover = None
+            caption = ''
+            if item_info.caption:
+                if show_caption:
+                    caption = ' : {}'.format(item_info.caption)
+                else:
                     caption_on_hover = nodes.inline('', item_info.caption)
                     caption_on_hover['classes'].append('popup_caption')
 
@@ -89,7 +90,7 @@ class TraceableBaseNode(nodes.General, nodes.Element, ABC):
             if colors:
                 class_name = app.config.traceability_class_names[colors]
                 newnode['classes'].append(class_name)
-            if caption_on_hover:
+            if caption_on_hover and not isinstance(app.builder, LaTeXBuilder):
                 innernode['classes'].append('has_hidden_caption')
                 innernode.append(caption_on_hover)  # set to hidden in traceability.js
             newnode.append(innernode)
