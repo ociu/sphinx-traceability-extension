@@ -17,8 +17,8 @@ setup(
     author='Stein Heselmans',
     author_email='teh@melexis.com',
     description='Sphinx traceability extension (Melexis fork)',
-    long_description=open("README.md").read(),
-    long_description_content_type='text/markdown',
+    long_description=open("doc/readme.rst").read(),
+    long_description_content_type='text/x-rst',
     zip_safe=False,
     classifiers=[
         'Development Status :: 5 - Production/Stable',
