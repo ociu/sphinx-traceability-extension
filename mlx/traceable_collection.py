@@ -261,7 +261,7 @@ class TraceableCollection:
             if self.items[itemid].is_placeholder():
                 continue
             if self.items[itemid].is_match(regex) and \
-                (not attributes or self.items[itemid].attributes_match(attributes)):
+                    (not attributes or self.items[itemid].attributes_match(attributes)):
                 matches.append(itemid)
         if sortattributes:
             matches = sorted(matches, key=lambda itemid: self.get_item(itemid).get_attributes(sortattributes),

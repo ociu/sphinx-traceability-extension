@@ -64,4 +64,3 @@ class TestTraceableBaseClass(TestCase):
         item.set_content(txt)
         self.assertEqual(txt, item.get_content())
         item.self_test()
-

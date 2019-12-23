@@ -265,14 +265,15 @@ def initialize_environment(app):
     # LaTeX-support: since we generate empty tags, we need to relax the verbosity of that error
     if 'preamble' not in app.config.latex_elements:
         app.config.latex_elements['preamble'] = ''
-    app.config.latex_elements['preamble'] += '''\
-\\makeatletter
-\\let\@noitemerr\\relax
-\\makeatother'''
+    app.config.latex_elements['preamble'] += (
+        r'\makeatletter'
+        r'\let\@noitemerr\relax'
+        r'\makeatother'
+    )
+
 
 # ----------------------------------------------------------------------------
 # Event handler helper functions
-
 def add_checklist_attribute(checklist_config, attributes_config, attribute_to_string_config):
     """
     Adds the specified attribute for checklist items to the application configuration variables.
@@ -305,7 +306,7 @@ def add_checklist_attribute(checklist_config, attributes_config, attribute_to_st
             attributes_config[checklist_config['attribute_name']] = regexp
             attribute_to_string_config[checklist_config['attribute_name']] = checklist_config['attribute_to_str']
             if checklist_config.get('api_host_name') and checklist_config.get('project_id') and \
-                checklist_config.get('merge_request_id'):
+                    checklist_config.get('merge_request_id'):
                 ChecklistItemDirective.query_results = query_checklist(checklist_config, attr_values)
 
 
@@ -394,9 +395,9 @@ def _parse_description(description, attr_values, merge_request_id, regex):
             query_results[cli_match.group('target_id')] = item_info
     return query_results
 
+
 # -----------------------------------------------------------------------------
 # Extension setup
-
 def setup(app):
     '''Extension setup'''
 
@@ -407,95 +408,103 @@ def setup(app):
     app.add_javascript('traceability.js')
 
     # Configuration for exporting collection to json
-    app.add_config_value('traceability_json_export_path',
-                         None, 'env')
+    app.add_config_value('traceability_json_export_path', None, 'env')
 
     # Configuration for adapting items through a callback
-    app.add_config_value('traceability_callback_per_item',
-                         None, 'env')
+    app.add_config_value('traceability_callback_per_item', None, 'env')
 
     # Create default attributes dictionary. Can be customized in conf.py
-    app.add_config_value('traceability_attributes',
-                         {'value': '^.*$',
-                          'asil': '^(QM|[ABCD])$',
-                          'aspice': '^[123]$',
-                          'status': '^.*$',
-                          'result': '(?i)^(pass|fail|error)$',},
-                         'env')
+    app.add_config_value(
+        'traceability_attributes',
+        {
+            'value': '^.*$',
+            'asil': '^(QM|[ABCD])$',
+            'aspice': '^[123]$',
+            'status': '^.*$',
+            'result': '(?i)^(pass|fail|error)$',
+        },
+        'env',
+    )
 
     # Configuration for translating the attribute keywords to rendered text
-    app.add_config_value('traceability_attribute_to_string',
-                         {'value': 'Value',
-                          'asil': 'ASIL',
-                          'aspice': 'ASPICE',
-                          'status': 'Status',
-                          'result': 'Result',},
-                         'env')
+    app.add_config_value(
+        'traceability_attribute_to_string',
+        {
+            'value': 'Value',
+            'asil': 'ASIL',
+            'aspice': 'ASPICE',
+            'status': 'Status',
+            'result': 'Result',
+        },
+        'env',
+    )
 
     # Create default relationships dictionary. Can be customized in conf.py
-    app.add_config_value('traceability_relationships',
-                         {'fulfills': 'fulfilled_by',
-                          'depends_on': 'impacts_on',
-                          'implements': 'implemented_by',
-                          'realizes': 'realized_by',
-                          'validates': 'validated_by',
-                          'trace': 'backtrace',
-                          'ext_toolname': '',},
-                         'env')
+    app.add_config_value(
+        'traceability_relationships',
+        {
+            'fulfills': 'fulfilled_by',
+            'depends_on': 'impacts_on',
+            'implements': 'implemented_by',
+            'realizes': 'realized_by',
+            'validates': 'validated_by',
+            'trace': 'backtrace',
+            'ext_toolname': '',
+        },
+        'env',
+    )
 
     # Configuration for translating the relationship keywords to rendered text
-    app.add_config_value('traceability_relationship_to_string',
-                         {'fulfills': 'Fulfills',
-                          'fulfilled_by': 'Fulfilled by',
-                          'depends_on': 'Depends on',
-                          'impacts_on': 'Impacts on',
-                          'implements': 'Implements',
-                          'implemented_by': 'Implemented by',
-                          'realizes': 'Realizes',
-                          'realized_by': 'Realized by',
-                          'validates': 'Validates',
-                          'validated_by': 'Validated by',
-                          'trace': 'Traces',
-                          'backtrace': 'Back traces',
-                          'ext_toolname': 'Reference to toolname',},
-                         'env')
+    app.add_config_value(
+        'traceability_relationship_to_string',
+        {
+            'fulfills': 'Fulfills',
+            'fulfilled_by': 'Fulfilled by',
+            'depends_on': 'Depends on',
+            'impacts_on': 'Impacts on',
+            'implements': 'Implements',
+            'implemented_by': 'Implemented by',
+            'realizes': 'Realizes',
+            'realized_by': 'Realized by',
+            'validates': 'Validates',
+            'validated_by': 'Validated by',
+            'trace': 'Traces',
+            'backtrace': 'Back traces',
+            'ext_toolname': 'Reference to toolname',
+        },
+        'env',
+    )
 
     # Configuration for translating external relationship to url
-    app.add_config_value('traceability_external_relationship_to_url',
-                         {'ext_toolname': 'http://toolname.company.com/field1/workitem?field2'},
-                         'env')
+    app.add_config_value(
+        'traceability_external_relationship_to_url',
+        {'ext_toolname': 'http://toolname.company.com/field1/workitem?field2'},
+        'env',
+    )
 
     # Configuration for enabling the rendering of the attributes on every item
-    app.add_config_value('traceability_render_attributes_per_item',
-                         True, 'env')
+    app.add_config_value('traceability_render_attributes_per_item', True, 'env')
 
     # Configuration for enabling the rendering of the relations on every item
-    app.add_config_value('traceability_render_relationship_per_item',
-                         False, 'env')
+    app.add_config_value('traceability_render_relationship_per_item', False, 'env')
 
     # Configuration for disabling the rendering of the captions for item
-    app.add_config_value('traceability_item_no_captions',
-                         False, 'env')
+    app.add_config_value('traceability_item_no_captions', False, 'env')
 
     # Configuration for enabling the ability to collapse the list of attributes and relations for item
-    app.add_config_value('traceability_collapse_links',
-                         False, 'env')
+    app.add_config_value('traceability_collapse_links', False, 'env')
 
     # Configuration for disabling the rendering of the captions for item-list
-    app.add_config_value('traceability_list_no_captions',
-                         False, 'env')
+    app.add_config_value('traceability_list_no_captions', False, 'env')
 
     # Configuration for disabling the rendering of the captions for item-matrix
-    app.add_config_value('traceability_matrix_no_captions',
-                         False, 'env')
+    app.add_config_value('traceability_matrix_no_captions', False, 'env')
 
     # Configuration for disabling the rendering of the captions for item-attributes-matrix
-    app.add_config_value('traceability_attributes_matrix_no_captions',
-                         False, 'env')
+    app.add_config_value('traceability_attributes_matrix_no_captions', False, 'env')
 
     # Configuration for disabling the rendering of the captions for item-tree
-    app.add_config_value('traceability_tree_no_captions',
-                         False, 'env')
+    app.add_config_value('traceability_tree_no_captions', False, 'env')
 
     # Configuration for customizing the color of hyperlinked items
     app.add_config_value('traceability_hyperlink_colors', OrderedDict([]), 'env')
