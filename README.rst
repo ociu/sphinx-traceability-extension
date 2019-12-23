@@ -50,3 +50,10 @@ as a requirements management tool for e.g. ISO26262 projects.
     installation
     configuration
     usage
+
+-------
+Process
+-------
+
+The Melexis.SWCC (SoftWare Competence Center) process has a Guideline for documenting in reStructuredText (RST).
+It holds guidelines for using the traceability plugin with naming conventions, templates, etc.
