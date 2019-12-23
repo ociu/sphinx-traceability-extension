@@ -542,4 +542,3 @@ Links and references
 Item reference: :item:`r001`
 
 :item:`Item reference with alternative text<r001>`
-
