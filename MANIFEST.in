@@ -12,6 +12,7 @@ exclude .pylintrc
 include LICENSE.txt
 include NOTICE
 include tox.ini
+include doc\.env.example
 recursive-include doc *.bat
 recursive-include doc *.py
 recursive-include doc *.rst
