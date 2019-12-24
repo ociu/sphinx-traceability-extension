@@ -76,5 +76,4 @@ class ItemAttributeDirective(TraceableBaseDirective):
             template.append('    ' + line)
         self.state_machine.insert_input(template, self.state_machine.document.attributes['source'])
 
-
         return [target_node, attribute_node]

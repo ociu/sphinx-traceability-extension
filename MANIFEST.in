@@ -1,17 +1,18 @@
 # Include the readme file
-include README.rst
+include README.md
 
 # Include the assets - javascript
 include mlx/assets/*.js
 
 
-exclude mlx __traceability_version__.py
+exclude mlx/__traceability_version__.py
 exclude .pylintrc
 
 # added by check_manifest.py
 include LICENSE.txt
 include NOTICE
 include tox.ini
+include doc/.env.example
 recursive-include doc *.bat
 recursive-include doc *.py
 recursive-include doc *.rst

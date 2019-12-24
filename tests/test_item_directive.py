@@ -25,7 +25,6 @@ class TestItemDirective(TestCase):
         self.app.config = Mock()
         self.app.config.traceability_hyperlink_colors = {}
 
-
     def test_make_internal_item_ref_no_caption(self):
         mock_builder = MagicMock(spec=StandaloneHTMLBuilder)
         mock_builder.env = BuildEnvironment()

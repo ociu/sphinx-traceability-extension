@@ -14,6 +14,7 @@ from mlx.traceable_base_directive import TraceableBaseDirective
 from mlx.traceable_base_node import TraceableBaseNode
 from mlx.traceable_item import TraceableItem
 
+
 def pct_wrapper(sizes):
     """ Helper function for matplotlib which returns the percentage and the absolute size of the slice.
 

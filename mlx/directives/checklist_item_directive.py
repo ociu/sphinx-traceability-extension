@@ -16,7 +16,6 @@ class ChecklistItemDirective(ItemDirective):
         env = self.state.document.settings.env
         app = env.app
 
-
         [target_node, item_node] = super().run()
         target_id = self.arguments[0]
         app.config.traceability_checklist['has_checklist_items'] = True
@@ -30,7 +29,7 @@ class ChecklistItemDirective(ItemDirective):
                                self.query_results.pop(target_id).attr_val)
         except TraceabilityException as err:
             report_warning(err, env.docname, self.lineno)
-        except KeyError as err:
+        except KeyError:
             # the checklist-item can still get the checklist_attribute by the checkbox-result directive
             pass
 

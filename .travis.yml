@@ -6,8 +6,6 @@ env:
   global:
     - LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
     - SEGFAULT_SIGNALS=all
-  matrix:
-    - TOXENV=check
 
 addons:
   apt:
@@ -30,7 +28,7 @@ matrix:
         - TOXENV=py36,sphinx2.1,sphinx-latest,codecov
     - python: 3.7
       env:
-        - TOXENV=py37,sphinx2.1,sphinx-latest,codecov
+        - TOXENV=py37,check,sphinx2.1,sphinx-latest,codecov
 
 before_install:
   - python --version
