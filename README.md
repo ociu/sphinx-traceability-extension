@@ -19,7 +19,6 @@ as a requirements management tool for e.g. ISO26262 projects.
 - [Installation](https://melexis.github.io/sphinx-traceability-extension/installation.html)
 - [Configuration](https://melexis.github.io/sphinx-traceability-extension/configuration.html)
 - [Usage](https://melexis.github.io/sphinx-traceability-extension/usage.html)
-- [Process](#process)
 
 ### Process
 
