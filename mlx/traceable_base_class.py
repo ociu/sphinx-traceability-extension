@@ -3,7 +3,7 @@ Base class for traceable stuff
 '''
 
 from mlx.traceability_exception import TraceabilityException
-
+import hashlib
 
 class TraceableBaseClass:
     '''
@@ -183,6 +183,7 @@ class TraceableBaseClass:
             data['caption'] = caption
         data['document'] = self.docname
         data['line'] = self.lineno
+        data['content-hash'] = hashlib.md5(self.content.encode('utf-8')).hexdigest()
         return data
 
     def self_test(self):
