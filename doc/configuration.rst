@@ -256,6 +256,7 @@ As a preliminary feature, the database only contains per documentation item:
 - the caption,
 - the document name and line number,
 - the relations to other items.
+- An MD5 hash of the content, allowing to check for changes in content when diffing 2 versions of the documentation.
 
 The actual content (RST content with images, formulas, etc) of the item is currently not stored.
 
