@@ -183,7 +183,10 @@ class TraceableBaseClass:
             data['caption'] = caption
         data['document'] = self.docname
         data['line'] = self.lineno
-        data['content-hash'] = hashlib.md5(self.content.encode('utf-8')).hexdigest()
+        if self.content:
+            data['content-hash'] = hashlib.md5(self.content.encode('utf-8')).hexdigest()
+        else:
+            data['content-hash'] = 0
         return data
 
     def self_test(self):
