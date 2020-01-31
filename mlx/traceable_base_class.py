@@ -2,8 +2,9 @@
 Base class for traceable stuff
 '''
 
-from mlx.traceability_exception import TraceabilityException
 import hashlib
+from mlx.traceability_exception import TraceabilityException
+
 
 class TraceableBaseClass:
     '''
