@@ -187,7 +187,7 @@ class TraceableBaseClass:
         if self.content:
             data['content-hash'] = hashlib.md5(self.content.encode('utf-8')).hexdigest()
         else:
-            data['content-hash'] = 0
+            data['content-hash'] = "0"
         return data
 
     def self_test(self):

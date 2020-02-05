@@ -77,6 +77,8 @@ class TestTraceableItem(TestCase):
         self.assertEqual(self.docname, data['document'])
         self.assertEqual(0, data['line'])
         self.assertEqual({}, data['targets'])
+        print(data['content-hash'])
+        self.assertEqual("0", data['content-hash'])
         item.self_test()
 
     def test_set_content(self):
@@ -85,6 +87,8 @@ class TestTraceableItem(TestCase):
         item.set_document(self.docname)
         item.set_content(txt)
         self.assertEqual(txt, item.get_content())
+        data = item.to_dict()
+        self.assertEqual("b787a17fc91c9cf37b5bf0665f13c8b1", data['content-hash'])
         item.self_test()
 
     def test_add_invalid_attribute(self):
@@ -222,6 +226,7 @@ class TestTraceableItem(TestCase):
         self.assertEqual([self.identification_tgt], data['targets'][self.fwd_relation])
         self.assertEqual(self.docname, data['document'])
         self.assertEqual(0, data['line'])
+        self.assertEqual("0", data['content-hash'])
         # Self test should pass
         item.self_test()
 
@@ -276,6 +281,7 @@ class TestTraceableItem(TestCase):
         self.assertEqual([self.identification_tgt], data['targets'][self.fwd_relation])
         self.assertEqual(self.docname, data['document'])
         self.assertEqual(0, data['line'])
+        self.assertEqual("0", data['content-hash'])
         # Self test should pass
         item.self_test()
 
