@@ -1,11 +1,13 @@
 '''
 Storage classes for collection of traceable items
 '''
-
 import json
+from pathlib import Path
+
 from natsort import natsorted
+
+from mlx.traceability_exception import MultipleTraceabilityExceptions, TraceabilityException
 from mlx.traceable_item import TraceableItem
-from mlx.traceability_exception import TraceabilityException, MultipleTraceabilityExceptions
 
 
 class TraceableCollection:
@@ -142,11 +144,12 @@ class TraceableCollection:
 
     def export(self, fname):
         '''
-        Export collection content
+        Exports collection content. The target location of the json file gets created if it doesn't exist yet.
 
         Args:
             fname (str): Path to the json file to export
         '''
+        Path(fname).parent.mkdir(parents=True, exist_ok=True)
         with open(fname, 'w') as outfile:
             data = []
             for itemid in self.iter_items():
