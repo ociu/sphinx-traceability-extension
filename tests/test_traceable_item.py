@@ -77,7 +77,6 @@ class TestTraceableItem(TestCase):
         self.assertEqual(self.docname, data['document'])
         self.assertEqual(0, data['line'])
         self.assertEqual({}, data['targets'])
-        print(data['content-hash'])
         self.assertEqual("0", data['content-hash'])
         item.self_test()
 
