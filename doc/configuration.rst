@@ -252,10 +252,12 @@ can be enabled by setting the configuration to your JSON-file to export to. Note
 
 As a preliminary feature, the database only contains per documentation item:
 
-- the id,
-- the caption,
-- the document name and line number,
-- the relations to other items.
+- the id
+- the caption
+- the document name and line number
+- the attributes
+- the relations to other items
+- the MD5 hash of the content, which allows to check for changes in content when diffing 2 versions of the documentation
 
 The actual content (RST content with images, formulas, etc) of the item is currently not stored.
 

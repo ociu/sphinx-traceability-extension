@@ -55,6 +55,7 @@ class TestTraceableBaseClass(TestCase):
         self.assertEqual(txt, data['caption'])
         self.assertEqual(self.docname, data['document'])
         self.assertEqual(0, data['line'])
+        self.assertEqual("0", data['content-hash'])
         item.self_test()
 
     def test_set_content(self):
@@ -63,4 +64,6 @@ class TestTraceableBaseClass(TestCase):
         item.set_document(self.docname)
         item.set_content(txt)
         self.assertEqual(txt, item.get_content())
+        data = item.to_dict()
+        self.assertEqual("b787a17fc91c9cf37b5bf0665f13c8b1", data['content-hash'])
         item.self_test()
