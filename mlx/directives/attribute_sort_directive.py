@@ -6,7 +6,7 @@ from mlx.traceable_base_node import TraceableBaseNode
 
 
 class AttributeSort(TraceableBaseNode):
-    '''List of documentation items'''
+    """Node that configures the order of filtered items' attributes in the generated output."""
 
     def perform_replacement(self, app, collection):
         """ Processes the attribute-sort items.
@@ -26,7 +26,9 @@ class AttributeSort(TraceableBaseNode):
 
 class AttributeSortDirective(TraceableBaseDirective):
     """
-    Directive to configure the order of items' attributes in the generated output.
+    Directive to store the configuration of the order of filtered items' attributes.
+
+    The node will be responsible for applying the configuration to the Item. First, all directives must be parsed.
 
     Syntax::
 
@@ -43,7 +45,7 @@ class AttributeSortDirective(TraceableBaseDirective):
     has_content = False
 
     def run(self):
-        """ Processes the contents of the directive. """
+        """ Processes the contents of the directive. Just store the configuration. """
         env = self.state.document.settings.env
 
         node = AttributeSort('')
