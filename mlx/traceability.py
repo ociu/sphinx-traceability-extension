@@ -23,6 +23,7 @@ from mlx.traceable_base_node import TraceableBaseNode
 from mlx.traceable_item import TraceableItem
 from mlx.traceable_collection import TraceableCollection
 from mlx.traceability_exception import TraceabilityException, MultipleTraceabilityExceptions, report_warning
+from mlx.directives.attribute_sort_directive import AttributeSort, AttributeSortDirective
 from mlx.directives.checkbox_result_directive import CheckboxResultDirective
 from mlx.directives.checklist_item_directive import ChecklistItemDirective
 from mlx.directives.item_directive import Item, ItemDirective
@@ -175,8 +176,8 @@ def process_item_nodes(app, doctree, fromdocname):
     """
     env = app.builder.env
 
-    for node_class in (ItemLink, ItemMatrix, ItemPieChart, ItemAttributesMatrix, Item2DMatrix, ItemList, ItemTree,
-                       ItemAttribute, Item):
+    for node_class in (AttributeSort, ItemLink, ItemMatrix, ItemPieChart, ItemAttributesMatrix, Item2DMatrix, ItemList,
+                       ItemTree, ItemAttribute, Item):  # order is important: e.g. AttributeSort before Item
         for node in doctree.traverse(node_class):
             node.perform_replacement(app, env.traceability_collection)
 
@@ -522,6 +523,7 @@ def setup(app):
     app.add_node(ItemList)
     app.add_node(ItemAttribute)
     app.add_node(Item)
+    app.add_node(AttributeSort)
 
     app.add_directive('item', ItemDirective)
     app.add_directive('checklist-item', ChecklistItemDirective)
@@ -534,6 +536,7 @@ def setup(app):
     app.add_directive('item-2d-matrix', Item2DMatrixDirective)
     app.add_directive('item-tree', ItemTreeDirective)
     app.add_directive('item-link', ItemLinkDirective)
+    app.add_directive('attribute-sort', AttributeSortDirective)
 
     app.connect('doctree-resolved', process_item_nodes)
     app.connect('env-check-consistency', perform_consistency_check)
