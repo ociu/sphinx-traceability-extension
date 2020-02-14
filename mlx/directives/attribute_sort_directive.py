@@ -33,7 +33,6 @@ class AttributeSortDirective(TraceableBaseDirective):
       .. attribute-sort::
          :filter: regex
          :sort: list_of_attributes
-
     """
     # Options
     option_spec = {
