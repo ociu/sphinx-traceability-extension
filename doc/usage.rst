@@ -113,6 +113,22 @@ to add content to the attributes. A detailed description can be added to an attr
 
         The status of the requirement explains whether it is *draft*, *under-review*, *approved* or *invalid*.
 
+---------------------------
+Configuring attribute order
+---------------------------
+
+By default, attributes get sorted naturally. This default behavior can be changed by use of the dedicated
+``attribute-sort`` directive. The ``filter`` option allows filtering on item IDs. Its value gets treated as a regular
+expression. If this option is missing, the configuration will be applied to all items. The ``sort`` option must be a
+list of attributes, of which the order is used to sort the attributes of those items that match the filter regex.
+Attributes that are missing from this list get sorted naturally and appended afterwards.
+
+.. code-block:: rest
+
+    .. attribute-sort::
+        :filter: RQT-
+        :sort: status value aspice
+
 .. _traceability_usage_item_linking:
 
 ----------------------------------
