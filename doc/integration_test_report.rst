@@ -19,6 +19,15 @@ SRS and SSS
 Other requirements
 ==================
 
+.. attribute-sort::
+    :filter: r003
+    :sort: status
+
+.. attribute-sort::
+    :sort: aspice nonexistent
+
+.. triggers a warning about r003 already having a configuration for attribute-sort
+
 .. item:: r001 First requirement
     :class: functional requirement
     :status: Draft
@@ -73,6 +82,7 @@ This text is not part of any item
 .. item:: r006 Depends on all
     :class: terciary
     :asil: C
+    :aspice: 2
     :value: 12
     :trace: r001
         r002
@@ -185,6 +195,8 @@ Attribute details
 .. item-attribute:: ASPICE The level for A-SPICE
 
     Similar to ASIL, ASPICE is an automitve safety standard. Levels are ASPICE 1/2/3.
+
+.. item-attribute:: status The approval status
 
 .. item-attribute:: non_existing_attribute This should trigger a warning
 
