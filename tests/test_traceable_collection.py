@@ -400,3 +400,34 @@ class TestTraceableCollection(TestCase):
         with patch('mlx.traceable_collection.open', open_mock, create=True):
             coll.export(self.mock_export_file)
         open_mock.assert_called_once_with(self.mock_export_file, 'w')
+
+    def test_add_attribute_sorting_rule(self):
+        coll = dut.TraceableCollection()
+        item1 = item.TraceableItem('ABC')
+        coll.add_item(item1)
+        item2 = item.TraceableItem('DEF')
+        coll.add_item(item2)
+        attribute_regex = r'\w+'
+
+        for attr_key in ('small', 'large', 'number'):
+            attr = attribute.TraceableAttribute(attr_key, attribute_regex)
+            dut.TraceableItem.define_attribute(attr)
+            item1.add_attribute(attr_key, 'small')
+
+        for attr_key in ('small', 'large', 'number', 'attr2'):
+            attr = attribute.TraceableAttribute(attr_key, attribute_regex)
+            dut.TraceableItem.define_attribute(attr)
+            item2.add_attribute(attr_key, 'small')
+
+        ignored1 = coll.add_attribute_sorting_rule('AB', ['number', 'small', 'large', 'attr2'])
+        ignored2 = coll.add_attribute_sorting_rule('[A-Z]+', ['small', 'large'])  # item ABC must get ignored
+
+        attributes_item1 = item1.iter_attributes()
+        attributes_item2 = item2.iter_attributes()
+
+        self.assertEqual(item1.attribute_order, ['number', 'small', 'large', 'attr2'])
+        self.assertEqual(item2.attribute_order, ['small', 'large'])
+        self.assertEqual(attributes_item1, ['number', 'small', 'large'])
+        self.assertEqual(attributes_item2, ['small', 'large', 'attr2', 'number'])
+        self.assertEqual(ignored1, [])
+        self.assertEqual(ignored2, [item1])
