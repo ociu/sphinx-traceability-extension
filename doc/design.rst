@@ -315,54 +315,52 @@ Design for mlx.traceability
 .. item:: DESIGN-ATTRIBUTES Documentation parts can have attributes
     :depends_on: DESIGN-ITEMIZE
 
-    Attributes shall be able to be added to the documentation parts.
+    Attributes can be added to the documentation parts.
     Attributes have a key and an optional value.
-    The set of attributes, their order and the validness of the attribute values shall be configurable.
+    The set of attributes, their order and the validness of the attribute values are configurable.
 
 .. item:: DESIGN-RELATIONS Documentation parts can be linked to each other
     :depends_on: DESIGN-ITEMIZE
 
-    Documentation parts shall be able to link to other documentation parts.
-    The set of relations shall be configurable.
+    Documentation parts can be linked to other documentation parts.
+    The set of relations is configurable.
 
 .. item:: DESIGN-AUTO_REVERSE Automatic creation of reverse relations
     :depends_on: DESIGN-RELATIONS
 
     When a documentation part <A> is related to a documentation part <B> (forward relation), the reverse
-    relation from documentation part <B> to documentation part <A> shall be automatically created.
+    relation from documentation part <B> to documentation part <A> gets created automatically.
 
 .. item:: DESIGN-LIST Listing documentation parts
     :depends_on: DESIGN-ITEMIZE
 
-    A list of documentation parts matching a certain query shall be able to be retrieved.
+    A list of documentation parts matching a certain query can be retrieved.
 
 .. item:: DESIGN-COVERAGE Calculation of coverage for relations between documentation parts
     :depends_on: DESIGN-RELATIONS
 
-    The plugin shall be able to calculate the coverage for a certain type of relation between
+    The plugin is able to calculate the coverage for a certain type of relation between
     documentation parts.
 
 .. item:: DESIGN-MATRIX Auto-generation of a traceability matrix
     :depends_on: DESIGN-RELATIONS
 
-    The relations between documentation parts shall be able to be queried, and an overview matrix
-    shall be able to be generated.
+    The relations between documentation parts can be queried, and an overview matrix can be generated.
 
 .. item:: DESIGN-TREE Auto-generation of a traceability tree
     :depends_on: DESIGN-RELATIONS
 
-    The relations between documentation parts shall be able to be queried, and an overview tree
-    shall be able to be generated.
+    The relations between documentation parts can be queried, and an overview tree can be generated.
 
 .. item:: DESIGN-ATTRIBUTES_MATRIX Overview of attributes on documentation parts
     :depends_on: DESIGN-ATTRIBUTES
 
-    An overview table of the attribute values for documentation parts shall be generated.
+    An overview table of the attribute values for documentation parts can be generated.
 
 .. item:: DESIGN-ATTRIBUTE_SORT Custom sorting of items' attributes
     :depends_on: DESIGN-ATTRIBUTES
 
-    The plugin shall have a directive that allows configurability of the order of items' attributes.
+    The plugin has a directive that allows configurability of the order of items' attributes.
 
 -------------------
 Traceability matrix
