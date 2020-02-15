@@ -85,7 +85,7 @@ Requirements for mlx.traceability
 
 .. item:: RQT-ATTRIBUTE_SORT Custom sorting of items' attributes
     :depends_on: RQT-ATTRIBUTES
-    :fullfilled_by: DESIGN-ATTRIBUTE_SORT
+    :fulfilled_by: DESIGN-ATTRIBUTE_SORT
 
     The plugin shall be able to allow configurability of the order of items' attributes.
 
