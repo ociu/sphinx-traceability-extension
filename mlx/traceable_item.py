@@ -28,6 +28,7 @@ class TraceableItem(TraceableBaseClass):
         self.explicit_relations = {}
         self.implicit_relations = {}
         self.attributes = {}
+        self.attribute_order = []
         self._placeholder = placeholder
 
     def update(self, other):
@@ -237,21 +238,24 @@ class TraceableItem(TraceableBaseClass):
         Args:
             attr (list): List of names of the attribute
         Returns:
-            (list) List of values matching the given attributes, or [] if attributes do not exist
+            (list) List of values matching the given attributes, or an empty list if no attributes exist
         '''
-        value = []
-        if attrs:
-            for attr in attrs:
-                value.append(self.get_attribute(attr))
-        return value
+        values = []
+        for attr in attrs:
+            values.append(self.get_attribute(attr))
+        return values
 
     def iter_attributes(self):
-        ''' Iterates over available attributes: naturally sorted.
+        ''' Iterates over available attributes.
+
+        Sorted as configured by an attribute-sort directive, with the remaining attributes naturally sorted.
 
         Returns:
-            (list) Naturally sorted list containing available attributes in the item.
+            (list) Sorted list containing available attributes in the item.
         '''
-        return natsorted(list(self.attributes))
+        sorted_attributes = [attr for attr in self.attribute_order if attr in self.attributes]
+        sorted_attributes.extend(natsorted(set(self.attributes).difference(set(self.attribute_order))))
+        return sorted_attributes
 
     def __str__(self, explicit=True, implicit=True):
         ''' Converts object to string.

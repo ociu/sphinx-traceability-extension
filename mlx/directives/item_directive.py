@@ -38,13 +38,14 @@ class Item(TraceableBaseNode):
             dl_node (nodes.definition_list): Definition list of the item.
             app: Sphinx's application object to use.
         """
-        if self._item.iter_attributes():
+        attributes = self._item.iter_attributes()
+        if attributes:
             li_node = nodes.definition_list_item()
             dt_node = nodes.term()
             txt = nodes.Text('Attributes')
             dt_node.append(txt)
             li_node.append(dt_node)
-            for attr in self._item.iter_attributes():
+            for attr in attributes:
                 dd_node = nodes.definition()
                 p_node = nodes.paragraph()
                 link = self.make_attribute_ref(app, attr, self._item.get_attribute(attr))

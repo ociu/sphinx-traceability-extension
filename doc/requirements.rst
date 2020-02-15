@@ -83,6 +83,12 @@ Requirements for mlx.traceability
 
     An overview table of the attribute values for documentation parts shall be generated.
 
+.. item:: RQT-ATTRIBUTE_SORT Custom sorting of items' attributes
+    :depends_on: RQT-ATTRIBUTES
+    :fulfilled_by: DESIGN-ATTRIBUTE_SORT
+
+    The plugin shall be able to allow configurability of the order of items' attributes.
+
 -------------------
 Traceability matrix
 -------------------

@@ -142,6 +142,29 @@ class TraceableCollection:
             # Add reverse relation to target-item
             self.items[target_id].add_target(reverse_relation, source_id, implicit=True)
 
+    def add_attribute_sorting_rule(self, filter_regex, attributes):
+        """ Configures how the attributes of matching items should be sorted.
+
+        The attributes that are missing from the given list will be sorted alphabetically underneath. The items that
+        already have their attributes sorted will be returned as a list; used to report a warning.
+
+        Args:
+            filter_regex (str): Regular expression used to match items to apply the attribute sorting to.
+            attributes (list): List of attributes (str) in the order they should be sorted on.
+
+        Returns:
+            list: Items that already have the order of their attributes configured.
+        """
+        ignored_items = []
+        item_ids = self.get_items(filter_regex)
+        for item_id in item_ids:
+            item = self.get_item(item_id)
+            if item.attribute_order:
+                ignored_items.append(item)
+            else:
+                item.attribute_order = attributes
+        return ignored_items
+
     def export(self, fname):
         '''
         Exports collection content. The target location of the json file gets created if it doesn't exist yet.
