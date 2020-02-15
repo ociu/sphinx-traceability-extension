@@ -166,6 +166,11 @@ Design for mlx.traceability
             + {static} dict query_results
         }
 
+        class AttributeSortDirective {
+            + {static} dict option_spec
+            + {static} has_content = False
+        }
+
         abstract class TraceableBaseNode {
             + {abstract} perform_replacement(app, collection)
             + {static} create_top_node(title)
@@ -224,6 +229,9 @@ Design for mlx.traceability
             # generate_bullet_list_tree(app, collection, item_id, captions=True)
         }
 
+        class AttributeSort {
+        }
+
         class PendingItemXref {
         }
 
@@ -264,6 +272,7 @@ Design for mlx.traceability
         ItemMatrixDirective "1" *-- "1" ItemMatrix
         ItemPieChartDirective "1" *-- "1" ItemPieChart
         ItemTreeDirective "1" *-- "1" ItemTree
+        AttributeSortDirective "1" *-- "1" AttributeSort
         Exception <|-- TraceabilityException
         Exception <|-- MultipleTraceabilityExceptions
         @enduml
@@ -308,7 +317,7 @@ Design for mlx.traceability
 
     Attributes shall be able to be added to the documentation parts.
     Attributes have a key and an optional value.
-    The set of attributes and the validness of the attribute values shall be configurable.
+    The set of attributes, their order and the validness of the attribute values shall be configurable.
 
 .. item:: DESIGN-RELATIONS Documentation parts can be linked to each other
     :depends_on: DESIGN-ITEMIZE
@@ -349,6 +358,11 @@ Design for mlx.traceability
     :depends_on: DESIGN-ATTRIBUTES
 
     An overview table of the attribute values for documentation parts shall be generated.
+
+.. item:: DESIGN-ATTRIBUTE_SORT Custom sorting of items' attributes
+    :depends_on: DESIGN-ATTRIBUTES
+
+    The plugin shall have a directive that allows configurability of the order of items' attributes.
 
 -------------------
 Traceability matrix
