@@ -126,7 +126,6 @@ class PendingItemXref(TraceableBaseNode):
                     new_node = node
                 elif config:
                     node = self._try_make_refnode(app, config['docname'], config['refid'])
-                    print(f"blahh: {node}")
                     if node is not None:
                         new_node = node
         else:
