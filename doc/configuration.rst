@@ -322,12 +322,12 @@ Mapping of undefined references
 -------------------------------
 
 Undefined references can be mapped to a special item, e.g. to explain to the reader why the reference is undefined.
-In the example below the special item has ID *DOC-NOTIFICATION* and is contained inside file *notifications.rst*.
+In the example below the special item has ID *DOC-NOTIFICATION*.
 
 .. code-block:: python
 
     traceability_notifications = {
-        'undefined-reference': {'docname': 'notifications', 'refid': 'DOC-NOTIFICATION'},
+        'undefined-reference': 'DOC-NOTIFICATION',
     }
 
 .. _traceability_default_config:

@@ -120,14 +120,13 @@ class PendingItemXref(TraceableBaseNode):
         item_info = collection.get_item(self['reftarget'])
         if item_info:
             if not self.has_warned_about_undefined(item_info):
-                config = app.config.traceability_notifications.get('undefined-reference')
+                notification_item_id = app.config.traceability_notifications.get('undefined-reference')
                 node = self._try_make_refnode(app, item_info.docname, item_info.node['refid'])
+                if node is None and notification_item_id:
+                    docname = app.env.traceability_collection.get_item(notification_item_id).docname
+                    node = self._try_make_refnode(app, docname, notification_item_id)
                 if node is not None:
                     new_node = node
-                elif config:
-                    node = self._try_make_refnode(app, config['docname'], config['refid'])
-                    if node is not None:
-                        new_node = node
         else:
             report_warning('Traceability: item %s not found' % self['reftarget'], self['document'], self['line'])
         self.replace_self(new_node)
