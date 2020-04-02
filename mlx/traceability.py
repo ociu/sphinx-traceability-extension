@@ -123,8 +123,9 @@ class PendingItemXref(TraceableBaseNode):
                 notification_item_id = app.config.traceability_notifications.get('undefined-reference')
                 node = self._try_make_refnode(app, item_info.docname, item_info.node['refid'])
                 if node is None and notification_item_id:
-                    docname = app.env.traceability_collection.get_item(notification_item_id).docname
-                    node = self._try_make_refnode(app, docname, notification_item_id)
+                    notification_item = app.env.traceability_collection.get_item(notification_item_id)
+                    if notification_item:
+                        node = self._try_make_refnode(app, notification_item.docname, notification_item_id)
                 if node is not None:
                     new_node = node
         else:
@@ -151,6 +152,7 @@ class PendingItemXref(TraceableBaseNode):
                                 self['reftarget'])
         except NoUri:
             return None
+
 
 # -----------------------------------------------------------------------------
 # Event handlers
