@@ -146,9 +146,9 @@ class PendingItemXref(TraceableBaseNode):
         notification_item = app.env.traceability_collection.get_item(notification_item_id)
         if notification_item:
             node = self._try_make_refnode(app, notification_item.docname, notification_item_id)
-            if node is None:
-                report_warning("Failed to redirect undefined reference %r to %r as this configured item does not exist"
-                               % (self['reftarget'], notification_item_id))
+        else:
+            report_warning("Failed to redirect undefined reference %r to %r as this configured item does not exist"
+                           % (self['reftarget'], notification_item_id))
         return node
 
     def _try_make_refnode(self, app, docname, refid):
