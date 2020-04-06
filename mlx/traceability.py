@@ -123,14 +123,33 @@ class PendingItemXref(TraceableBaseNode):
                 notification_item_id = app.config.traceability_notifications.get('undefined-reference')
                 node = self._try_make_refnode(app, item_info.docname, item_info.node['refid'])
                 if node is None and notification_item_id:
-                    notification_item = app.env.traceability_collection.get_item(notification_item_id)
-                    if notification_item:
-                        node = self._try_make_refnode(app, notification_item.docname, notification_item_id)
+                    node = self._redirect_undefined_reference(app, notification_item_id)
                 if node is not None:
                     new_node = node
         else:
             report_warning('Traceability: item %s not found' % self['reftarget'], self['document'], self['line'])
         self.replace_self(new_node)
+
+    def _redirect_undefined_reference(self, app, notification_item_id):
+        """ Uses the configured item ID to create the reference if the item exists.
+
+        Returns None and reports a warning if the item doesn't exist.
+
+        Args:
+            app: Sphinx application object to use.
+            notification_item_id (str): ID of the item to create the reference to.
+
+        Returns:
+            nodes.reference/None: Returns the reference node if a link was successfully made, None otherwise.
+        """
+        node = None
+        notification_item = app.env.traceability_collection.get_item(notification_item_id)
+        if notification_item:
+            node = self._try_make_refnode(app, notification_item.docname, notification_item_id)
+            if node is None:
+                report_warning("Failed to redirect undefined reference %r to %r as this configured item does not exist"
+                               % (self['reftarget'], notification_item_id))
+        return node
 
     def _try_make_refnode(self, app, docname, refid):
         """ Tries to create a reference node that points to the given document name and reference id.
@@ -141,7 +160,7 @@ class PendingItemXref(TraceableBaseNode):
             refid (str): Item ID of the reference.
 
         Returns:
-            node/None: Returns the reference node if a link was successfully made, None otherwise.
+            nodes.reference/None: Returns the reference node if a link was successfully made, None otherwise.
         """
         try:
             return make_refnode(app.builder,
