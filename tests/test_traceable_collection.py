@@ -31,7 +31,7 @@ class TestTraceableCollection(TestCase):
         coll = dut.TraceableCollection()
         # Self test should fail as no relations configured
         with self.assertRaises(exception.TraceabilityException):
-            coll.self_test()
+            coll.self_test(None)
 
     def test_add_relation_pair_bidir(self):
         coll = dut.TraceableCollection()
@@ -50,7 +50,7 @@ class TestTraceableCollection(TestCase):
         self.assertIn(self.fwd_relation, relations_iterator)
         self.assertIn(self.rev_relation, relations_iterator)
         # Self test should pass
-        coll.self_test()
+        coll.self_test(None)
 
     def test_add_relation_pair_unidir(self):
         coll = dut.TraceableCollection()
@@ -61,7 +61,7 @@ class TestTraceableCollection(TestCase):
         # Reverse for fwd should be nothing
         self.assertEqual(coll.NO_RELATION_STR, coll.get_reverse_relation(self.unidir_relation))
         # Self test should pass
-        coll.self_test()
+        coll.self_test(None)
 
     def test_add_item(self):
         coll = dut.TraceableCollection()
@@ -97,7 +97,7 @@ class TestTraceableCollection(TestCase):
         self.assertIn(self.identification_tgt, item_iterator)
         # Self test should pass
         coll.add_relation_pair(self.fwd_relation, self.rev_relation)
-        coll.self_test()
+        coll.self_test(None)
 
     def test_add_item_overwrite(self):
         coll = dut.TraceableCollection()
@@ -153,7 +153,7 @@ class TestTraceableCollection(TestCase):
         self.assertEqual(0, len(relations))
         # Self test should fail, as we have a placeholder item
         with self.assertRaises(dut.MultipleTraceabilityExceptions):
-            coll.self_test()
+            coll.self_test(None)
 
     def test_add_relation_unknown_relation(self):
         # with unknown relation, warning is expected
@@ -174,7 +174,7 @@ class TestTraceableCollection(TestCase):
         self.assertEqual(0, len(relations))
         # Self test should pass
         coll.add_relation_pair(self.fwd_relation, self.rev_relation)
-        coll.self_test()
+        coll.self_test(None)
 
     def test_add_relation_unknown_target(self):
         # With unknown target item, the generation of a placeholder is expected
@@ -205,7 +205,7 @@ class TestTraceableCollection(TestCase):
         self.assertEqual(0, len(relations))
         # Self test should fail, as we have a placeholder item
         with self.assertRaises(dut.MultipleTraceabilityExceptions):
-            coll.self_test()
+            coll.self_test(None)
 
     def test_add_relation_happy(self):
         # Normal addition of relation, everything is there
@@ -237,7 +237,7 @@ class TestTraceableCollection(TestCase):
         relations = item2.iter_targets(self.fwd_relation, explicit=True, implicit=False)
         self.assertEqual(0, len(relations))
         # Self test should pass
-        coll.self_test()
+        coll.self_test(None)
 
     def test_add_relation_unidirectional(self):
         # Normal addition of uni-directional relation
@@ -258,7 +258,7 @@ class TestTraceableCollection(TestCase):
         # Assert item2 is not existent
         self.assertIsNone(coll.get_item(self.identification_tgt))
         # Self test should pass
-        coll.self_test()
+        coll.self_test(None)
 
     def test_stringify(self):
         coll = dut.TraceableCollection()
@@ -357,7 +357,7 @@ class TestTraceableCollection(TestCase):
         coll = dut.TraceableCollection()
         coll.add_relation_pair(self.fwd_relation, self.rev_relation)
         # Self test should pass
-        coll.self_test()
+        coll.self_test(None)
         # Create first item
         item1 = item.TraceableItem(self.identification_src)
         item1.set_document(self.docname)
@@ -369,18 +369,18 @@ class TestTraceableCollection(TestCase):
         coll.add_item(item1)
         # Self test should fail as target item is not in collection
         with self.assertRaises(dut.MultipleTraceabilityExceptions):
-            coll.self_test()
+            coll.self_test(None)
         # Self test one limited scope (no matching document), should pass
-        coll.self_test('document-does-not-exist.rst')
+        coll.self_test(None, docname='document-does-not-exist.rst')
         # Creating and adding second item, self test should still fail as no automatic reverse relation
         item2 = item.TraceableItem(self.identification_tgt)
         item2.set_document(self.docname)
         coll.add_item(item2)
         with self.assertRaises(dut.MultipleTraceabilityExceptions):
-            coll.self_test()
+            coll.self_test(None)
         # Mimicing the automatic reverse relation, self test should pass
         item2.add_target(self.rev_relation, self.identification_src)
-        coll.self_test()
+        coll.self_test(None)
 
     def test_export_no_items(self):
         open_mock = mock_open()
