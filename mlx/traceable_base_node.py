@@ -73,14 +73,7 @@ class TraceableBaseNode(nodes.General, nodes.Element, ABC):
                 p_node.append(txt)
                 return p_node
 
-        caption_on_hover = None
-        caption = ''
-        if item_info and item_info.caption:
-            if show_caption:
-                caption = ' : {}'.format(item_info.caption)
-            else:
-                caption_on_hover = nodes.inline('', item_info.caption)
-                caption_on_hover['classes'].append('popup_caption')
+        caption, caption_on_hover = self._get_caption_info(item_info, show_caption=show_caption)
 
         newnode = nodes.reference('', '')
         innernode = nodes.emphasis(item_id + caption, item_id + caption)
@@ -200,6 +193,29 @@ class TraceableBaseNode(nodes.General, nodes.Element, ABC):
             if re.search(regex, item_id):
                 return tuple(colors)
         return None
+
+    @staticmethod
+    def _get_caption_info(item_info, show_caption=True):
+        """ Gets either the caption or the caption to show on hover, depending on the item's configuration.
+
+        Args:
+            item_info (TraceableItem): TraceableItem object.
+            show_caption (bool): True if the caption should always be shown, False to only show caption on hover.
+
+        Returns:
+            str: Caption to append to the item's ID, or empty string when item has no caption or it is configured to be
+                shown on hover
+            nodes.inline/None: Inline node containing the item's caption, or None if caption should always be shown.
+        """
+        caption = ''
+        caption_on_hover = None
+        if item_info and item_info.caption:
+            if show_caption:
+                caption = ' : {}'.format(item_info.caption)
+            else:
+                caption_on_hover = nodes.inline('', item_info.caption)
+                caption_on_hover['classes'].append('popup_caption')
+        return caption, caption_on_hover
 
     def has_warned_about_undefined(self, item_info):
         """
