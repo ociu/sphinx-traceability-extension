@@ -180,16 +180,16 @@ class TraceableCollection:
                 data.append(item.to_dict())
             json.dump(data, outfile, indent=4, sort_keys=True)
 
-    def self_test(self, app, docname=None):
+    def self_test(self, notification_item_id, docname=None):
         '''
         Perform self test on collection content
 
         Args:
-            app: Sphinx application object to use.
+            notification_item_id (str/None): ID of the configured notification item, None if not configured.
             docname (str): Document on which to run the self test, None for all.
         '''
         errors = []
-        notification_item = self.get_item(app.config.traceability_notifications.get('undefined-reference'))
+        notification_item = self.get_item(notification_item_id)
         # Having no valid relations, is invalid
         if not self.relations:
             raise TraceabilityException('No relations configured', 'configuration')

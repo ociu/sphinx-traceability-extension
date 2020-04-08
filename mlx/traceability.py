@@ -186,7 +186,7 @@ def perform_consistency_check(app, doctree):
     env = app.builder.env
 
     try:
-        env.traceability_collection.self_test(app)
+        env.traceability_collection.self_test(app.config.traceability_notifications.get('undefined-reference'))
     except TraceabilityException as err:
         report_warning(str(err), err.get_document())
     except MultipleTraceabilityExceptions as errs:
