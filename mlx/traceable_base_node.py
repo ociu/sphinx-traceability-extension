@@ -59,42 +59,47 @@ class TraceableBaseNode(nodes.General, nodes.Element, ABC):
         """
         env = app.builder.env
         item_info = env.traceability_collection.get_item(item_id)
+        notification_item = None
 
         p_node = nodes.paragraph()
 
-        # Only create link when target item exists, warn otherwise (in html and terminal)
-        if self.has_warned_about_undefined(item_info):
-            txt = nodes.Text('%s not defined, broken link' % item_id)
-            p_node.append(txt)
-        else:
-            caption_on_hover = None
-            caption = ''
-            if item_info.caption:
-                if show_caption:
-                    caption = ' : {}'.format(item_info.caption)
-                else:
-                    caption_on_hover = nodes.inline('', item_info.caption)
-                    caption_on_hover['classes'].append('popup_caption')
+        # Only create link when target item (or notification item) exists, warn otherwise (in html and terminal)
+        if item_info.is_placeholder():
+            notification_item_id = app.config.traceability_notifications.get('undefined-reference')
+            notification_item = app.env.traceability_collection.get_item(notification_item_id)
+            if not notification_item:
+                self.has_warned_about_undefined(item_info)
+                txt = nodes.Text('%s not defined, broken link' % item_id)
+                p_node.append(txt)
+                return p_node
 
-            newnode = nodes.reference('', '')
-            innernode = nodes.emphasis(item_id + caption, item_id + caption)
-            newnode['refdocname'] = item_info.docname
-            try:
+        caption, caption_on_hover = self._get_caption_info(item_info, show_caption=show_caption)
+
+        newnode = nodes.reference('', '')
+        innernode = nodes.emphasis(item_id + caption, item_id + caption)
+        try:
+            if not notification_item:
                 newnode['refuri'] = app.builder.get_relative_uri(self['document'], item_info.docname)
                 newnode['refuri'] += '#' + item_id
-            except NoUri:
-                # ignore if no URI can be determined, e.g. for LaTeX output :(
-                pass
-            # change text color if item_id matches a regex in traceability_hyperlink_colors
-            colors = self._find_colors_for_class(app.config.traceability_hyperlink_colors, item_id)
-            if colors:
-                class_name = app.config.traceability_class_names[colors]
-                newnode['classes'].append(class_name)
-            if caption_on_hover and not isinstance(app.builder, LaTeXBuilder):
-                innernode['classes'].append('has_hidden_caption')
-                innernode.append(caption_on_hover)  # set to hidden in traceability.js
-            newnode.append(innernode)
-            p_node += newnode
+                newnode['refdocname'] = item_info.docname
+            else:
+                newnode['refuri'] = app.builder.get_relative_uri(self['document'], notification_item.docname)
+                newnode['refuri'] += '#' + notification_item_id
+                newnode['refdocname'] = notification_item.docname
+        except NoUri:
+            # ignore if no URI can be determined, e.g. for LaTeX output :(
+            pass
+
+        # change text color if item_id matches a regex in traceability_hyperlink_colors
+        colors = self._find_colors_for_class(app.config.traceability_hyperlink_colors, item_id)
+        if colors:
+            class_name = app.config.traceability_class_names[colors]
+            newnode['classes'].append(class_name)
+        if caption_on_hover and not isinstance(app.builder, LaTeXBuilder):
+            innernode['classes'].append('has_hidden_caption')
+            innernode.append(caption_on_hover)  # set to hidden in traceability.js
+        newnode.append(innernode)
+        p_node += newnode
 
         return p_node
 
@@ -188,6 +193,29 @@ class TraceableBaseNode(nodes.General, nodes.Element, ABC):
             if re.search(regex, item_id):
                 return tuple(colors)
         return None
+
+    @staticmethod
+    def _get_caption_info(item_info, show_caption=True):
+        """ Gets either the caption or the caption to show on hover, depending on the item's configuration.
+
+        Args:
+            item_info (TraceableItem): TraceableItem object.
+            show_caption (bool): True if the caption should always be shown, False to only show caption on hover.
+
+        Returns:
+            str: Caption to append to the item's ID, or empty string when item has no caption or it is configured to be
+                shown on hover
+            nodes.inline/None: Inline node containing the item's caption, or None if caption should always be shown.
+        """
+        caption = ''
+        caption_on_hover = None
+        if item_info and item_info.caption:
+            if show_caption:
+                caption = ' : {}'.format(item_info.caption)
+            else:
+                caption_on_hover = nodes.inline('', item_info.caption)
+                caption_on_hover['classes'].append('popup_caption')
+        return caption, caption_on_hover
 
     def has_warned_about_undefined(self, item_info):
         """
