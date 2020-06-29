@@ -17,6 +17,7 @@ from sphinx.util.nodes import make_refnode
 from sphinx.errors import NoUri
 from docutils import nodes
 from docutils.parsers.rst import directives
+from jira import JIRA
 
 from mlx.traceable_attribute import TraceableAttribute
 from mlx.traceable_base_node import TraceableBaseNode
@@ -232,6 +233,8 @@ def process_item_nodes(app, doctree, fromdocname):
                 report_warning("List item {!r} in merge/pull request {} is not defined as a checklist-item."
                                .format(item_id, item_info.mr_id))
 
+    create_jira_issues(app)
+
 
 def init_available_relationships(app):
     """
@@ -357,6 +360,21 @@ def define_attribute(attr, app):
     else:
         report_warning('Traceability: attribute {attr} cannot be translated to string'.format(attr=attr))
     TraceableItem.define_attribute(attrobject)
+
+def create_jira_issues(app):
+    settings = app.config.traceability_jira_automation
+    print('#'*99)
+    print(settings)
+    print(type(settings))
+    for value in settings.values():
+        if not value:
+            return
+
+    options = {"server": settings['api_endpoint']}
+    jira = JIRA(options, basic_auth=(settings['username'], settings['password']))
+    projects = jira.projects()
+    print('+'*199)
+    print(sorted([project.key for project in projects])[2:5])
 
 
 def query_checklist(settings, attr_values):
@@ -555,6 +573,9 @@ def setup(app):
 
     # Configuration for notification item about missing items
     app.add_config_value('traceability_notifications', {}, 'env')
+
+    # Configuration for automated issue creation in JIRA
+    app.add_config_value('traceability_jira_automation', {}, 'env')
 
     app.add_node(ItemTree)
     app.add_node(ItemMatrix)
