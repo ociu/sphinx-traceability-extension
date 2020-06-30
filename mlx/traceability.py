@@ -178,12 +178,15 @@ class PendingItemXref(TraceableBaseNode):
 # Event handlers
 
 def perform_consistency_check(app, doctree):
-
     '''
     New in sphinx 1.6: consistency checker callback
 
     Used to perform the self-test on the collection of items
+
+    If the ``checklist_item_regex`` is configured, a warning is reported
+    for each item ID that matches it and is not defined as a checklist-item.
     '''
+    print('perform_consistency_check')
     env = app.builder.env
 
     try:
@@ -202,6 +205,14 @@ def perform_consistency_check(app, doctree):
         app.add_stylesheet('hyperlink_colors.css')
         generate_color_css(app, app.config.traceability_hyperlink_colors)
 
+    regex = app.config.traceability_checklist.get('checklist_item_regex')
+    if regex is not None and app.config.traceability_checklist['has_checklist_items']:
+        for item_id in list(ChecklistItemDirective.query_results):
+            if fullmatch(regex, item_id):
+                item_info = ChecklistItemDirective.query_results.pop(item_id)
+                report_warning("List item {!r} in merge/pull request {} is not defined as a checklist-item."
+                               .format(item_id, item_info.mr_id))
+
 
 def process_item_nodes(app, doctree, fromdocname):
     """
@@ -209,9 +220,6 @@ def process_item_nodes(app, doctree, fromdocname):
 
     Replace all ItemList nodes with a list of the collected items.
     Augment each item with a backlink to the original location.
-
-    If the ``checklist_item_regex`` is configured, a warning is reported
-    for each item ID that matches it and is not defined as a checklist-item.
     """
     env = app.builder.env
 
@@ -224,16 +232,6 @@ def process_item_nodes(app, doctree, fromdocname):
         node['document'] = fromdocname
         node['line'] = node.line
         node.perform_replacement(app, env.traceability_collection)
-
-    regex = app.config.traceability_checklist.get('checklist_item_regex')
-    if regex is not None and app.config.traceability_checklist['has_checklist_items']:
-        for item_id in list(ChecklistItemDirective.query_results):
-            if fullmatch(regex, item_id):
-                item_info = ChecklistItemDirective.query_results.pop(item_id)
-                report_warning("List item {!r} in merge/pull request {} is not defined as a checklist-item."
-                               .format(item_id, item_info.mr_id))
-
-    create_jira_issues(app)
 
 
 def init_available_relationships(app):
