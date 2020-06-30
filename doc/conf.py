@@ -383,8 +383,9 @@ traceability_jira_automation = {
     'api_endpoint': config('JIRA_API_ENDPOINT', ''),
     'username': config('JIRA_USERNAME', ''),
     'password': config('JIRA_PASSWORD', ''),
-    'item_regex': config('JIRA_ITEM_REGEX', 'ACTION-'),
-    'issue_type': config('JIRA_ISSUE_TYPE', 'task'),
+    'project': config('JIRA_PROJECT', ''),
+    'item_regex': config('JIRA_ITEM_REGEX', '.*ACTION-.*'),
+    'issue_type': config('JIRA_ISSUE_TYPE', 'Task'),
 }
 
 # Point to plantuml jar file
