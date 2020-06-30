@@ -186,7 +186,6 @@ def perform_consistency_check(app, doctree):
     If the ``checklist_item_regex`` is configured, a warning is reported
     for each item ID that matches it and is not defined as a checklist-item.
     '''
-    print('perform_consistency_check')
     env = app.builder.env
 
     try:
