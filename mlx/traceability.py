@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
-'''
+"""
 Traceability plugin
 
 Sphinx extension for reStructuredText that added traceable documentation items.
 See readme for more details.
-'''
+"""
 
 from collections import OrderedDict, namedtuple
 from re import fullmatch, match
@@ -178,14 +178,14 @@ class PendingItemXref(TraceableBaseNode):
 # Event handlers
 
 def perform_consistency_check(app, doctree):
-    '''
+    """
     New in sphinx 1.6: consistency checker callback
 
     Used to perform the self-test on the collection of items
 
     If the ``checklist_item_regex`` is configured, a warning is reported
     for each item ID that matches it and is not defined as a checklist-item.
-    '''
+    """
     env = app.builder.env
 
     try:
@@ -453,7 +453,7 @@ def _parse_description(description, attr_values, merge_request_id, regex):
 # -----------------------------------------------------------------------------
 # Extension setup
 def setup(app):
-    '''Extension setup'''
+    """Extension setup"""
 
     # Javascript and stylesheet for the tree-view
     # app.add_javascript('jquery.js') #note: can only be included once
