@@ -476,6 +476,10 @@ def setup(app):
             'aspice': '^[123]$',
             'status': '^.*$',
             'result': '(?i)^(pass|fail|error)$',
+            'attendees': '^([A-Z]{3}[, ]*)+$',
+            'assignee': '^.*$',
+            'effort': r'^([\d\.]+(mo|[wdhm]) ?)+$',
+
         },
         'env',
     )
@@ -489,6 +493,9 @@ def setup(app):
             'aspice': 'ASPICE',
             'status': 'Status',
             'result': 'Result',
+            'attendees': 'Attendees',
+            'assignee': 'Assignee',
+            'effort': 'Effort estimation',
         },
         'env',
     )
