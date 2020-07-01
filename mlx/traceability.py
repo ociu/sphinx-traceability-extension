@@ -409,7 +409,7 @@ def create_jira_issues(app):
             description=item.get_content(),
             issuetype={'name': issue_type},
             components=components,
-            #timetracking={'remainingEstimate': item.get_attribute('effort')},
+            # timetracking={'remainingEstimate': item.get_attribute('effort')},
             assignee={'name': item.get_attribute('assignee')},
         )
         if item.get_attribute('effort'):
@@ -437,7 +437,6 @@ def determine_jira_project(key_regexp, key_prefix, default_project, item_id):
         return key_prefix + key_match.group('project')
     except (AttributeError, IndexError):
         return default_project
-
 
 
 def query_checklist(settings, attr_values):
