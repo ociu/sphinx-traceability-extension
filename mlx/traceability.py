@@ -8,7 +8,7 @@ See readme for more details.
 """
 
 from collections import OrderedDict, namedtuple
-from re import fullmatch, match
+from re import fullmatch, match, search
 from os import path
 
 from requests import Session
@@ -17,7 +17,7 @@ from sphinx.util.nodes import make_refnode
 from sphinx.errors import NoUri
 from docutils import nodes
 from docutils.parsers.rst import directives
-from jira import JIRA
+from jira import JIRA, JIRAError
 
 from mlx.traceable_attribute import TraceableAttribute
 from mlx.traceable_base_node import TraceableBaseNode
@@ -212,6 +212,9 @@ def perform_consistency_check(app, doctree):
                 report_warning("List item {!r} in merge/pull request {} is not defined as a checklist-item."
                                .format(item_id, item_info.mr_id))
 
+    if app.config.traceability_jira_automation:
+        create_jira_issues(app)
+
 
 def process_item_nodes(app, doctree, fromdocname):
     """
@@ -358,20 +361,83 @@ def define_attribute(attr, app):
         report_warning('Traceability: attribute {attr} cannot be translated to string'.format(attr=attr))
     TraceableItem.define_attribute(attrobject)
 
+
 def create_jira_issues(app):
     settings = app.config.traceability_jira_automation
-    print('#'*99)
-    print(settings)
-    print(type(settings))
-    for value in settings.values():
-        if not value:
-            return
 
-    options = {"server": settings['api_endpoint']}
-    jira = JIRA(options, basic_auth=(settings['username'], settings['password']))
-    projects = jira.projects()
-    print('+'*199)
-    print(sorted([project.key for project in projects])[2:5])
+    mandatory_keys = ('api_endpoint', 'username', 'password', 'item_regex', 'issue_type')
+    missing_keys = []
+    for key in mandatory_keys:
+        if not settings.get(key, None):
+            missing_keys.append(key)
+    if missing_keys:
+        return report_warning("Configuration for automated ticket creation via JIRA API is missing mandatory values "
+                              "for keys {}".format(missing_keys))
+
+    jira = JIRA({"server": settings['api_endpoint']}, basic_auth=(settings['username'], settings['password']))
+    issue_type = settings['issue_type']
+    components = []
+    for comp in settings.get('components', '').split(','):
+        components.append({'name': comp})
+
+    traceability_collection = app.builder.env.traceability_collection
+    for item_id in traceability_collection.get_items(settings['item_regex']):
+        item = traceability_collection.get_item(item_id)
+        project_id_or_key = determine_jira_project(settings['project_key_regexp'],
+                                                   settings['project_key_prefix'],
+                                                   settings['default_project'],
+                                                   item_id)
+        if not project_id_or_key:
+            report_warning("Could not determine a JIRA project key or id for item {!r}".format(item_id))
+            continue
+
+        summary = item.caption
+        if settings['relationship_to_parent']:
+            parent_ids = item.iter_targets(settings['relationship_to_parent'])
+            if parent_ids:
+                summary = "{} {}".format(parent_ids[0], summary)
+
+        matches = jira.search_issues("project={} and summary ~ {!r}".format(project_id_or_key, summary))
+        if matches:
+            report_warning("Won't create a {} for item {!r} because JIRA API query to check to prevent duplication "
+                           "returned {}".format(issue_type, item_id, matches))
+            continue
+
+        issue = jira.create_issue(
+            project=project_id_or_key,
+            summary=summary,
+            description=item.get_content(),
+            issuetype={'name': issue_type},
+            components=components,
+            #timetracking={'remainingEstimate': item.get_attribute('effort')},
+            assignee={'name': item.get_attribute('assignee')},
+        )
+        if item.get_attribute('effort'):
+            try:
+                issue.update(update={"timetracking": [{"edit": {"timeestimate": item.get_attribute('effort')}}]},
+                             notify=False)
+            except JIRAError as err:
+                report_warning("JIRA API returned error code {}: {}".format(err.status_code, err.response.text))
+
+
+def determine_jira_project(key_regexp, key_prefix, default_project, item_id):
+    """ Determines the JIRA project key or id to use for give item ID.
+
+    Args:
+        key_regexp (str): Regular expression used to scan through the <<item_id>>. In case of a hit, the capture group
+            with name 'project' will be used to build the project key.
+        key_prefix (str): Prefix to use if <<key_regexp>> gets used to build the project key.
+        default_project (str): Project key or id to use if a match for <<key_regexp>> doesn't get used.
+
+    Returns:
+        str: JIRA project key or id.
+    """
+    key_match = search(key_regexp, item_id)
+    try:
+        return key_prefix + key_match.group('project')
+    except (AttributeError, IndexError):
+        return default_project
+
 
 
 def query_checklist(settings, attr_values):
