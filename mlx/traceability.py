@@ -383,9 +383,9 @@ def create_jira_issues(app):
     traceability_collection = app.builder.env.traceability_collection
     for item_id in traceability_collection.get_items(settings['item_regex']):
         item = traceability_collection.get_item(item_id)
-        project_id_or_key = determine_jira_project(settings['project_key_regexp'],
-                                                   settings['project_key_prefix'],
-                                                   settings['default_project'],
+        project_id_or_key = determine_jira_project(settings.get('project_key_regexp', ''),
+                                                   settings.get('project_key_prefix', ''),
+                                                   settings.get('default_project', ''),
                                                    item_id)
         if not project_id_or_key:
             report_warning("Could not determine a JIRA project key or id for item {!r}".format(item_id))
