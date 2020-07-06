@@ -365,7 +365,7 @@ def define_attribute(attr, app):
 def create_jira_issues(app):
     settings = app.config.traceability_jira_automation
 
-    mandatory_keys = ('api_endpoint', 'username', 'password', 'item_regex', 'issue_type')
+    mandatory_keys = ('api_endpoint', 'username', 'password', 'item_to_issue_regex', 'issue_type')
     missing_keys = []
     for key in mandatory_keys:
         if not settings.get(key, None):
@@ -381,7 +381,7 @@ def create_jira_issues(app):
         components.append({'name': comp})
 
     traceability_collection = app.builder.env.traceability_collection
-    for item_id in traceability_collection.get_items(settings['item_regex']):
+    for item_id in traceability_collection.get_items(settings['item_to_issue_regex']):
         item = traceability_collection.get_item(item_id)
         project_id_or_key = determine_jira_project(settings.get('project_key_regexp', ''),
                                                    settings.get('project_key_prefix', ''),
