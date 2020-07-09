@@ -379,14 +379,7 @@ traceability_checklist = {
 }
 
 # Options for automated ticket creation via JIRA API
-traceability_jira_automation = {
-    'api_endpoint': config('JIRA_API_ENDPOINT', ''),
-    'username': config('JIRA_USERNAME', ''),
-    'password': config('JIRA_PASSWORD', ''),
-    'project': config('JIRA_PROJECT', ''),
-    'item_regex': config('JIRA_ITEM_REGEX', '.*ACTION-.*'),
-    'issue_type': config('JIRA_ISSUE_TYPE', 'Task'),
-}
+traceability_jira_automation = {}
 
 # Point to plantuml jar file
 # confirm we have plantuml in the path
