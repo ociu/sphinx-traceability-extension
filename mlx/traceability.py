@@ -380,7 +380,8 @@ def create_jira_issues(app):
     optional_fields = {}
     components = []
     for comp in settings.get('components', '').split(','):
-        components.append({'name': comp})
+        if comp:
+            components.append({'name': comp.strip()})
     if components:
         optional_fields['components'] = components
 
