@@ -31,7 +31,12 @@ def create_jira_issues(app):
         general_fields['components'] = components
 
     traceability_collection = app.builder.env.traceability_collection
-    for item_id in traceability_collection.get_items(settings['item_to_issue_regex']):
+    relevant_item_ids = traceability_collection.get_items(settings['item_to_issue_regex'])
+    create_unique_issues(relevant_item_ids, jira, general_fields, settings, traceability_collection)
+
+
+def create_unique_issues(item_ids, jira, general_fields, settings, traceability_collection):
+    for item_id in item_ids:
         fields = {}
         item = traceability_collection.get_item(item_id)
         project_id_or_key = determine_jira_project(settings.get('project_key_regexp', ''),
@@ -57,7 +62,7 @@ def create_jira_issues(app):
         if matches:
             if settings.get('warn_if_existent', False):
                 report_warning("Won't create a {} for item {!r} because the Jira API query to check to prevent duplication "
-                               "returned {}".format(issue_type, item_id, matches))
+                               "returned {}".format(general_fields['issuetype']['name'], item_id, matches))
             continue
 
         fields['project'] = project_id_or_key
@@ -66,10 +71,10 @@ def create_jira_issues(app):
         if assignee:
             fields['assignee'] = {'name': item.get_attribute('assignee')}
 
-        create_jira_issue_for_item(jira, {**fields, **general_fields}, item, attendees)
+        push_item_to_jira(jira, {**fields, **general_fields}, item, attendees)
 
 
-def create_jira_issue_for_item(jira, fields, item, attendees):
+def push_item_to_jira(jira, fields, item, attendees):
     issue = jira.create_issue(**fields)
 
     effort = item.get_attribute('effort')
