@@ -371,14 +371,18 @@ def create_jira_issues(app):
         if not settings.get(key, None):
             missing_keys.append(key)
     if missing_keys:
-        return report_warning("Configuration for automated ticket creation via JIRA API is missing mandatory values "
+        return report_warning("Configuration for automated ticket creation via Jira API is missing mandatory values "
                               "for keys {}".format(missing_keys))
 
     jira = JIRA({"server": settings['api_endpoint']}, basic_auth=(settings['username'], settings['password']))
     issue_type = settings['issue_type']
+
+    optional_fields = {}
     components = []
     for comp in settings.get('components', '').split(','):
         components.append({'name': comp})
+    if components:
+        optional_fields['components'] = components
 
     traceability_collection = app.builder.env.traceability_collection
     for item_id in traceability_collection.get_items(settings['item_to_issue_regex']):
@@ -408,16 +412,16 @@ def create_jira_issues(app):
             summary=summary,
             description=item.get_content(),
             issuetype={'name': issue_type},
-            components=components,
-            # timetracking={'remainingEstimate': item.get_attribute('effort')},
+            # timetracking={'originalEstimate': item.get_attribute('effort')},
             assignee={'name': item.get_attribute('assignee')},
+            **optional_fields,
         )
         if item.get_attribute('effort'):
             try:
                 issue.update(update={"timetracking": [{"edit": {"timeestimate": item.get_attribute('effort')}}]},
                              notify=False)
             except JIRAError as err:
-                report_warning("JIRA API returned error code {}: {}".format(err.status_code, err.response.text))
+                report_warning("Jira API returned error code {}: {}".format(err.status_code, err.response.text))
 
 
 def determine_jira_project(key_regexp, key_prefix, default_project, item_id):
