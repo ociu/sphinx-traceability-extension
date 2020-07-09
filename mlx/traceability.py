@@ -453,10 +453,10 @@ def setup(app):
     """Extension setup"""
 
     # Javascript and stylesheet for the tree-view
-    # app.add_javascript('jquery.js') #note: can only be included once
-    app.add_javascript('https://cdn.rawgit.com/aexmachina/jquery-bonsai/master/jquery.bonsai.js')
-    app.add_stylesheet('https://cdn.rawgit.com/aexmachina/jquery-bonsai/master/jquery.bonsai.css')
-    app.add_javascript('traceability.js')
+    # app.add_js_file('jquery.js') #note: can only be included once
+    app.add_js_file('https://cdn.rawgit.com/aexmachina/jquery-bonsai/master/jquery.bonsai.js')
+    app.add_js_file('https://cdn.rawgit.com/aexmachina/jquery-bonsai/master/jquery.bonsai.css')
+    app.add_js_file('traceability.js')
 
     # Configuration for exporting collection to json
     app.add_config_value('traceability_json_export_path', None, 'env')
