@@ -413,16 +413,15 @@ def create_jira_issues(app):
             summary=summary,
             description=item.get_content(),
             issuetype={'name': issue_type},
-            # timetracking={'originalEstimate': item.get_attribute('effort')},
             assignee={'name': item.get_attribute('assignee')},
             **optional_fields,
         )
-        if item.get_attribute('effort'):
+        effort = item.get_attribute('effort')
+        if effort:
             try:
-                issue.update(update={"timetracking": [{"edit": {"timeestimate": item.get_attribute('effort')}}]},
-                             notify=False)
-            except JIRAError as err:
-                report_warning("Jira API returned error code {}: {}".format(err.status_code, err.response.text))
+                issue.update(update={"timetracking": [{"edit": {"timeestimate": effort}}]}, notify=False)
+            except JIRAError:
+                issue.update(description="{}\n\nEffort estimation: {}".format(item.get_content(), effort), notify=False)
 
 
 def determine_jira_project(key_regexp, key_prefix, default_project, item_id):
