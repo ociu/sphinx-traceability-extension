@@ -222,7 +222,7 @@ def perform_consistency_check(app, doctree):
         warn_missing_checklist_items(regex)
 
     if app.config.traceability_jira_automation:
-        create_jira_issues(app)
+        create_jira_issues(app.config.traceability_jira_automation, app.builder.env.traceability_collection)
 
 
 def process_item_nodes(app, doctree, fromdocname):
