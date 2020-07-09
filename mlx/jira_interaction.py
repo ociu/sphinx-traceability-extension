@@ -75,8 +75,8 @@ def create_unique_issues(item_ids, jira, general_fields, settings, traceability_
         matches = jira.search_issues("project={} and summary ~ {!r}".format(project_id_or_key, summary))
         if matches:
             if settings.get('warn_if_existent', False):
-                report_warning("Won't create a {} for item {!r} because the Jira API query to check to prevent duplication "
-                               "returned {}".format(general_fields['issuetype']['name'], item_id, matches))
+                report_warning("Won't create a {} for item {!r} because the Jira API query to check to prevent "
+                               "duplication returned {}".format(general_fields['issuetype']['name'], item_id, matches))
             continue
 
         fields['project'] = project_id_or_key
