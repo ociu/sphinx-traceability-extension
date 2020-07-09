@@ -96,6 +96,19 @@ def build_class_name(inputs, class_names):
     class_names[inputs] = name.lower()
 
 
+def warn_missing_checklist_items(regex):
+    """ Reports a warning for each list item that is not defined as a checklist-item but is expected to be as such.
+
+    Args:
+        regex (str): Regular expression for matching list items that are supposed to be a checklist-item
+    """
+    for item_id in list(ChecklistItemDirective.query_results):
+        if fullmatch(regex, item_id):
+            item_info = ChecklistItemDirective.query_results.pop(item_id)
+            report_warning("List item {!r} in merge/pull request {} is not defined as a checklist-item."
+                           .format(item_id, item_info.mr_id))
+
+
 # -----------------------------------------------------------------------------
 # Pending item cross reference node
 
@@ -206,11 +219,7 @@ def perform_consistency_check(app, doctree):
 
     regex = app.config.traceability_checklist.get('checklist_item_regex')
     if regex is not None and app.config.traceability_checklist['has_checklist_items']:
-        for item_id in list(ChecklistItemDirective.query_results):
-            if fullmatch(regex, item_id):
-                item_info = ChecklistItemDirective.query_results.pop(item_id)
-                report_warning("List item {!r} in merge/pull request {} is not defined as a checklist-item."
-                               .format(item_id, item_info.mr_id))
+        warn_missing_checklist_items(regex)
 
     if app.config.traceability_jira_automation:
         create_jira_issues(app)
