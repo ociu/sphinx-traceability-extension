@@ -397,10 +397,14 @@ def create_jira_issues(app):
             continue
 
         summary = item.caption
+        attendees = []
         if settings['relationship_to_parent']:
             parent_ids = item.iter_targets(settings['relationship_to_parent'])
             if parent_ids:
-                summary = "{} {}".format(parent_ids[0], summary)
+                parent_id = parent_ids[0]
+                parent = traceability_collection.get_item(parent_id)
+                summary = "{} {}".format(parent_id, summary)
+                attendees = parent.get_attribute('attendees').split(',')
 
         matches = jira.search_issues("project={} and summary ~ {!r}".format(project_id_or_key, summary))
         if matches:
@@ -423,6 +427,11 @@ def create_jira_issues(app):
                 issue.update(update={"timetracking": [{"edit": {"timeestimate": effort}}]}, notify=False)
             except JIRAError:
                 issue.update(description="{}\n\nEffort estimation: {}".format(item.get_content(), effort), notify=False)
+        for attendee in attendees:
+            try:
+                jira.add_watcher(issue, attendee.strip())
+            except JIRAError as err:
+                report_warning("Jira API returned error code {}: {}".format(err.status_code, err.response.text))
 
 
 def determine_jira_project(key_regexp, key_prefix, default_project, item_id):
