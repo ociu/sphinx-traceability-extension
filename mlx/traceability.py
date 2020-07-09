@@ -402,8 +402,8 @@ def create_jira_issues(app):
                 summary = "{} {}".format(parent_ids[0], summary)
 
         matches = jira.search_issues("project={} and summary ~ {!r}".format(project_id_or_key, summary))
-        if matches:
-            report_warning("Won't create a {} for item {!r} because JIRA API query to check to prevent duplication "
+        if matches and settings.get('warn_if_existent', False):
+            report_warning("Won't create a {} for item {!r} because the Jira API query to check to prevent duplication "
                            "returned {}".format(issue_type, item_id, matches))
             continue
 
