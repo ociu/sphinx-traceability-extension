@@ -480,3 +480,56 @@ GitHub
 - *MERGE_REQUEST_ID* is the pull request number.
 
 .. _`personal access token`: https://github.blog/2013-05-16-personal-api-tokens/
+
+.. _traceability_jira_automation:
+
+--------------------
+Jira ticket creation
+--------------------
+
+Traceable items can be configured to create Jira tickets for. Duplication of tickets is avoided by querying Jira
+first for existing tickets based on the Jira project and ticket summary. Below is an example configuration:
+
+Configuration
+=============
+
+.. code-block:: python
+
+    traceability_jira_automation = {
+        'api_endpoint': 'https://jira.atlassian.com/rest/api/latest/',
+        'username': 'my_username',
+        'password': 'my_password',
+        'project_key_regexp': r'ACTION-(?P<project>\d{5})_',
+        'project_key_prefix': 'MLX',
+        'default_project': 'SWCC',
+        'issue_type': 'Task',
+        'item_to_issue_regex': r'ACTION-81340_ACTION_\d+',
+        'warn_if_existent': True,
+        'relationship_to_parent': 'depends_on',
+        'components': '[SW],[HW]',
+    }
+
+``project_key_regexp`` can optionally be defined. This regular expression with a named group *project* is used to
+extract a certain part of the item ID to determine the Jira project key. ``project_key_prefix`` can optionally be
+defined to add a prefix to the match for ``project_key_regexp``. Additionally, ``default_project`` defines the Jira
+project key or id in case ``project_key_regexp`` doesn't come up with a match.
+
+``item_to_issue_regex`` defines the regular expression used to filter item IDs to be exported as Jira tickets.
+A warning gets reported when a Jira ticket already exists. These warnings can be disabled by setting
+``warn_if_existent`` to ``True``.
+
+The item ID of a linked item can be added to the summary of the Jira ticket to create by specifying the relationship
+to this item with ``relationship_to_parent``. This makes it possible to create a query link in advance to list all
+related Jira tickets.
+
+Attributes
+==========
+
+All attributes are optional and are defined in traceability_default_config_.
+
+- *assignee* is used to assign a username to the Jira ticket.
+- *effort* is used to set the original effort estimation field. On failure, it gets appended to the description field.
+
+If the item, for which to create a ticket for, has an item linked to it by a ``relationship_to_parent`` relationship,
+the *attendees* attribute of this linked item should be a comma-separated list of usernames that get added as watchers
+to the ticket.
