@@ -86,7 +86,7 @@ Example of internal and external relationship pairs:
 
     traceability_relationships = {
         'validates': 'validated_by',
-        'ext_polarion_reference': ''
+        'ext_polarion_reference': '',
     }
 
 .. _traceability_config_relation2string:
@@ -107,7 +107,7 @@ Example of internal and external relationship stringification:
     traceability_relationship_to_string = {
         'validates': 'Validates',
         'validated_by': 'Validated by',
-        'ext_polarion_reference': 'Polarion reference'
+        'ext_polarion_reference': 'Polarion reference',
     }
 
 .. _traceability_config_ext2url:
