@@ -476,7 +476,6 @@ def setup(app):
             'attendees': '^([A-Z]{3}[, ]*)+$',
             'assignee': '^.*$',
             'effort': r'^([\d\.]+(mo|[wdhm]) ?)+$',
-
         },
         'env',
     )
@@ -527,7 +526,7 @@ def setup(app):
             'validates': 'Validates',
             'validated_by': 'Validated by',
             'trace': 'Traces',
-            'backtrace': 'Back traces',
+            'backtrace': 'Backtraces',
             'ext_toolname': 'Reference to toolname',
         },
         'env',
