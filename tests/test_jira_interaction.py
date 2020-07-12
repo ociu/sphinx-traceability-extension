@@ -1,9 +1,6 @@
 from logging import WARNING
 from unittest import TestCase, mock
 
-from jira import JIRA, Issue
-
-import mlx.traceability_exception as exception
 from mlx.traceable_attribute import TraceableAttribute
 from mlx.traceable_collection import TraceableCollection
 from mlx.traceable_item import TraceableItem
@@ -101,5 +98,8 @@ class TestJiraInteraction(TestCase):
              "missing mandatory values for keys ['password']"]
         )
 
-    def test_create_jira_issues(self, *_):
+    def test_create_jira_issues(self, jira):
         dut.create_jira_issues(self.settings, self.coll)
+        self.assertEqual(jira.call_args,
+                         mock.call({'server': 'https://jira.atlassian.com/rest/api/latest/'},
+                                   basic_auth=('my_username', 'my_password')))
