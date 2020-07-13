@@ -77,7 +77,7 @@ def create_unique_issues(item_ids, jira, general_fields, settings, traceability_
                                                                        jira_field_id,
                                                                        jira_field))
         if matches:
-            if settings.get('warn_if_existent', False):
+            if settings.get('warn_if_exists', False):
                 report_warning("Won't create a {} for item {!r} because the Jira API query to check to prevent "
                                "duplication returned {}".format(general_fields['issuetype']['name'], item_id, matches))
             continue

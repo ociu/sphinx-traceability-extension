@@ -32,7 +32,7 @@ class TestJiraInteraction(TestCase):
             'project_key_regex': r'ACTION-(?P<project>\d{5})_',
             'project_key_prefix': 'MLX',
             'default_project': 'SWCC',
-            'warn_if_existent': True,
+            'warn_if_exists': True,
             'relationship_to_parent': 'depends_on',
             'components': '[SW],[HW]',
         }
@@ -102,7 +102,7 @@ class TestJiraInteraction(TestCase):
 
     def test_missing_all_optional_one_mandatory(self, *_):
         mandatory_keys = ['components', 'project_key_prefix', 'project_key_regex', 'default_project',
-                          'relationship_to_parent', 'warn_if_existent', 'password']
+                          'relationship_to_parent', 'warn_if_exists', 'password']
         for key in mandatory_keys:
             self.settings.pop(key)
         with self.assertLogs(level=WARNING) as cm:
@@ -202,7 +202,7 @@ class TestJiraInteraction(TestCase):
 
     def test_no_warning_about_duplication(self, jira):
         """ Default behavior should be no warning when a Jira ticket doesn't get created to prevent duplication """
-        self.settings.pop('warn_if_existent')
+        self.settings.pop('warn_if_exists')
         jira_mock = jira.return_value
         jira_mock.search_issues.return_value = ['Jira already contains this ticket']
         with self.assertLogs(level=WARNING) as cm:
