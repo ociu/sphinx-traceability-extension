@@ -9,6 +9,7 @@ from mlx.traceable_collection import TraceableCollection
 from mlx.traceable_item import TraceableItem
 import mlx.jira_interaction as dut
 
+
 @mock.patch('mlx.jira_interaction.JIRA')
 class TestJiraInteraction(TestCase):
     general_fields = {
@@ -240,6 +241,7 @@ class TestJiraInteraction(TestCase):
 
     def test_add_watcher_jira_error(self, jira):
         Response = namedtuple('Response', 'text')
+
         def jira_add_watcher_mock(*_):
             raise JIRAError(status_code=401, response=Response('dummy msg'))
 
