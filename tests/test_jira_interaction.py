@@ -183,7 +183,20 @@ class TestJiraInteraction(TestCase):
         )
 
     def test_prevent_duplication(self, jira):
-        pass
+        jira_mock = jira.return_value
+        jira_mock.search_issues.return_value = ['Jira already contains this ticket']
+        with self.assertLogs(level=WARNING) as cm:
+            dut.create_jira_issues(self.settings, self.coll)
+
+        self.assertEqual(
+            cm.output,
+            ["WARNING:sphinx.mlx.traceability_exception:Won't create a Task for item "
+             "'ACTION-12345_ACTION_1' because the Jira API query to check to prevent "
+             "duplication returned ['Jira already contains this ticket']",
+             "WARNING:sphinx.mlx.traceability_exception:Won't create a Task for item "
+             "'ACTION-12345_ACTION_2' because the Jira API query to check to prevent "
+             "duplication returned ['Jira already contains this ticket']"]
+        )
 
     def test_no_warning_about_duplication(self, jira):
         pass
