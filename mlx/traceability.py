@@ -214,7 +214,7 @@ def perform_consistency_check(app, doctree):
         env.traceability_collection.export(fname)
 
     if app.config.traceability_hyperlink_colors:
-        app.add_stylesheet('hyperlink_colors.css')
+        app.add_css_file('hyperlink_colors.css')
         generate_color_css(app, app.config.traceability_hyperlink_colors)
 
     regex = app.config.traceability_checklist.get('checklist_item_regex')
