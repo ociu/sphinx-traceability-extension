@@ -503,7 +503,7 @@ Configuration
         'project_key_prefix': 'MLX',
         'default_project': 'SWCC',
         'issue_type': 'Task',
-        'item_to_issue_regex': r'ACTION-81340_ACTION_\d+',
+        'item_to_issue_regex': r'ACTION-12345_ACTION_\d+',
         'warn_if_existent': True,
         'relationship_to_parent': 'depends_on',
         'components': '[SW],[HW]',
