@@ -1,3 +1,4 @@
+from collections import namedtuple
 from logging import WARNING, warning
 from unittest import TestCase, mock
 
@@ -236,3 +237,20 @@ class TestJiraInteraction(TestCase):
                     **self.general_fields
                 ),
             ])
+
+    def test_add_watcher_jira_error(self, jira):
+        Response = namedtuple('Response', 'text')
+        def jira_add_watcher_mock(*_):
+            raise JIRAError(status_code=401, response=Response('dummy msg'))
+
+        jira_mock = jira.return_value
+        jira_mock.search_issues.return_value = []
+        jira_mock.add_watcher.side_effect = jira_add_watcher_mock
+        with self.assertLogs(level=WARNING) as cm:
+            dut.create_jira_issues(self.settings, self.coll)
+
+        error_msg = "WARNING:sphinx.mlx.traceability_exception:Jira API returned error code 401: dummy msg"
+        self.assertEqual(
+            cm.output,
+            [error_msg, error_msg]
+        )
