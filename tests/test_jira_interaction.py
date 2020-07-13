@@ -6,7 +6,6 @@ from mlx.traceable_collection import TraceableCollection
 from mlx.traceable_item import TraceableItem
 import mlx.jira_interaction as dut
 
-
 @mock.patch('mlx.jira_interaction.JIRA')
 class TestJiraInteraction(TestCase):
 
@@ -27,6 +26,7 @@ class TestJiraInteraction(TestCase):
         self.coll = TraceableCollection()
         parent = TraceableItem('MEETING-12345_2')
         action1 = TraceableItem('ACTION-12345_ACTION_1')
+        action1.caption = 'Caption for action 1'
         action2 = TraceableItem('ACTION-12345_ACTION_2')
         action3 = TraceableItem('ACTION-98765_ACTION_55')
         item1 = TraceableItem('ITEM-12345_1')
@@ -99,7 +99,13 @@ class TestJiraInteraction(TestCase):
         )
 
     def test_create_jira_issues(self, jira):
+        jira_mock = jira.return_value
         dut.create_jira_issues(self.settings, self.coll)
         self.assertEqual(jira.call_args,
                          mock.call({'server': 'https://jira.atlassian.com/rest/api/latest/'},
                                    basic_auth=('my_username', 'my_password')))
+        self.assertEqual(jira_mock.search_issues.call_args_list,
+                         [
+                             mock.call("project=MLX12345 and summary ~ 'MEETING-12345_2 Caption for action 1'"),
+                             mock.call("project=MLX12345 and summary ~ 'MEETING-12345_2 None'"),
+                         ])
