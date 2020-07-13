@@ -101,9 +101,9 @@ class TestJiraInteraction(TestCase):
         )
 
     def test_missing_all_optional_one_mandatory(self, *_):
-        mandatory_keys = ['components', 'project_key_prefix', 'project_key_regex', 'default_project',
+        keys_to_remove = ['components', 'project_key_prefix', 'project_key_regex', 'default_project',
                           'relationship_to_parent', 'warn_if_exists', 'password']
-        for key in mandatory_keys:
+        for key in keys_to_remove:
             self.settings.pop(key)
         with self.assertLogs(level=WARNING) as cm:
             dut.create_jira_issues(self.settings, None)
