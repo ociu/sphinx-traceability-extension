@@ -487,8 +487,10 @@ GitHub
 Jira ticket creation
 --------------------
 
-Traceable items can be configured to create Jira tickets for. Duplication of tickets is avoided by querying Jira
-first for existing tickets based on the Jira project and ticket summary. Below is an example configuration:
+Jira tickets that are based on traceable items can be automatically created by the plugin. A ticket gets created only
+for each item of which its ID **matches** the configured regular expression ``item_to_issue_regex``.
+Duplication of tickets is avoided by querying Jira first for existing tickets based on the Jira project and the
+value of the ticket field configured by ``jira_field_id``. Below is an example configuration:
 
 Configuration
 =============
@@ -499,14 +501,15 @@ Configuration
         'api_endpoint': 'https://jira.atlassian.com/rest/api/latest/',
         'username': 'my_username',
         'password': 'my_password',
+        'item_to_issue_regex': r'ACTION-12345_ACTION_\d+',
+        'jira_field_id': 'summary',
+        'issue_type': 'Task',
         'project_key_regexp': r'ACTION-(?P<project>\d{5})_',
         'project_key_prefix': 'MLX',
         'default_project': 'SWCC',
-        'issue_type': 'Task',
-        'item_to_issue_regex': r'ACTION-12345_ACTION_\d+',
-        'warn_if_existent': True,
         'relationship_to_parent': 'depends_on',
         'components': '[SW],[HW]',
+        'warn_if_existent': True,
     }
 
 ``project_key_regexp`` can optionally be defined. This regular expression with a named group *project* is used to
