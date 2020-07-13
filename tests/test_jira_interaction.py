@@ -199,7 +199,18 @@ class TestJiraInteraction(TestCase):
         )
 
     def test_no_warning_about_duplication(self, jira):
-        pass
+        """ Default behavior should be no warning when a Jira ticket doesn't get created to prevent duplication """
+        self.settings.pop('warn_if_existent')
+        jira_mock = jira.return_value
+        jira_mock.search_issues.return_value = ['Jira already contains this ticket']
+        with self.assertLogs(level=WARNING) as cm:
+            warning('Dummy log')
+            dut.create_jira_issues(self.settings, self.coll)
+
+        self.assertEqual(
+            cm.output,
+            ['WARNING:root:Dummy log']
+        )
 
     def test_default_project(self, jira):
         pass
