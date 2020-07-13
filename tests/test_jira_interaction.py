@@ -8,6 +8,14 @@ import mlx.jira_interaction as dut
 
 @mock.patch('mlx.jira_interaction.JIRA')
 class TestJiraInteraction(TestCase):
+    general_fields = {
+        'components': [
+            {'name': '[SW]'},
+            {'name': '[HW]'},
+        ],
+        'issuetype': {'name': 'Task'},
+        'project': 'MLX12345',
+    }
 
     def setUp(self):
         self.settings = {
@@ -27,7 +35,10 @@ class TestJiraInteraction(TestCase):
         parent = TraceableItem('MEETING-12345_2')
         action1 = TraceableItem('ACTION-12345_ACTION_1')
         action1.caption = 'Caption for action 1'
+        action1.set_content('Description for action 1')
         action2 = TraceableItem('ACTION-12345_ACTION_2')
+        action2.caption = 'Caption for action 2'
+        action2.set_content('')
         action3 = TraceableItem('ACTION-98765_ACTION_55')
         item1 = TraceableItem('ITEM-12345_1')
 
@@ -41,16 +52,16 @@ class TestJiraInteraction(TestCase):
         parent.add_attribute('attendees', 'ABC, ZZZ')
         action1.add_attribute('effort', '1mo 2w 3d 4h 55m')
         action1.add_attribute('assignee', 'ABC')
-        action2.add_attribute('assignee', 'ABC')
-        action3.add_attribute('assignee', 'ZZZ')
+        action2.add_attribute('assignee', 'ZZZ')
+        action3.add_attribute('assignee', 'ABC')
 
         for item in (parent, action1, action2, action3, item1):
             self.coll.add_item(item)
 
         self.coll.add_relation_pair('depends_on', 'impacts_on')
-        self.coll.add_relation(action1.id, 'impacts_on', item1.id)
-        self.coll.add_relation(action1.id, 'depends_on', parent.id)
-        self.coll.add_relation(action2.id, 'depends_on', parent.id)
+        self.coll.add_relation(action1.id, 'impacts_on', item1.id)  # to be ignored
+        self.coll.add_relation(action1.id, 'depends_on', parent.id)  # to be taken into account
+        self.coll.add_relation(action2.id, 'impacts_on', parent.id)  # to be ignored
 
     def test_missing_endpoint(self, *_):
         self.settings = self.settings
@@ -98,8 +109,9 @@ class TestJiraInteraction(TestCase):
              "missing mandatory values for keys ['password']"]
         )
 
-    def test_create_jira_issues(self, jira):
+    def test_create_jira_issues_unique(self, jira):
         jira_mock = jira.return_value
+        jira_mock.search_issues.return_value = []
         dut.create_jira_issues(self.settings, self.coll)
         self.assertEqual(jira.call_args,
                          mock.call({'server': 'https://jira.atlassian.com/rest/api/latest/'},
@@ -107,5 +119,47 @@ class TestJiraInteraction(TestCase):
         self.assertEqual(jira_mock.search_issues.call_args_list,
                          [
                              mock.call("project=MLX12345 and summary ~ 'MEETING-12345_2 Caption for action 1'"),
-                             mock.call("project=MLX12345 and summary ~ 'MEETING-12345_2 None'"),
+                             mock.call("project=MLX12345 and summary ~ 'Caption for action 2'"),
                          ])
+
+        issue = jira_mock.create_issue.return_value
+        self.assertEqual(
+            jira_mock.create_issue.call_args_list,
+            [
+                mock.call(
+                    summary='MEETING-12345_2 Caption for action 1',
+                    description='Description for action 1',
+                    assignee={'name': 'ABC'},
+                    **self.general_fields
+                ),
+                mock.call(
+                    summary='Caption for action 2',
+                    description='',
+                    assignee={'name': 'ZZZ'},
+                    **self.general_fields
+                ),
+            ])
+
+        self.assertEqual(
+            issue.update.call_args_list,
+            [mock.call(notify=False, update={'timetracking': [{"edit": {"timeestimate": '1mo 2w 3d 4h 55m'}}]})]
+        )
+
+        # attendees added for action1 since it is linked with depends_on to parent item with ``attendees`` attribute
+        self.assertEqual(jira_mock.add_watcher.call_args_list,
+                         [
+                             mock.call(issue, 'ABC'),
+                             mock.call(issue, 'ZZZ'),
+                         ])
+
+    def test_create_issue_timetracking_unavailable(self, jira):
+        pass
+
+    def test_prevent_duplication(self, jira):
+        pass
+
+    def test_no_warning_about_duplication(self, jira):
+        pass
+
+    def test_default_project(self, jira):
+        pass
