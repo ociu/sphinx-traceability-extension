@@ -28,7 +28,7 @@ class TestJiraInteraction(TestCase):
             'password': 'my_password',
             'jira_field_id': 'summary',
             'issue_type': 'Task',
-            'item_to_issue_regex': r'ACTION-12345_ACTION_\d+',
+            'item_to_ticket_regex': r'ACTION-12345_ACTION_\d+',
             'project_key_regex': r'ACTION-(?P<project>\d{5})_',
             'project_key_prefix': 'MLX',
             'default_project': 'SWCC',
@@ -89,7 +89,7 @@ class TestJiraInteraction(TestCase):
         )
 
     def test_missing_all_mandatory(self, *_):
-        mandatory_keys = ['api_endpoint', 'username', 'password', 'item_to_issue_regex', 'issue_type']
+        mandatory_keys = ['api_endpoint', 'username', 'password', 'item_to_ticket_regex', 'issue_type']
         for key in mandatory_keys:
             self.settings.pop(key)
         with self.assertLogs(level=WARNING) as cm:

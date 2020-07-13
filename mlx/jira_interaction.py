@@ -13,7 +13,7 @@ def create_jira_issues(settings, traceability_collection):
         settings (dict): Settings relevant to this feature
         traceability_collection (TraceableCollection): Collection of all traceability items
     """
-    mandatory_keys = ('api_endpoint', 'username', 'password', 'jira_field_id', 'item_to_issue_regex', 'issue_type')
+    mandatory_keys = ('api_endpoint', 'username', 'password', 'jira_field_id', 'item_to_ticket_regex', 'issue_type')
     missing_keys = []
     for key in mandatory_keys:
         if not settings.get(key, None):
@@ -34,7 +34,7 @@ def create_jira_issues(settings, traceability_collection):
     if components:
         general_fields['components'] = components
 
-    relevant_item_ids = traceability_collection.get_items(settings['item_to_issue_regex'])
+    relevant_item_ids = traceability_collection.get_items(settings['item_to_ticket_regex'])
     create_unique_issues(relevant_item_ids, jira, general_fields, settings, traceability_collection)
 
 

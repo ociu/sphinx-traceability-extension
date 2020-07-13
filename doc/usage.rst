@@ -488,7 +488,7 @@ Jira ticket creation
 --------------------
 
 Jira tickets that are based on traceable items can be automatically created by the plugin. A ticket gets created only
-for each item of which its ID **matches** the configured regular expression ``item_to_issue_regex``.
+for each item of which its ID **matches** the configured regular expression ``item_to_ticket_regex``.
 Duplication of tickets is avoided by querying Jira first for existing tickets based on the Jira project and the
 value of the ticket field configured by ``jira_field_id``. Below is an example configuration:
 
@@ -501,7 +501,7 @@ Configuration
         'api_endpoint': 'https://jira.atlassian.com/rest/api/latest/',
         'username': 'my_username',
         'password': 'my_password',
-        'item_to_issue_regex': r'ACTION-12345_ACTION_\d+',
+        'item_to_ticket_regex': r'ACTION-12345_ACTION_\d+',
         'jira_field_id': 'summary',
         'issue_type': 'Task',
         'project_key_regex': r'ACTION-(?P<project>\d{5})_',
@@ -517,7 +517,7 @@ extract a certain part of the item ID to determine the Jira project key. ``proje
 defined to add a prefix to the match for ``project_key_regex``. Additionally, ``default_project`` defines the Jira
 project key or id in case the regular expression doesn't come up with a match or hasn't been configured.
 
-``item_to_issue_regex`` defines the regular expression used to filter item IDs to be exported as Jira tickets.
+``item_to_ticket_regex`` defines the regular expression used to filter item IDs to be exported as Jira tickets.
 A warning gets reported when a Jira ticket already exists. These warnings can be disabled by setting
 ``warn_if_existent`` to ``True``.
 
