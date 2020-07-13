@@ -86,7 +86,7 @@ Example of internal and external relationship pairs:
 
     traceability_relationships = {
         'validates': 'validated_by',
-        'ext_polarion_reference': ''
+        'ext_polarion_reference': '',
     }
 
 .. _traceability_config_relation2string:
@@ -107,7 +107,7 @@ Example of internal and external relationship stringification:
     traceability_relationship_to_string = {
         'validates': 'Validates',
         'validated_by': 'Validated by',
-        'ext_polarion_reference': 'Polarion reference'
+        'ext_polarion_reference': 'Polarion reference',
     }
 
 .. _traceability_config_ext2url:
@@ -347,12 +347,19 @@ The plugin itself holds a default config that can be used for any traceability d
         'aspice': '^[123]$',
         'status': '^.*$',
         'result': '(?i)^(pass|fail|error)$'
+        'attendees': '^([A-Z]{3}[, ]*)+$',
+        'assignee': '^.*$',
+        'effort': r'^([\d\.]+(mo|[wdhm]) ?)+$',
     }
     traceability_attribute_to_string = {
         'value': 'Value',
         'asil': 'ASIL',
         'aspice': 'ASPICE',
-        'status': 'Status'
+        'status': 'Status',
+        'result': 'Result',
+        'attendees': 'Attendees',
+        'assignee': 'Assignee',
+        'effort': 'Effort estimation',
     }
     traceability_relationships = {
         'fulfills': 'fulfilled_by',
@@ -361,7 +368,7 @@ The plugin itself holds a default config that can be used for any traceability d
         'realizes': 'realized_by',
         'validates': 'validated_by',
         'trace': 'backtrace',
-        'ext_toolname': ''
+        'ext_toolname': '',
     }
     traceability_relationship_to_string = {
         'fulfills': 'Fulfills',
@@ -375,11 +382,11 @@ The plugin itself holds a default config that can be used for any traceability d
         'validates': 'Validates',
         'validated_by': 'Validated by',
         'trace': 'Traces',
-        'backtrace': 'Back traces',
-        'ext_toolname': 'Reference to toolname'
+        'backtrace': 'Backtraces',
+        'ext_toolname': 'Reference to toolname',
     }
     traceability_external_relationship_to_url = {
-        'ext_toolname': 'http://toolname.company.com/field1/workitem?field2'
+        'ext_toolname': 'http://toolname.company.com/field1/workitem?field2',
     }
     traceability_render_relationship_per_item = False
 

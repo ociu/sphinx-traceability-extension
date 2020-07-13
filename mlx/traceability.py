@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
-'''
+"""
 Traceability plugin
 
 Sphinx extension for reStructuredText that added traceable documentation items.
 See readme for more details.
-'''
+"""
 
 from collections import OrderedDict, namedtuple
 from re import fullmatch, match
@@ -18,6 +18,7 @@ from sphinx.errors import NoUri
 from docutils import nodes
 from docutils.parsers.rst import directives
 
+from mlx.jira_interaction import create_jira_issues
 from mlx.traceable_attribute import TraceableAttribute
 from mlx.traceable_base_node import TraceableBaseNode
 from mlx.traceable_item import TraceableItem
@@ -93,6 +94,19 @@ def build_class_name(inputs, class_names):
     trans_table = str.maketrans("#,.%", "h-dp", " ()")
     name = name.translate(trans_table)
     class_names[inputs] = name.lower()
+
+
+def warn_missing_checklist_items(regex):
+    """ Reports a warning for each list item that is not defined as a checklist-item but is expected to be as such.
+
+    Args:
+        regex (str): Regular expression for matching list items that are supposed to be a checklist-item
+    """
+    for item_id in list(ChecklistItemDirective.query_results):
+        if fullmatch(regex, item_id):
+            item_info = ChecklistItemDirective.query_results.pop(item_id)
+            report_warning("List item {!r} in merge/pull request {} is not defined as a checklist-item."
+                           .format(item_id, item_info.mr_id))
 
 
 # -----------------------------------------------------------------------------
@@ -177,12 +191,14 @@ class PendingItemXref(TraceableBaseNode):
 # Event handlers
 
 def perform_consistency_check(app, doctree):
-
-    '''
+    """
     New in sphinx 1.6: consistency checker callback
 
     Used to perform the self-test on the collection of items
-    '''
+
+    If the ``checklist_item_regex`` is configured, a warning is reported
+    for each item ID that matches it and is not defined as a checklist-item.
+    """
     env = app.builder.env
 
     try:
@@ -198,8 +214,15 @@ def perform_consistency_check(app, doctree):
         env.traceability_collection.export(fname)
 
     if app.config.traceability_hyperlink_colors:
-        app.add_stylesheet('hyperlink_colors.css')
+        app.add_css_file('hyperlink_colors.css')
         generate_color_css(app, app.config.traceability_hyperlink_colors)
+
+    regex = app.config.traceability_checklist.get('checklist_item_regex')
+    if regex is not None and app.config.traceability_checklist['has_checklist_items']:
+        warn_missing_checklist_items(regex)
+
+    if app.config.traceability_jira_automation:
+        create_jira_issues(app.config.traceability_jira_automation, app.builder.env.traceability_collection)
 
 
 def process_item_nodes(app, doctree, fromdocname):
@@ -208,9 +231,6 @@ def process_item_nodes(app, doctree, fromdocname):
 
     Replace all ItemList nodes with a list of the collected items.
     Augment each item with a backlink to the original location.
-
-    If the ``checklist_item_regex`` is configured, a warning is reported
-    for each item ID that matches it and is not defined as a checklist-item.
     """
     env = app.builder.env
 
@@ -223,14 +243,6 @@ def process_item_nodes(app, doctree, fromdocname):
         node['document'] = fromdocname
         node['line'] = node.line
         node.perform_replacement(app, env.traceability_collection)
-
-    regex = app.config.traceability_checklist.get('checklist_item_regex')
-    if regex is not None and app.config.traceability_checklist['has_checklist_items']:
-        for item_id in list(ChecklistItemDirective.query_results):
-            if fullmatch(regex, item_id):
-                item_info = ChecklistItemDirective.query_results.pop(item_id)
-                report_warning("List item {!r} in merge/pull request {} is not defined as a checklist-item."
-                               .format(item_id, item_info.mr_id))
 
 
 def init_available_relationships(app):
@@ -438,13 +450,13 @@ def _parse_description(description, attr_values, merge_request_id, regex):
 # -----------------------------------------------------------------------------
 # Extension setup
 def setup(app):
-    '''Extension setup'''
+    """Extension setup"""
 
     # Javascript and stylesheet for the tree-view
-    # app.add_javascript('jquery.js') #note: can only be included once
-    app.add_javascript('https://cdn.rawgit.com/aexmachina/jquery-bonsai/master/jquery.bonsai.js')
-    app.add_stylesheet('https://cdn.rawgit.com/aexmachina/jquery-bonsai/master/jquery.bonsai.css')
-    app.add_javascript('traceability.js')
+    # app.add_js_file('jquery.js') #note: can only be included once
+    app.add_js_file('https://cdn.rawgit.com/aexmachina/jquery-bonsai/master/jquery.bonsai.js')
+    app.add_js_file('https://cdn.rawgit.com/aexmachina/jquery-bonsai/master/jquery.bonsai.css')
+    app.add_js_file('traceability.js')
 
     # Configuration for exporting collection to json
     app.add_config_value('traceability_json_export_path', None, 'env')
@@ -461,6 +473,9 @@ def setup(app):
             'aspice': '^[123]$',
             'status': '^.*$',
             'result': '(?i)^(pass|fail|error)$',
+            'attendees': '^([A-Z]{3}[, ]*)+$',
+            'assignee': '^.*$',
+            'effort': r'^([\d\.]+(mo|[wdhm]) ?)+$',
         },
         'env',
     )
@@ -474,6 +489,9 @@ def setup(app):
             'aspice': 'ASPICE',
             'status': 'Status',
             'result': 'Result',
+            'attendees': 'Attendees',
+            'assignee': 'Assignee',
+            'effort': 'Effort estimation',
         },
         'env',
     )
@@ -508,7 +526,7 @@ def setup(app):
             'validates': 'Validates',
             'validated_by': 'Validated by',
             'trace': 'Traces',
-            'backtrace': 'Back traces',
+            'backtrace': 'Backtraces',
             'ext_toolname': 'Reference to toolname',
         },
         'env',
@@ -555,6 +573,9 @@ def setup(app):
 
     # Configuration for notification item about missing items
     app.add_config_value('traceability_notifications', {}, 'env')
+
+    # Configuration for automated issue creation in JIRA
+    app.add_config_value('traceability_jira_automation', {}, 'env')
 
     app.add_node(ItemTree)
     app.add_node(ItemMatrix)

@@ -13,6 +13,10 @@ Meeting notes
 
 .. checkbox-result:: QUE_MEETING-HW_EXECUTION no
 
+.. item:: MOM_ACTION-81340_20200622_1_ACTION_1 Caption of action item
+
+    Description of action item.
+
 .. item-attributes-matrix:: Matrix of all checklist questions
     :filter: QUE(_MEETING)?-
     :attributes: checked

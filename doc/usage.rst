@@ -57,7 +57,7 @@ Documentation items can be defined using the *item* directive, specifying:
 
         According to the Polarion reference, the software **shall** implement my first requirement.
 
-Attributes can be added to the item, using the `configured attribute keys <traceability_default_config>`_
+Attributes can be added to the item, using the configured attribute keys in :ref:`traceability_default_config`
 (e.g. *value* in the above example). The content of the attribute is treated as a single string and should
 match the regular expression in configuration.
 
@@ -480,3 +480,59 @@ GitHub
 - *MERGE_REQUEST_ID* is the pull request number.
 
 .. _`personal access token`: https://github.blog/2013-05-16-personal-api-tokens/
+
+.. _traceability_jira_automation:
+
+--------------------
+Jira ticket creation
+--------------------
+
+Jira tickets that are based on traceable items can be automatically created by the plugin. A ticket gets created only
+for each item of which its ID **matches** the configured regular expression ``item_to_ticket_regex``.
+Duplication of tickets is avoided by querying Jira first for existing tickets based on the Jira project and the
+value of the ticket field configured by ``jira_field_id``. Below is an example configuration:
+
+Configuration
+=============
+
+.. code-block:: python
+
+    traceability_jira_automation = {
+        'api_endpoint': 'https://jira.atlassian.com/rest/api/latest/',
+        'username': 'my_username',
+        'password': 'my_password',
+        'item_to_ticket_regex': r'ACTION-12345_ACTION_\d+',
+        'jira_field_id': 'summary',
+        'issue_type': 'Task',
+        'project_key_regex': r'ACTION-(?P<project>\d{5})_',
+        'project_key_prefix': 'MLX',
+        'default_project': 'SWCC',
+        'relationship_to_parent': 'depends_on',
+        'components': '[SW],[HW]',
+        'warn_if_exists': True,
+    }
+
+``project_key_regex`` can optionally be defined. This regular expression with a named group *project* is used to
+extract a certain part of the item ID to determine the Jira project key. ``project_key_prefix`` can optionally be
+defined to add a prefix to the match for ``project_key_regex``. Additionally, ``default_project`` defines the Jira
+project key or id in case the regular expression doesn't come up with a match or hasn't been configured.
+
+``item_to_ticket_regex`` defines the regular expression used to filter item IDs to be exported as Jira tickets.
+A warning gets reported when a Jira ticket already exists. These warnings can be disabled by setting
+``warn_if_exists`` to ``True``.
+
+The item ID of a linked item can be added to the summary of the Jira ticket to create by specifying the relationship
+to this item with ``relationship_to_parent``. This makes it possible to create a query link in advance to list all
+related Jira tickets.
+
+Attributes
+==========
+
+All attributes are optional and are defined in :ref:`traceability_default_config`.
+
+- *assignee* is used to assign a username to the Jira ticket.
+- *effort* is used to set the original effort estimation field. On failure, it gets appended to the description field.
+
+If the item, for which to create a ticket for, has an item linked to it by a ``relationship_to_parent`` relationship,
+the *attendees* attribute of this linked item should be a comma-separated list of usernames that get added as watchers
+to the ticket.

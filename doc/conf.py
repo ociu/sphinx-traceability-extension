@@ -30,7 +30,7 @@ sys.path.insert(0, os.path.abspath('../mlx'))
 # -- General configuration -----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-#needs_sphinx = '1.0'
+needs_sphinx = '1.8'
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
@@ -377,6 +377,9 @@ traceability_checklist = {
     'attribute_to_str': config('ATTRIBUTE_TO_STRING', 'Answer'),
     'attribute_values': config('ATTRIBUTE_VALUES', 'yes,no'),
 }
+
+# Options for automated ticket creation via JIRA API
+traceability_jira_automation = {}
 
 # Point to plantuml jar file
 # confirm we have plantuml in the path
