@@ -13,7 +13,7 @@ def create_jira_issues(settings, traceability_collection):
         settings (dict): Settings relevant to this feature
         traceability_collection (TraceableCollection): Collection of all traceability items
     """
-    mandatory_keys = ('api_endpoint', 'username', 'password', 'item_to_issue_regex', 'issue_type')
+    mandatory_keys = ('api_endpoint', 'username', 'password', 'jira_field_id', 'item_to_issue_regex', 'issue_type')
     missing_keys = []
     for key in mandatory_keys:
         if not settings.get(key, None):
@@ -62,17 +62,20 @@ def create_unique_issues(item_ids, jira, general_fields, settings, traceability_
             continue
 
         assignee = item.get_attribute('assignee')
-        summary = item.caption
+        jira_field = item.caption
         attendees = []
         if settings['relationship_to_parent']:
             parent_ids = item.iter_targets(settings['relationship_to_parent'])
             if parent_ids:
                 parent_id = parent_ids[0]
                 parent = traceability_collection.get_item(parent_id)
-                summary = "{} {}".format(parent_id, summary)
+                jira_field = "{id} {field}".format(id=parent_id, field=jira_field)  # prepend item ID of parent
                 attendees = parent.get_attribute('attendees').split(',')
 
-        matches = jira.search_issues("project={} and summary ~ {!r}".format(project_id_or_key, summary))
+        jira_field_id = settings['jira_field_id']
+        matches = jira.search_issues("project={} and {} ~ {!r}".format(project_id_or_key,
+                                                                       jira_field_id,
+                                                                       jira_field))
         if matches:
             if settings.get('warn_if_existent', False):
                 report_warning("Won't create a {} for item {!r} because the Jira API query to check to prevent "
@@ -80,7 +83,7 @@ def create_unique_issues(item_ids, jira, general_fields, settings, traceability_
             continue
 
         fields['project'] = project_id_or_key
-        fields['summary'] = summary
+        fields[jira_field_id] = jira_field
         fields['description'] = item.get_content()
         if assignee:
             fields['assignee'] = {'name': item.get_attribute('assignee')}
