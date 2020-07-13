@@ -1,5 +1,7 @@
-from logging import WARNING
+from logging import WARNING, warning
 from unittest import TestCase, mock
+
+from jira import JIRAError
 
 from mlx.traceable_attribute import TraceableAttribute
 from mlx.traceable_collection import TraceableCollection
@@ -112,7 +114,15 @@ class TestJiraInteraction(TestCase):
     def test_create_jira_issues_unique(self, jira):
         jira_mock = jira.return_value
         jira_mock.search_issues.return_value = []
-        dut.create_jira_issues(self.settings, self.coll)
+        with self.assertLogs(level=WARNING) as cm:
+            warning('Dummy log')
+            dut.create_jira_issues(self.settings, self.coll)
+
+        self.assertEqual(
+            cm.output,
+            ['WARNING:root:Dummy log']
+        )
+
         self.assertEqual(jira.call_args,
                          mock.call({'server': 'https://jira.atlassian.com/rest/api/latest/'},
                                    basic_auth=('my_username', 'my_password')))
@@ -153,7 +163,24 @@ class TestJiraInteraction(TestCase):
                          ])
 
     def test_create_issue_timetracking_unavailable(self, jira):
-        pass
+        """ Value of effort attribute should be appended to description when setting timetracking field raises error """
+        def jira_update_mock(update={}, **_):
+            if 'timetracking' in update:
+                raise JIRAError
+
+        jira_mock = jira.return_value
+        jira_mock.search_issues.return_value = []
+        issue = jira_mock.create_issue.return_value
+        issue.update.side_effect = jira_update_mock
+        dut.create_jira_issues(self.settings, self.coll)
+
+        self.assertEqual(
+            issue.update.call_args_list,
+            [
+                mock.call(notify=False, update={'timetracking': [{"edit": {"timeestimate": '1mo 2w 3d 4h 55m'}}]}),
+                mock.call(notify=False, description="Description for action 1\n\nEffort estimation: 1mo 2w 3d 4h 55m"),
+            ]
+        )
 
     def test_prevent_duplication(self, jira):
         pass
