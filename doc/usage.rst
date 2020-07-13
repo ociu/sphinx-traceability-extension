@@ -57,7 +57,7 @@ Documentation items can be defined using the *item* directive, specifying:
 
         According to the Polarion reference, the software **shall** implement my first requirement.
 
-Attributes can be added to the item, using the `configured attribute keys <traceability_default_config>`_
+Attributes can be added to the item, using the configured attribute keys in traceability_default_config_
 (e.g. *value* in the above example). The content of the attribute is treated as a single string and should
 match the regular expression in configuration.
 
