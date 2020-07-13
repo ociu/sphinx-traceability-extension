@@ -53,7 +53,7 @@ def create_unique_issues(item_ids, jira, general_fields, settings, traceability_
     for item_id in item_ids:
         fields = {}
         item = traceability_collection.get_item(item_id)
-        project_id_or_key = determine_jira_project(settings.get('project_key_regexp', ''),
+        project_id_or_key = determine_jira_project(settings.get('project_key_regex', ''),
                                                    settings.get('project_key_prefix', ''),
                                                    settings.get('default_project', ''),
                                                    item_id)
@@ -120,19 +120,19 @@ def push_item_to_jira(jira, fields, item, attendees):
             report_warning("Jira API returned error code {}: {}".format(err.status_code, err.response.text))
 
 
-def determine_jira_project(key_regexp, key_prefix, default_project, item_id):
+def determine_jira_project(key_regex, key_prefix, default_project, item_id):
     """ Determines the JIRA project key or id to use for give item ID.
 
     Args:
-        key_regexp (str): Regular expression used to scan through the <<item_id>>. In case of a hit, the capture group
+        key_regex (str): Regular expression used to scan through the <<item_id>>. In case of a hit, the capture group
             with name 'project' will be used to build the project key.
-        key_prefix (str): Prefix to use if <<key_regexp>> gets used to build the project key.
-        default_project (str): Project key or id to use if a match for <<key_regexp>> doesn't get used.
+        key_prefix (str): Prefix to use if <<key_regex>> gets used to build the project key.
+        default_project (str): Project key or id to use if a match for <<key_regex>> doesn't get used.
 
     Returns:
         str: JIRA project key or id.
     """
-    key_match = search(key_regexp, item_id)
+    key_match = search(key_regex, item_id)
     try:
         return key_prefix + key_match.group('project')
     except (AttributeError, IndexError):

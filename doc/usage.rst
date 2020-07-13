@@ -504,7 +504,7 @@ Configuration
         'item_to_issue_regex': r'ACTION-12345_ACTION_\d+',
         'jira_field_id': 'summary',
         'issue_type': 'Task',
-        'project_key_regexp': r'ACTION-(?P<project>\d{5})_',
+        'project_key_regex': r'ACTION-(?P<project>\d{5})_',
         'project_key_prefix': 'MLX',
         'default_project': 'SWCC',
         'relationship_to_parent': 'depends_on',
@@ -512,10 +512,10 @@ Configuration
         'warn_if_existent': True,
     }
 
-``project_key_regexp`` can optionally be defined. This regular expression with a named group *project* is used to
+``project_key_regex`` can optionally be defined. This regular expression with a named group *project* is used to
 extract a certain part of the item ID to determine the Jira project key. ``project_key_prefix`` can optionally be
-defined to add a prefix to the match for ``project_key_regexp``. Additionally, ``default_project`` defines the Jira
-project key or id in case ``project_key_regexp`` doesn't come up with a match.
+defined to add a prefix to the match for ``project_key_regex``. Additionally, ``default_project`` defines the Jira
+project key or id in case the regular expression doesn't come up with a match or hasn't been configured.
 
 ``item_to_issue_regex`` defines the regular expression used to filter item IDs to be exported as Jira tickets.
 A warning gets reported when a Jira ticket already exists. These warnings can be disabled by setting

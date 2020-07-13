@@ -29,7 +29,7 @@ class TestJiraInteraction(TestCase):
             'jira_field_id': 'summary',
             'issue_type': 'Task',
             'item_to_issue_regex': r'ACTION-12345_ACTION_\d+',
-            'project_key_regexp': r'ACTION-(?P<project>\d{5})_',
+            'project_key_regex': r'ACTION-(?P<project>\d{5})_',
             'project_key_prefix': 'MLX',
             'default_project': 'SWCC',
             'warn_if_existent': True,
@@ -101,7 +101,7 @@ class TestJiraInteraction(TestCase):
         )
 
     def test_missing_all_optional_one_mandatory(self, *_):
-        mandatory_keys = ['components', 'project_key_prefix', 'project_key_regexp', 'default_project',
+        mandatory_keys = ['components', 'project_key_prefix', 'project_key_regex', 'default_project',
                           'relationship_to_parent', 'warn_if_existent', 'password']
         for key in mandatory_keys:
             self.settings.pop(key)
@@ -215,8 +215,8 @@ class TestJiraInteraction(TestCase):
         )
 
     def test_default_project(self, jira):
-        """ The default_project should get used when project_key_regexp doesn't match """
-        self.settings['project_key_regexp'] = 'regex_that_does_not_match_any_id'
+        """ The default_project should get used when project_key_regex doesn't match """
+        self.settings['project_key_regex'] = 'regex_that_does_not_match_any_id'
         self.general_fields['project'] = self.settings['default_project']
 
         jira_mock = jira.return_value
