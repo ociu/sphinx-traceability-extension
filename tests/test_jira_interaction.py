@@ -66,7 +66,6 @@ class TestJiraInteraction(TestCase):
         self.coll.add_relation(action2.id, 'impacts_on', parent.id)  # to be ignored
 
     def test_missing_endpoint(self, *_):
-        self.settings = self.settings
         self.settings.pop('api_endpoint')
         with self.assertLogs(level=WARNING) as cm:
             dut.create_jira_issues(self.settings, None)
@@ -213,4 +212,27 @@ class TestJiraInteraction(TestCase):
         )
 
     def test_default_project(self, jira):
-        pass
+        """ The default_project should get used when project_key_regexp doesn't match """
+        self.settings['project_key_regexp'] = 'regex_that_does_not_match_any_id'
+        self.general_fields['project'] = self.settings['default_project']
+
+        jira_mock = jira.return_value
+        jira_mock.search_issues.return_value = []
+        dut.create_jira_issues(self.settings, self.coll)
+
+        self.assertEqual(
+            jira_mock.create_issue.call_args_list,
+            [
+                mock.call(
+                    summary='MEETING-12345_2 Caption for action 1',
+                    description='Description for action 1',
+                    assignee={'name': 'ABC'},
+                    **self.general_fields
+                ),
+                mock.call(
+                    summary='Caption for action 2',
+                    description='',
+                    assignee={'name': 'ZZZ'},
+                    **self.general_fields
+                ),
+            ])
