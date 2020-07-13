@@ -57,7 +57,7 @@ Documentation items can be defined using the *item* directive, specifying:
 
         According to the Polarion reference, the software **shall** implement my first requirement.
 
-Attributes can be added to the item, using the configured attribute keys in traceability_default_config_
+Attributes can be added to the item, using the configured attribute keys in :ref:`traceability_default_config`
 (e.g. *value* in the above example). The content of the attribute is treated as a single string and should
 match the regular expression in configuration.
 
@@ -525,7 +525,7 @@ related Jira tickets.
 Attributes
 ==========
 
-All attributes are optional and are defined in traceability_default_config_.
+All attributes are optional and are defined in :ref:`traceability_default_config`.
 
 - *assignee* is used to assign a username to the Jira ticket.
 - *effort* is used to set the original effort estimation field. On failure, it gets appended to the description field.
