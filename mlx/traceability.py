@@ -118,7 +118,7 @@ def jira_interaction(app):
     try:
         create_jira_issues(app.config.traceability_jira_automation, app.builder.env.traceability_collection)
     except Exception as err:  # pylint: disable=broad-except
-        if app.config.traceability_jira_automation.get('catch_errors', False):
+        if app.config.traceability_jira_automation.get('errors_to_warnings', True):
             report_warning("Jira interaction failed: {}".format(err))
         else:
             raise err
