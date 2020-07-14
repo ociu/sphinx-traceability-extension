@@ -520,7 +520,7 @@ project key or id in case the regular expression doesn't come up with a match or
 
 ``item_to_ticket_regex`` defines the regular expression used to filter item IDs to be exported as Jira tickets.
 A warning gets reported when a Jira ticket already exists. These warnings can be disabled by setting
-``warn_if_exists`` to ``True``. Exceptions raised by this feature can be converted to warnings by means setting the
+``warn_if_exists`` to ``True``. Errors raised by this feature can be converted to warnings by means setting the
 optional setting ``catch_errors`` to a truthy value .
 
 The item ID of a linked item can be added to the summary of the Jira ticket to create by specifying the relationship
