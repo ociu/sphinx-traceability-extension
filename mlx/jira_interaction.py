@@ -22,9 +22,7 @@ def create_jira_issues(settings, traceability_collection):
         return report_warning("Jira interaction failed: configuration is missing mandatory values for keys {}"
                               .format(missing_keys))
 
-    jira = JIRA({"server": settings['api_endpoint']}, basic_auth=(settings['username'], settings['password']))
     issue_type = settings['issue_type']
-
     general_fields = {}
     general_fields['issuetype'] = {'name': issue_type}
     components = []
@@ -35,7 +33,9 @@ def create_jira_issues(settings, traceability_collection):
         general_fields['components'] = components
 
     relevant_item_ids = traceability_collection.get_items(settings['item_to_ticket_regex'])
-    create_unique_issues(relevant_item_ids, jira, general_fields, settings, traceability_collection)
+    if relevant_item_ids:
+        jira = JIRA({"server": settings['api_endpoint']}, basic_auth=(settings['username'], settings['password']))
+        create_unique_issues(relevant_item_ids, jira, general_fields, settings, traceability_collection)
 
 
 def create_unique_issues(item_ids, jira, general_fields, settings, traceability_collection):
