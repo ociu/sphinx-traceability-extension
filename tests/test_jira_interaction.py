@@ -35,6 +35,7 @@ class TestJiraInteraction(TestCase):
             'warn_if_exists': True,
             'relationship_to_parent': 'depends_on',
             'components': '[SW],[HW]',
+            'catch_errors': False,
         }
         self.coll = TraceableCollection()
         parent = TraceableItem('MEETING-12345_2')
@@ -74,7 +75,7 @@ class TestJiraInteraction(TestCase):
             dut.create_jira_issues(self.settings, None)
         self.assertEqual(
             cm.output,
-            ["WARNING:sphinx.mlx.traceability_exception:Configuration for automated ticket creation via Jira API is "
+            ["WARNING:sphinx.mlx.traceability_exception:Jira interaction failed: configuration is "
              "missing mandatory values for keys ['api_endpoint']"]
         )
 
@@ -84,7 +85,7 @@ class TestJiraInteraction(TestCase):
             dut.create_jira_issues(self.settings, None)
         self.assertEqual(
             cm.output,
-            ["WARNING:sphinx.mlx.traceability_exception:Configuration for automated ticket creation via Jira API is "
+            ["WARNING:sphinx.mlx.traceability_exception:Jira interaction failed: configuration is "
              "missing mandatory values for keys ['username']"]
         )
 
@@ -96,20 +97,20 @@ class TestJiraInteraction(TestCase):
             dut.create_jira_issues(self.settings, None)
         self.assertEqual(
             cm.output,
-            ["WARNING:sphinx.mlx.traceability_exception:Configuration for automated ticket creation via Jira API is "
+            ["WARNING:sphinx.mlx.traceability_exception:Jira interaction failed: configuration is "
              "missing mandatory values for keys {}".format(mandatory_keys)]
         )
 
     def test_missing_all_optional_one_mandatory(self, *_):
         keys_to_remove = ['components', 'project_key_prefix', 'project_key_regex', 'default_project',
-                          'relationship_to_parent', 'warn_if_exists', 'password']
+                          'relationship_to_parent', 'warn_if_exists', 'catch_errors', 'password']
         for key in keys_to_remove:
             self.settings.pop(key)
         with self.assertLogs(level=WARNING) as cm:
             dut.create_jira_issues(self.settings, None)
         self.assertEqual(
             cm.output,
-            ["WARNING:sphinx.mlx.traceability_exception:Configuration for automated ticket creation via Jira API is "
+            ["WARNING:sphinx.mlx.traceability_exception:Jira interaction failed: configuration is "
              "missing mandatory values for keys ['password']"]
         )
 
@@ -252,7 +253,7 @@ class TestJiraInteraction(TestCase):
         with self.assertLogs(level=WARNING) as cm:
             dut.create_jira_issues(self.settings, self.coll)
 
-        error_msg = "WARNING:sphinx.mlx.traceability_exception:Jira API returned error code 401: dummy msg"
+        error_msg = "WARNING:sphinx.mlx.traceability_exception:Jira interaction failed: error code 401: dummy msg"
         self.assertEqual(
             cm.output,
             [error_msg, error_msg]

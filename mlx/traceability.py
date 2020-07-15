@@ -109,6 +109,21 @@ def warn_missing_checklist_items(regex):
                            .format(item_id, item_info.mr_id))
 
 
+def jira_interaction(app):
+    """ Execute the functionality that creates Jira tickets based on traceable items.
+
+    Args:
+        app: Sphinx application object to use.
+    """
+    try:
+        create_jira_issues(app.config.traceability_jira_automation, app.builder.env.traceability_collection)
+    except Exception as err:  # pylint: disable=broad-except
+        if app.config.traceability_jira_automation.get('errors_to_warnings', True):
+            report_warning("Jira interaction failed: {}".format(err))
+        else:
+            raise err
+
+
 # -----------------------------------------------------------------------------
 # Pending item cross reference node
 
@@ -222,7 +237,7 @@ def perform_consistency_check(app, doctree):
         warn_missing_checklist_items(regex)
 
     if app.config.traceability_jira_automation:
-        create_jira_issues(app.config.traceability_jira_automation, app.builder.env.traceability_collection)
+        jira_interaction(app)
 
 
 def process_item_nodes(app, doctree, fromdocname):
