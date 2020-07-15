@@ -56,7 +56,7 @@ class TestJiraInteraction(TestCase):
         TraceableItem.define_attribute(attendees_attr)
 
         parent.add_attribute('attendees', 'ABC, ZZZ')
-        action1.add_attribute('effort', '1mo 2w 3d 4h 55m')
+        action1.add_attribute('effort', '2w 3d 4h 55m')
         action1.add_attribute('assignee', 'ABC')
         action2.add_attribute('assignee', 'ZZZ')
         action3.add_attribute('assignee', 'ABC')
@@ -155,7 +155,7 @@ class TestJiraInteraction(TestCase):
 
         self.assertEqual(
             issue.update.call_args_list,
-            [mock.call(notify=False, update={'timetracking': [{"edit": {"timeestimate": '1mo 2w 3d 4h 55m'}}]})]
+            [mock.call(notify=False, update={'timetracking': [{"edit": {"originalEstimate": '2w 3d 4h 55m'}}]})]
         )
 
         # attendees added for action1 since it is linked with depends_on to parent item with ``attendees`` attribute
@@ -180,8 +180,8 @@ class TestJiraInteraction(TestCase):
         self.assertEqual(
             issue.update.call_args_list,
             [
-                mock.call(notify=False, update={'timetracking': [{"edit": {"timeestimate": '1mo 2w 3d 4h 55m'}}]}),
-                mock.call(notify=False, description="Description for action 1\n\nEffort estimation: 1mo 2w 3d 4h 55m"),
+                mock.call(notify=False, update={'timetracking': [{"edit": {"originalEstimate": '2w 3d 4h 55m'}}]}),
+                mock.call(notify=False, description="Description for action 1\n\nEffort estimation: 2w 3d 4h 55m"),
             ]
         )
 
@@ -253,7 +253,8 @@ class TestJiraInteraction(TestCase):
         with self.assertLogs(level=WARNING) as cm:
             dut.create_jira_issues(self.settings, self.coll)
 
-        error_msg = "WARNING:sphinx.mlx.traceability_exception:Jira interaction failed: error code 401: dummy msg"
+        error_msg = ("WARNING:sphinx.mlx.traceability_exception:Jira interaction failed: item ACTION-12345_ACTION_1: "
+                     "error code 401: dummy msg")
         self.assertEqual(
             cm.output,
             [error_msg, error_msg]

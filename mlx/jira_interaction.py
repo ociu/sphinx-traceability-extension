@@ -109,7 +109,7 @@ def push_item_to_jira(jira, fields, item, attendees):
     effort = item.get_attribute('effort')
     if effort:
         try:
-            issue.update(update={"timetracking": [{"edit": {"timeestimate": effort}}]}, notify=False)
+            issue.update(update={"timetracking": [{"edit": {"originalEstimate": effort}}]}, notify=False)
         except JIRAError:
             issue.update(description="{}\n\nEffort estimation: {}".format(item.get_content(), effort), notify=False)
 
@@ -117,7 +117,8 @@ def push_item_to_jira(jira, fields, item, attendees):
         try:
             jira.add_watcher(issue, attendee.strip())
         except JIRAError as err:
-            report_warning("Jira interaction failed: error code {}: {}".format(err.status_code, err.response.text))
+            report_warning("Jira interaction failed: item {}: error code {}: {}"
+                           .format(item.id, err.status_code, err.response.text))
 
 
 def determine_jira_project(key_regex, key_prefix, default_project, item_id):
