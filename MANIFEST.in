@@ -16,6 +16,7 @@ include doc/.env.example
 recursive-include doc *.bat
 recursive-include doc *.py
 recursive-include doc *.rst
+recursive-include doc *.css
 recursive-include doc Makefile
 recursive-include tests *.py
 recursive-include tests *.rst
