@@ -1,0 +1,8 @@
+.rst-content .section ul.bonsai li>* {
+    margin-top: auto!important;
+    margin-bottom: 2px!important;
+}
+
+.rst-content .section ul.bonsai li {
+    margin-left: 0!important;
+}
