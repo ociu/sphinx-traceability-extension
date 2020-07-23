@@ -27,3 +27,5 @@ include .coveragerc
 
 # added by check_manifest.py
 include *.txt
+
+recursive-exclude doc/_build *
