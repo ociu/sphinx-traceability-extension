@@ -181,7 +181,7 @@ class TestJiraInteraction(TestCase):
             issue.update.call_args_list,
             [
                 mock.call(notify=False, update={'timetracking': [{"edit": {"originalEstimate": '2w 3d 4h 55m'}}]}),
-                mock.call(notify=False, description="Description for action 1\n\nEffort estimation: 2w 3d 4h 55m"),
+                mock.call(notify=False, description="Description for action 1\n\nEffort estimate: 2w 3d 4h 55m"),
             ]
         )
 

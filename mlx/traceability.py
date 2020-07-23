@@ -470,7 +470,7 @@ def setup(app):
     # Javascript and stylesheet for the tree-view
     # app.add_js_file('jquery.js') #note: can only be included once
     app.add_js_file('https://cdn.rawgit.com/aexmachina/jquery-bonsai/master/jquery.bonsai.js')
-    app.add_js_file('https://cdn.rawgit.com/aexmachina/jquery-bonsai/master/jquery.bonsai.css')
+    app.add_css_file('https://cdn.rawgit.com/aexmachina/jquery-bonsai/master/jquery.bonsai.css')
     app.add_js_file('traceability.js')
 
     # Configuration for exporting collection to json
