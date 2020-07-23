@@ -111,7 +111,7 @@ def push_item_to_jira(jira, fields, item, attendees):
         try:
             issue.update(update={"timetracking": [{"edit": {"originalEstimate": effort}}]}, notify=False)
         except JIRAError:
-            issue.update(description="{}\n\nEffort estimation: {}".format(item.get_content(), effort), notify=False)
+            issue.update(description="{}\n\nEffort estimate: {}".format(item.get_content(), effort), notify=False)
 
     for attendee in attendees:
         try:
