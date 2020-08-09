@@ -69,7 +69,7 @@ def create_unique_issues(item_ids, jira, general_fields, settings, traceability_
             if parent_ids:
                 parent_id = parent_ids[0]
                 parent = traceability_collection.get_item(parent_id)
-                jira_field = "{id} {field}".format(id=parent_id, field=jira_field)  # prepend item ID of parent
+                jira_field = "{id}: {field}".format(id=parent_id, field=jira_field)  # prepend item ID of parent
                 attendees = parent.get_attribute('attendees').split(',')
 
         jira_field_id = settings['jira_field_id']
