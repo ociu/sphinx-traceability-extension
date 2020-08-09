@@ -87,7 +87,7 @@ def create_unique_issues(item_ids, jira, general_fields, settings, traceability_
         content = item.get_content()
         if not content:
             content = item.caption
-        fields['description'] = content
+        fields['description'] = settings.get('description_head', '') + content
         if assignee:
             fields['assignee'] = {'name': item.get_attribute('assignee')}
 
