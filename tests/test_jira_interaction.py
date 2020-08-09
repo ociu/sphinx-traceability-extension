@@ -131,7 +131,7 @@ class TestJiraInteraction(TestCase):
                                    basic_auth=('my_username', 'my_password')))
         self.assertEqual(jira_mock.search_issues.call_args_list,
                          [
-                             mock.call("project=MLX12345 and summary ~ 'MEETING-12345_2 Caption for action 1'"),
+                             mock.call("project=MLX12345 and summary ~ 'MEETING-12345_2: Caption for action 1'"),
                              mock.call("project=MLX12345 and summary ~ 'Caption for action 2'"),
                          ])
 
@@ -140,14 +140,14 @@ class TestJiraInteraction(TestCase):
             jira_mock.create_issue.call_args_list,
             [
                 mock.call(
-                    summary='MEETING-12345_2 Caption for action 1',
+                    summary='MEETING-12345_2: Caption for action 1',
                     description='Description for action 1',
                     assignee={'name': 'ABC'},
                     **self.general_fields
                 ),
                 mock.call(
                     summary='Caption for action 2',
-                    description='',
+                    description='Caption for action 2',
                     assignee={'name': 'ZZZ'},
                     **self.general_fields
                 ),
@@ -228,14 +228,14 @@ class TestJiraInteraction(TestCase):
             jira_mock.create_issue.call_args_list,
             [
                 mock.call(
-                    summary='MEETING-12345_2 Caption for action 1',
+                    summary='MEETING-12345_2: Caption for action 1',
                     description='Description for action 1',
                     assignee={'name': 'ABC'},
                     **self.general_fields
                 ),
                 mock.call(
                     summary='Caption for action 2',
-                    description='',
+                    description='Caption for action 2',
                     assignee={'name': 'ZZZ'},
                     **self.general_fields
                 ),
