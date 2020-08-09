@@ -62,15 +62,8 @@ def create_unique_issues(item_ids, jira, general_fields, settings, traceability_
             continue
 
         assignee = item.get_attribute('assignee')
-        jira_field = item.caption
-        attendees = []
-        if settings['relationship_to_parent']:
-            parent_ids = item.iter_targets(settings['relationship_to_parent'])
-            if parent_ids:
-                parent_id = parent_ids[0]
-                parent = traceability_collection.get_item(parent_id)
-                jira_field = "{id}: {field}".format(id=parent_id, field=jira_field)  # prepend item ID of parent
-                attendees = parent.get_attribute('attendees').split(',')
+        attendees, jira_field = get_info_from_relationship(item, settings['relationship_to_parent'],
+                                                           traceability_collection)
 
         jira_field_id = settings['jira_field_id']
         matches = jira.search_issues("project={} and {} ~ {!r}".format(project_id_or_key,
@@ -141,3 +134,29 @@ def determine_jira_project(key_regex, key_prefix, default_project, item_id):
         return key_prefix + key_match.group('project')
     except (AttributeError, IndexError):
         return default_project
+
+
+def get_info_from_relationship(item, relationship, traceability_collection):
+    """ Gets info from the first item with the given relationship.
+
+    Its id is added to the jira field and if it has the 'attendees' attribute, its value is returned as a list.
+
+    Args:
+        item (TraceableItem): Traceable item to create the Jira ticket for
+        relationship_to_parent (str): Relationship to the item to extract info from
+        traceability_collection (TraceableCollection): Collection of all traceability items
+
+    Returns:
+        list: List of attendees (str)
+        str: Contents for field with id jira_field_id
+    """
+    attendees = []
+    jira_field = item.caption
+    if relationship:
+        parent_ids = item.iter_targets(relationship)
+        if parent_ids:
+            parent_id = parent_ids[0]
+            parent = traceability_collection.get_item(parent_id)
+            jira_field = "{id}: {field}".format(id=parent_id, field=jira_field)  # prepend item ID of parent
+            attendees = parent.get_attribute('attendees').split(',')
+    return attendees, jira_field
