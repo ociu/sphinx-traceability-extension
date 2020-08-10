@@ -509,6 +509,7 @@ Configuration
         'default_project': 'SWCC',
         'relationship_to_parent': 'depends_on',
         'components': '[SW],[HW]',
+        'description_head': 'Action raised in meeting.\n\n',
         'warn_if_exists': False,
         'errors_to_warnings': True,
     }
@@ -526,6 +527,9 @@ crash your build, you can set ``errors_to_warnings`` to a falsy value.
 The item ID of a linked item can be added to the summary of the Jira ticket to create by specifying the relationship
 to this item with ``relationship_to_parent``. This makes it possible to create a query link in advance to list all
 related Jira tickets.
+
+A string can be added to the start of a ticket's description by configuring ``description_head``. If the item to create
+a ticket for does not have a body, its caption will be used to build the ticket's description.
 
 Attributes
 ==========
