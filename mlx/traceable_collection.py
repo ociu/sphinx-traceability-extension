@@ -224,7 +224,7 @@ class TraceableCollection:
                         continue
                     # Reverse relation exists?
                     target = self.get_item(tgt)
-                    if itemid not in target.iter_targets(rev_relation):
+                    if itemid not in target.iter_targets(rev_relation, sort=False):
                         errors.append(TraceabilityException("No automatic reverse relation: {source} {relation} "
                                                             "{target}".format(source=tgt,
                                                                               relation=rev_relation,
@@ -269,7 +269,7 @@ class TraceableCollection:
         if not target or target.is_placeholder():
             return False
         if not relations:
-            relations = self.iter_relations()
+            relations = self.relations
         return self.items[source_id].is_related(relations, target_id)
 
     def get_items(self, regex, attributes=None, sortattributes=None, reverse=False):
