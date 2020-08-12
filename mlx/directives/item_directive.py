@@ -60,7 +60,7 @@ class Item(TraceableBaseNode):
         Args:
             collection (TraceableCollection): Collection of all TraceableItems.
         """
-        for rel in collection.relations:
+        for rel in collection.iter_relations():
             targets = self._item.iter_targets(rel)
             if targets:
                 self._list_targets_for_relation(rel, targets, *args)

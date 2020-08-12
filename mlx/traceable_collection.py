@@ -21,6 +21,7 @@ class TraceableCollection:
         '''Initializer for container of traceable items'''
         self.relations = {}
         self.items = {}
+        self.relations_sorted = {}
 
     def add_relation_pair(self, forward, reverse=NO_RELATION_STR):
         '''
@@ -53,10 +54,13 @@ class TraceableCollection:
         '''
         Iterate over available relations: naturally sorted
 
-        Returns:
+        Yields:
             Naturally sorted list over available relations in the collection
         '''
-        return natsorted(self.relations)
+        if len(self.relations) != len(self.relations_sorted):
+            self.relations_sorted = natsorted(self.relations)
+        for rel in self.relations_sorted:
+            yield rel
 
     def add_item(self, item):
         '''
