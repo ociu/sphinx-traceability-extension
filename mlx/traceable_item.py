@@ -183,7 +183,6 @@ class TraceableItem(TraceableBaseClass):
             return natsorted(relations)
         return relations
 
-
     @staticmethod
     def define_attribute(attr):
         ''' Defines an attribute that can be assigned to traceable items.
