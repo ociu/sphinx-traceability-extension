@@ -54,13 +54,12 @@ class TraceableCollection:
         '''
         Iterate over available relations: naturally sorted
 
-        Yields:
+        Returns:
             Naturally sorted list over available relations in the collection
         '''
         if len(self.relations) != len(self.relations_sorted):
             self.relations_sorted = natsorted(self.relations)
-        for rel in self.relations_sorted:
-            yield rel
+        return self.relations_sorted
 
     def add_item(self, item):
         '''
