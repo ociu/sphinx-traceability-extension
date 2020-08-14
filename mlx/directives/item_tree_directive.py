@@ -115,7 +115,7 @@ class ItemTreeDirective(TraceableBaseDirective):
         # Combination of forward + matching reverse relationship cannot be in the same list, as it will give
         # endless treeview (and endless recursion in python --> exception)
         for rel in item_tree_node['type']:
-            if rel not in env.traceability_collection.iter_relations():
+            if rel not in env.traceability_collection.relations:
                 report_warning('Traceability: unknown relation for item-tree: %s' % rel, env.docname, self.lineno)
                 continue
             if env.traceability_collection.get_reverse_relation(rel) in item_tree_node['type']:

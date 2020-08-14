@@ -74,7 +74,7 @@ class TraceableBaseDirective(Directive, ABC):
             env (sphinx.environment.BuildEnvironment): Sphinx's build environment.
         """
         for rel in relationships:
-            if rel not in env.traceability_collection.iter_relations():
+            if rel not in env.traceability_collection.relations:
                 report_warning('Traceability: unknown relation for %s: %s' % (self.name, rel),
                                env.docname, self.lineno)
 

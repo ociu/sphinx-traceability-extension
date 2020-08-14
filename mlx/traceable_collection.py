@@ -21,6 +21,7 @@ class TraceableCollection:
         '''Initializer for container of traceable items'''
         self.relations = {}
         self.items = {}
+        self.relations_sorted = {}
 
     def add_relation_pair(self, forward, reverse=NO_RELATION_STR):
         '''
@@ -56,7 +57,9 @@ class TraceableCollection:
         Returns:
             Naturally sorted list over available relations in the collection
         '''
-        return natsorted(self.relations)
+        if len(self.relations) != len(self.relations_sorted):
+            self.relations_sorted = natsorted(self.relations)
+        return self.relations_sorted
 
     def add_item(self, item):
         '''
@@ -224,7 +227,7 @@ class TraceableCollection:
                         continue
                     # Reverse relation exists?
                     target = self.get_item(tgt)
-                    if itemid not in target.iter_targets(rev_relation):
+                    if itemid not in target.iter_targets(rev_relation, sort=False):
                         errors.append(TraceabilityException("No automatic reverse relation: {source} {relation} "
                                                             "{target}".format(source=tgt,
                                                                               relation=rev_relation,
@@ -269,7 +272,7 @@ class TraceableCollection:
         if not target or target.is_placeholder():
             return False
         if not relations:
-            relations = self.iter_relations()
+            relations = self.relations
         return self.items[source_id].is_related(relations, target_id)
 
     def get_items(self, regex, attributes=None, sortattributes=None, reverse=False):

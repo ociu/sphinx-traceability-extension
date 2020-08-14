@@ -148,31 +148,40 @@ class TraceableItem(TraceableBaseClass):
                 if target_id in database[relation]:
                     database[relation].remove(target_id)
 
-    def iter_targets(self, relation, explicit=True, implicit=True):
-        ''' Gets a naturally sorted list of targets to other traceable item(s).
+    def iter_targets(self, relation, explicit=True, implicit=True, sort=True):
+        ''' Gets a list of targets to other traceable item(s), naturally sorted by default.
 
         Args:
             relation (str): Name of the relation.
             explicit (bool): If True, explicitly expressed relations are included in the returned list.
             implicit (bool): If True, implicitly expressed relations are included in the returned list.
+            sort (bool): True if the relations should be sorted naturally, False if no sorting is needed
 
         Returns:
-            (list) Naturally sorted list of targets to other traceable item(s).
+            (list) List of targets to other traceable item(s), naturally sorted by default
         '''
         relations = []
         if explicit and relation in self.explicit_relations:
             relations.extend(self.explicit_relations[relation])
         if implicit and relation in self.implicit_relations:
             relations.extend(self.implicit_relations[relation])
-        return natsorted(relations)
+        if sort:
+            return natsorted(relations)
+        return relations
 
-    def iter_relations(self):
-        ''' Iterates over available relations: naturally sorted.
+    def iter_relations(self, sort=True):
+        ''' Iterates over available relations: naturally sorted by default.
+
+        Args:
+            sort (bool): True if the relations should be sorted naturally, False if no sorting is needed
 
         Returns:
-            (list) Naturally sorted list containing available relations in the item.
+            (list) List containing available relations in the item, naturally sorted by default
         '''
-        return natsorted(list(self.explicit_relations) + list(self.implicit_relations))
+        relations = list(self.explicit_relations) + list(self.implicit_relations)
+        if sort:
+            return natsorted(relations)
+        return relations
 
     @staticmethod
     def define_attribute(attr):
@@ -328,7 +337,7 @@ class TraceableItem(TraceableBaseClass):
             (bool) True if given item is related through the given relationships, False otherwise.
         '''
         for relation in relations:
-            if target_id in self.iter_targets(relation, explicit=True, implicit=True):
+            if target_id in self.iter_targets(relation, explicit=True, implicit=True, sort=False):
                 return True
         return False
 
@@ -367,8 +376,8 @@ class TraceableItem(TraceableBaseClass):
                 raise TraceabilityException('item {item} has invalid attribute value for {attribute}'
                                             .format(item=self.get_id(), attribute=attribute))
         # Targets should have no duplicates
-        for relation in self.iter_relations():
-            tgts = self.iter_targets(relation)
+        for relation in self.iter_relations(sort=False):
+            tgts = self.iter_targets(relation, sort=False)
             cnt_duplicate = len(tgts) - len(set(tgts))
             if cnt_duplicate:
                 raise TraceabilityException('{cnt} duplicate target(s) found for {item} {relation})'
