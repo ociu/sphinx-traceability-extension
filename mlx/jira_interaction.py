@@ -91,6 +91,7 @@ def push_item_to_jira(jira, fields, item, attendees, assignee):
     The value of the effort option gets added to the Estimated field of the time tracking section. On failure, it gets
     appended to the description instead.
     The attendees are added to the watchers field. A warning is raised for each error returned by Jira.
+    The assignee is set as the last step. When this results in a change in the ticket, the watchers get notified.
 
     Args:
         jira (jira.JIRA): Jira interface object
