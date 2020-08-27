@@ -12,16 +12,15 @@ import mlx.jira_interaction as dut
 
 @mock.patch('mlx.jira_interaction.JIRA')
 class TestJiraInteraction(TestCase):
-    general_fields = {
-        'components': [
-            {'name': '[SW]'},
-            {'name': '[HW]'},
-        ],
-        'issuetype': {'name': 'Task'},
-        'project': 'MLX12345',
-    }
-
     def setUp(self):
+        self.general_fields = {
+            'components': [
+                {'name': '[SW]'},
+                {'name': '[HW]'},
+            ],
+            'issuetype': {'name': 'Task'},
+            'project': 'MLX12345',
+        }
         self.settings = {
             'api_endpoint': 'https://jira.atlassian.com/rest/api/latest/',
             'username': 'my_username',
@@ -36,6 +35,7 @@ class TestJiraInteraction(TestCase):
             'relationship_to_parent': 'depends_on',
             'components': '[SW],[HW]',
             'catch_errors': False,
+            'notify_watchers': False,
         }
         self.coll = TraceableCollection()
         parent = TraceableItem('MEETING-12345_2')
@@ -160,6 +160,45 @@ class TestJiraInteraction(TestCase):
 
         # attendees added for action1 since it is linked with depends_on to parent item with ``attendees`` attribute
         self.assertEqual(jira_mock.add_watcher.call_args_list,
+                         [
+                             mock.call(issue, 'ABC'),
+                             mock.call(issue, 'ZZZ'),
+                         ])
+
+        self.assertEqual(jira_mock.assign_issue.call_args_list, [])
+
+    def test_notify_watchers(self, jira):
+        """ Test effect of setting `notify_watchers` to True
+
+        By default, watchers are added as the last step. When setting `notify_watchers` is set to a truthy value,
+        the assignee should be set in an additional call to Jira after the watchers have been added.
+        """
+        jira_mock = jira.return_value
+        jira_mock.search_issues.return_value = []
+        self.settings['notify_watchers'] = True
+
+        with self.assertLogs(level=WARNING):
+            warning('Dummy log')
+            dut.create_jira_issues(self.settings, self.coll)
+
+        # No kwarg 'assignee' should be passed
+        self.assertEqual(
+            jira_mock.create_issue.call_args_list,
+            [
+                mock.call(
+                    description='Description for action 1',
+                    summary='MEETING-12345_2: Caption for action 1',
+                    **self.general_fields
+                ),
+                mock.call(
+                    description='Caption for action 2',
+                    summary='Caption for action 2',
+                    **self.general_fields
+                ),
+            ])
+        # Additional call to set assignee should be made after the issue has been created
+        issue = jira_mock.create_issue.return_value
+        self.assertEqual(jira_mock.assign_issue.call_args_list,
                          [
                              mock.call(issue, 'ABC'),
                              mock.call(issue, 'ZZZ'),

@@ -81,24 +81,27 @@ def create_unique_issues(item_ids, jira, general_fields, settings, traceability_
         if not body:
             body = item.caption
         fields['description'] = settings.get('description_head', '') + body
-        if assignee:
+        if assignee and not settings.get('notify_watchers', False):
             fields['assignee'] = {'name': item.get_attribute('assignee')}
+            assignee = ''
 
-        push_item_to_jira(jira, {**fields, **general_fields}, item, attendees)
+        push_item_to_jira(jira, {**fields, **general_fields}, item, attendees, assignee)
 
 
-def push_item_to_jira(jira, fields, item, attendees):
+def push_item_to_jira(jira, fields, item, attendees, assignee):
     """ Pushes the request to create a ticket on Jira for the given item.
 
     The value of the effort option gets added to the Estimated field of the time tracking section. On failure, it gets
     appended to the description instead.
     The attendees are added to the watchers field. A warning is raised for each error returned by Jira.
+    The assignee can be set as the last step. When this results in a change in the ticket, the watchers get notified.
 
     Args:
         jira (jira.JIRA): Jira interface object
         general_fields (dict): Dictionary containing all fields to include in the initial creation of the Jira ticket
         item (TraceableItem): Traceable item to create the Jira ticket for
         attendees (list): List of attendees that should get added to the watchers field
+        assignee (str): User to assign to the issue as a last and separate call to Jira; empty to skip this step
     """
     issue = jira.create_issue(**fields)
 
@@ -115,6 +118,9 @@ def push_item_to_jira(jira, fields, item, attendees):
         except JIRAError as err:
             report_warning("Jira interaction failed: item {}: error code {}: {}"
                            .format(item.id, err.status_code, err.response.text))
+
+    if assignee:
+        jira.assign_issue(issue, assignee)
 
 
 def determine_jira_project(key_regex, key_prefix, default_project, item_id):

@@ -512,6 +512,7 @@ Configuration
         'description_head': 'Action raised in meeting.\n\n',
         'warn_if_exists': False,
         'errors_to_warnings': True,
+        'notify_watchers': False,
     }
 
 ``project_key_regex`` can optionally be defined. This regular expression with a named group *project* is used to
@@ -530,6 +531,10 @@ related Jira tickets.
 
 A string can be added to the start of a ticket's description by configuring ``description_head``. If the item to create
 a ticket for does not have a body, its caption will be used to build the ticket's description.
+
+Watchers of a ticket can be notified about the creation of the ticket by setting ``notify_watchers`` to ``True``.
+Note that this notification is only sent when the user to assign to the ticket is different from the default assignee
+configured in Jira.
 
 Attributes
 ==========
