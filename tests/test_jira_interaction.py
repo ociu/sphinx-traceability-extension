@@ -142,11 +142,13 @@ class TestJiraInteraction(TestCase):
                 mock.call(
                     summary='MEETING-12345_2: Caption for action 1',
                     description='Description for action 1',
+                    assignee={'name': 'ABC'},
                     **self.general_fields
                 ),
                 mock.call(
                     summary='Caption for action 2',
                     description='Caption for action 2',
+                    assignee={'name': 'ZZZ'},
                     **self.general_fields
                 ),
             ])
@@ -158,12 +160,6 @@ class TestJiraInteraction(TestCase):
 
         # attendees added for action1 since it is linked with depends_on to parent item with ``attendees`` attribute
         self.assertEqual(jira_mock.add_watcher.call_args_list,
-                         [
-                             mock.call(issue, 'ABC'),
-                             mock.call(issue, 'ZZZ'),
-                         ])
-
-        self.assertEqual(jira_mock.assign_issue.call_args_list,
                          [
                              mock.call(issue, 'ABC'),
                              mock.call(issue, 'ZZZ'),
@@ -234,11 +230,13 @@ class TestJiraInteraction(TestCase):
                 mock.call(
                     summary='MEETING-12345_2: Caption for action 1',
                     description='Description for action 1',
+                    assignee={'name': 'ABC'},
                     **self.general_fields
                 ),
                 mock.call(
                     summary='Caption for action 2',
                     description='Caption for action 2',
+                    assignee={'name': 'ZZZ'},
                     **self.general_fields
                 ),
             ])
