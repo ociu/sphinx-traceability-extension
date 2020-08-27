@@ -177,7 +177,7 @@ class TestJiraInteraction(TestCase):
         jira_mock.search_issues.return_value = []
         self.settings['notify_watchers'] = True
 
-        with self.assertLogs(level=WARNING) as cm:
+        with self.assertLogs(level=WARNING):
             warning('Dummy log')
             dut.create_jira_issues(self.settings, self.coll)
 
