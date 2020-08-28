@@ -22,7 +22,9 @@ class ItemMatrix(TraceableBaseNode):
         Rows = namedtuple('Rows', "covered uncovered")
         showcaptions = not self['nocaptions']
         source_ids = collection.get_items(self['source'], self['filter-attributes'])
-        target_ids = collection.get_items(self['target'])
+        target_ids = []
+        for target in self['target']:
+            target_ids.append(collection.get_items(target))
         top_node = self.create_top_node(self['title'])
         table = nodes.table()
         if self.get('classes'):
@@ -59,10 +61,11 @@ class ItemMatrix(TraceableBaseNode):
                     for target_id in source_item.iter_targets(relationship):
                         right += self.make_external_item_ref(app, target_id, relationship)
                         covered = True
-            for target_id in target_ids:
-                if collection.are_related(source_id, relationships, target_id):
-                    right += self.make_internal_item_ref(app, target_id, showcaptions)
-                    covered = True
+            for target_list in target_ids:
+                for target_id in target_list:
+                    if collection.are_related(source_id, relationships, target_id):
+                        right += self.make_internal_item_ref(app, target_id, showcaptions)
+                        covered = True
 
             row += left
             row += right
@@ -151,7 +154,7 @@ class ItemMatrixDirective(TraceableBaseDirective):
         self.add_found_attributes(item_matrix_node)
 
         self.process_options(item_matrix_node,
-                             {'target': '',
+                             {'target': [],
                               'source': '',
                               'targettitle': 'Target',
                               'sourcetitle': 'Source',
