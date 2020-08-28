@@ -5,6 +5,7 @@ from docutils.parsers.rst import Directive
 from mlx.traceability_exception import report_warning
 from mlx.traceable_item import TraceableItem
 
+import shlex
 
 class TraceableBaseDirective(Directive, ABC):
     """ Base class for all Traceability directives. """
@@ -105,7 +106,7 @@ class TraceableBaseDirective(Directive, ABC):
             if option in self.options:
                 if isinstance(default_value, list):
                     self._warn_if_comma_separated(option, docname)
-                    node[option] = self.options[option].split()
+                    node[option] = shlex.split(self.options[option])
                 else:
                     node[option] = self.options[option]
             elif docname:

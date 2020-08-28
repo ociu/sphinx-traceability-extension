@@ -1,6 +1,7 @@
 from collections import namedtuple
 from docutils import nodes
 from docutils.parsers.rst import directives
+import sys
 
 from mlx.traceability_exception import report_warning
 from mlx.traceable_base_directive import TraceableBaseDirective
@@ -19,6 +20,8 @@ class ItemMatrix(TraceableBaseNode):
             app: Sphinx application object to use.
             collection (TraceableCollection): Collection for which to generate the nodes.
         """
+
+        number_of_columns = max(2, len(self['target']) + 1)
         Rows = namedtuple('Rows', "covered uncovered")
         showcaptions = not self['nocaptions']
         source_ids = collection.get_items(self['source'], self['filter-attributes'])
@@ -30,13 +33,19 @@ class ItemMatrix(TraceableBaseNode):
         if self.get('classes'):
             table.get('classes').extend(self.get('classes'))
         tgroup = nodes.tgroup()
-        left_colspec = nodes.colspec(colwidth=5)
-        right_colspec = nodes.colspec(colwidth=5)
-        tgroup += [left_colspec, right_colspec]
-        tgroup += nodes.thead('', nodes.row(
-            '',
-            nodes.entry('', nodes.paragraph('', self['sourcetitle'])),
-            nodes.entry('', nodes.paragraph('', self['targettitle']))))
+        colspecs = [nodes.colspec(colwidth=5) for _ in range(number_of_columns)]
+        print(self['target'], file=sys.stderr)
+        print(colspecs, file=sys.stderr)
+
+        tgroup += colspecs
+        headings = []
+        headings.append(nodes.entry('', nodes.paragraph('', self['sourcetitle'])))
+        print("spam", file=sys.stderr)
+        for target_heading in self['targettitle']:
+            headings.append(nodes.entry('', nodes.paragraph('', target_heading)))
+
+        print(*headings)
+        tgroup += nodes.thead('', nodes.row('', *headings))
         tbody = nodes.tbody()
         tgroup += tbody
         table += tgroup
@@ -44,6 +53,8 @@ class ItemMatrix(TraceableBaseNode):
         relationships = self['type']
         if not relationships:
             relationships = collection.iter_relations()
+
+        print(self['targettitle'], file=sys.stderr)
 
         count_total = 0
         count_covered = 0
@@ -55,20 +66,23 @@ class ItemMatrix(TraceableBaseNode):
             row = nodes.row()
             left = nodes.entry()
             left += self.make_internal_item_ref(app, source_id, showcaptions)
-            right = nodes.entry()
+            rights = [nodes.entry('') for _ in range(number_of_columns - 1)]
             for relationship in relationships:
                 if REGEXP_EXTERNAL_RELATIONSHIP.search(relationship):
                     for target_id in source_item.iter_targets(relationship):
-                        right += self.make_external_item_ref(app, target_id, relationship)
+                        rights[0] += self.make_external_item_ref(app, target_id, relationship)
                         covered = True
-            for target_list in target_ids:
+            for idx, target_list in enumerate(target_ids):
                 for target_id in target_list:
                     if collection.are_related(source_id, relationships, target_id):
-                        right += self.make_internal_item_ref(app, target_id, showcaptions)
+                        rights[idx] += self.make_internal_item_ref(app, target_id, showcaptions)
                         covered = True
 
             row += left
-            row += right
+            for right in rights:
+                row += right
+
+            print(row, file=sys.stderr)
 
             if covered:
                 count_covered += 1
@@ -156,7 +170,7 @@ class ItemMatrixDirective(TraceableBaseDirective):
         self.process_options(item_matrix_node,
                              {'target': [],
                               'source': '',
-                              'targettitle': 'Target',
+                              'targettitle': ['Target'],
                               'sourcetitle': 'Source',
                               'type': [],
                               })
