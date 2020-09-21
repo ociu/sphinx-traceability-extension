@@ -95,4 +95,3 @@ class TestItemDirective(TestCase):
     def test_is_relation_external(self, relation_name, expected):
         external = self.node.is_relation_external(relation_name)
         self.assertEqual(external, expected)
-
