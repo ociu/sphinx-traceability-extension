@@ -53,7 +53,7 @@ class ItemMatrix(TraceableBaseNode):
 
         relationships = self['type']
         if not relationships:
-            # if no explicit relationships were given, we consider all of them (expect for external ones)
+            # if no explicit relationships were given, we consider all of them (except for external ones)
             relationships = [rel for rel in collection.iter_relations() if not self.is_relation_external(rel)]
 
         count_total = 0
