@@ -16,6 +16,7 @@ from mlx.traceable_item import TraceableItem
 # hyperlink is done through the config traceability_external_relationship_to_url.
 REGEXP_EXTERNAL_RELATIONSHIP = re.compile('^ext_.*')
 
+
 class TraceableCollection:
     '''
     Storage for a collection of TraceableItems

@@ -11,6 +11,7 @@ from mlx.traceable_item import TraceableItem
 
 EXTERNAL_LINK_FIELDNAME = 'field'
 
+
 class TraceableBaseNode(nodes.General, nodes.Element, ABC):
     """ Base class for all Traceability node classes. """
 
