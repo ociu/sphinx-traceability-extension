@@ -21,6 +21,9 @@ class ItemMatrix(TraceableBaseNode):
             collection (TraceableCollection): Collection for which to generate the nodes.
         """
 
+        # The 'target' attribute might be empty, in which case a catch-all is implied. In this case, we set
+        # number_of_columns to 2 (one source, one target). In other cases, it's the number of target settings + 1 source
+        # column
         number_of_columns = max(2, len(self['target']) + 1)
         Rows = namedtuple('Rows', "covered uncovered")
         showcaptions = not self['nocaptions']
@@ -34,17 +37,14 @@ class ItemMatrix(TraceableBaseNode):
             table.get('classes').extend(self.get('classes'))
         tgroup = nodes.tgroup()
         colspecs = [nodes.colspec(colwidth=5) for _ in range(number_of_columns)]
-        print(self['target'], file=sys.stderr)
-        print(colspecs, file=sys.stderr)
+        # print(colspecs, file=sys.stderr)
 
         tgroup += colspecs
         headings = []
         headings.append(nodes.entry('', nodes.paragraph('', self['sourcetitle'])))
-        print("spam", file=sys.stderr)
         for target_heading in self['targettitle']:
             headings.append(nodes.entry('', nodes.paragraph('', target_heading)))
 
-        print(*headings)
         tgroup += nodes.thead('', nodes.row('', *headings))
         tbody = nodes.tbody()
         tgroup += tbody
@@ -54,7 +54,7 @@ class ItemMatrix(TraceableBaseNode):
         if not relationships:
             relationships = collection.iter_relations()
 
-        print(self['targettitle'], file=sys.stderr)
+        # print(self['targettitle'], file=sys.stderr)
 
         count_total = 0
         count_covered = 0
@@ -82,7 +82,7 @@ class ItemMatrix(TraceableBaseNode):
             for right in rights:
                 row += right
 
-            print(row, file=sys.stderr)
+            # print(row, file=sys.stderr)
 
             if covered:
                 count_covered += 1
@@ -187,6 +187,12 @@ class ItemMatrixDirective(TraceableBaseDirective):
                 item_matrix_node['group'] = 'top'
         else:
             item_matrix_node['group'] = ''
+
+        if len(item_matrix_node['target']) > 1 and len(item_matrix_node['target']) != len(item_matrix_node['targettitle']):
+            report_warning("Item-matrix directive should have the same number of 'target' attributes as 'target-title' "
+                           "attributes. Got target: {targets} and targettitle: {titles}"
+                           .format(targets=item_matrix_node['target'], titles=item_matrix_node['targettitle']),
+                           env.docname, self.lineno)
 
         self.check_relationships(item_matrix_node['type'], env)
 
