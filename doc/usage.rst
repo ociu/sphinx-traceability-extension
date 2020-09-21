@@ -229,7 +229,7 @@ A traceability matrix of documentation items can be generated using:
         :target: [IU]TEST
         :status: Appr
         :sourcetitle: Software requirements
-        :targettitle: Integration and unit test cases
+        :targettitle: "Integration and unit test cases"
         :type: validated_by
         :group: bottom
         :nocaptions:

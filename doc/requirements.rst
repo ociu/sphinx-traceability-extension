@@ -122,7 +122,7 @@ Test coverage
     :source: RQT
     :target: [IU]TEST
     :sourcetitle: Requirement
-    :targettitle: Test case
+    :targettitle: "Test case"
     :nocaptions:
     :stats:
 

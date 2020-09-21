@@ -377,21 +377,49 @@ Tree of design
 Design reverse coverage
 =======================
 
+.. When not combined with "", a space is considered as a list delimiter. However, if a space is desired in one of the
+   directive settings, surrounding the setting with "" will 'escape' that space.
+
 .. item-matrix:: Trace design to requirements
     :source: DESIGN
-    :target: RQT
+    :target: RQT IMPL
     :sourcetitle: Design
-    :targettitle: Requirements
+    :targettitle: "Linked Requirements" "Linked implementation"
     :nocaptions:
     :stats:
 
 Implementation coverage
 =======================
 
+.. An item-matrix doesn't need a target per se. If omitted, a catch-all is used.
+   In the example just below, the filtering is only done based on the relationship type.
+   Also the targettitle is optional. If not provided, 'Target' is used.
+
 .. item-matrix:: Trace design to implementation
     :source: DESIGN
-    :target: IMPL
     :sourcetitle: Design
     :targettitle: Implementation
+    :type: fulfilled_by
+    :nocaptions:
+    :stats:
+
+
+.. item-matrix:: Ext_toolname
+    :target: namespace:class namespace:group
+    :targettitle: Class Group
+    :nocaptions:
+    :stats:
+    :type: ext_toolname implements
+
+.. item-matrix:: Ext_toolname
+    :target: namespace:class RQT
+    :targettitle: Class RQT
+    :nocaptions:
+    :stats:
+
+.. item-matrix:: Ext_toolname
+    :source: r00
+    :target: r00 late001
+    :targettitle: "First title" "Second title"
     :nocaptions:
     :stats:

@@ -72,6 +72,7 @@ This text is not part of any item
     :class: terciary
     :trace: r002 r002 r003
     :nocaptions:
+    :ext_toolname: namespace:class:document:
 
     Clean up all this again
 
@@ -280,7 +281,7 @@ Traceability from SRS to SSS
 .. item-matrix:: Software requirements fulfilling system requirements
     :target: SYS
     :source: SRS
-    :targettitle: system requirement
+    :targettitle: "system requirement"
     :sourcetitle: software requirement
     :type: fulfills
     :stats:
@@ -291,7 +292,7 @@ Traceability from SSS to SRS
 .. item-matrix:: System requirements fulfilled by software requirements
     :target: SRS
     :source: SYS
-    :targettitle: software requirement
+    :targettitle: "software requirement"
     :sourcetitle: system requirement
     :type: fulfilled_by
     :stats:
@@ -303,7 +304,7 @@ Another matrix that should spawn a warning as the relation in *type* does not ex
     :target: SRS
     :source: SYS
     :type: non_existing_relation
-    :targettitle: system requirement
+    :targettitle: "system requirement"
     :sourcetitle: software requirement
 
 Item attribute matrix
