@@ -2,19 +2,12 @@
 Storage classes for collection of traceable items
 '''
 import json
-import re
 from pathlib import Path
 
 from natsort import natsorted
 
 from mlx.traceability_exception import MultipleTraceabilityExceptions, TraceabilityException
 from mlx.traceable_item import TraceableItem
-
-# External relationship: starts with ext_
-# An external relationship is a relationship where the item to link to is not in the
-# traceability system, but on an external tool. Translating the link to a clickable
-# hyperlink is done through the config traceability_external_relationship_to_url.
-REGEXP_EXTERNAL_RELATIONSHIP = re.compile('^ext_.*')
 
 
 class TraceableCollection:
@@ -67,18 +60,6 @@ class TraceableCollection:
         if len(self.relations) != len(self.relations_sorted):
             self.relations_sorted = natsorted(self.relations)
         return self.relations_sorted
-
-    @staticmethod
-    def is_relation_external(relation):
-        ''' Helper function to check if a given relationship (string) is an external relationship or not
-
-        Args:
-            relation (str): Name of the relationship to check
-
-        Returns:
-            bool: True if relationship is an external one, False otherwise
-        '''
-        return True if REGEXP_EXTERNAL_RELATIONSHIP.search(relation) else False
 
     def add_item(self, item):
         '''

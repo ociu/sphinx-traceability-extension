@@ -120,6 +120,18 @@ class TraceableBaseNode(nodes.General, nodes.Element, ABC):
         p_node += link
         return p_node
 
+    @staticmethod
+    def is_relation_external(relation):
+        ''' Helper function to check if a given relationship (string) is an external relationship or not
+
+        Args:
+            relation (str): Name of the relationship to check
+
+        Returns:
+            bool: True if relationship is an external one, False otherwise
+        '''
+        return True if re.search('^ext_.*', relation) else False
+
     def is_item_top_level(self, env, item_id):
         '''
         Checks if item with given item ID is a top level item.
