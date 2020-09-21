@@ -1,7 +1,6 @@
 from collections import namedtuple
 from docutils import nodes
 from docutils.parsers.rst import directives
-import sys
 
 from mlx.traceability_exception import report_warning
 from mlx.traceable_base_directive import TraceableBaseDirective
@@ -39,7 +38,8 @@ class ItemMatrix(TraceableBaseNode):
 
         # Column and heading setup
         tgroup += [nodes.colspec(colwidth=5) for _ in range(number_of_columns)]
-        headings = [nodes.entry('', nodes.paragraph('', title)) for title in [self['sourcetitle'], *self['targettitle']]]
+        headings = [nodes.entry('', nodes.paragraph('', title))
+                    for title in [self['sourcetitle'], *self['targettitle']]]
         tgroup += nodes.thead('', nodes.row('', *headings))
 
         # The table body
@@ -182,7 +182,9 @@ class ItemMatrixDirective(TraceableBaseDirective):
         else:
             item_matrix_node['group'] = ''
 
-        if len(item_matrix_node['target']) > 1 and len(item_matrix_node['target']) != len(item_matrix_node['targettitle']):
+        number_of_targets = len(item_matrix_node['target'])
+        number_of_targettitles = len(item_matrix_node['targettitle'])
+        if number_of_targets > 1 and number_of_targets != number_of_targettitles:
             report_warning("Item-matrix directive should have the same number of 'target' attributes as 'target-title' "
                            "attributes. Got target: {targets} and targettitle: {titles}"
                            .format(targets=item_matrix_node['target'], titles=item_matrix_node['targettitle']),
