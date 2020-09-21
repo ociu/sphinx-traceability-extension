@@ -9,13 +9,7 @@ from sphinx.builders.latex import LaTeXBuilder
 from mlx.traceability_exception import report_warning
 from mlx.traceable_item import TraceableItem
 
-# External relationship: starts with ext_
-# An external relationship is a relationship where the item to link to is not in the
-# traceability system, but on an external tool. Translating the link to a clickable
-# hyperlink is done through the config traceability_external_relationship_to_url.
-REGEXP_EXTERNAL_RELATIONSHIP = re.compile('^ext_.*')
 EXTERNAL_LINK_FIELDNAME = 'field'
-
 
 class TraceableBaseNode(nodes.General, nodes.Element, ABC):
     """ Base class for all Traceability node classes. """
