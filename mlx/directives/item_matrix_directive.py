@@ -4,7 +4,7 @@ from docutils.parsers.rst import directives
 
 from mlx.traceability_exception import report_warning
 from mlx.traceable_base_directive import TraceableBaseDirective
-from mlx.traceable_base_node import TraceableBaseNode, REGEXP_EXTERNAL_RELATIONSHIP
+from mlx.traceable_base_node import TraceableBaseNode
 
 
 class ItemMatrix(TraceableBaseNode):
@@ -47,9 +47,14 @@ class ItemMatrix(TraceableBaseNode):
         tgroup += tbody
         table += tgroup
 
+        # External relationships are treated a bit special in item-matrices:
+        # - External references are only shown if explicitly requested in the "type" configuration
+        # - No target filtering is done on external references
+
         relationships = self['type']
         if not relationships:
-            relationships = collection.iter_relations()
+            # if no explicit relationships were given, we consider all of them (expect for external ones)
+            relationships = [rel for rel in collection.iter_relations() if not self.is_relation_external(rel)]
 
         count_total = 0
         count_covered = 0
@@ -63,7 +68,7 @@ class ItemMatrix(TraceableBaseNode):
             left += self.make_internal_item_ref(app, source_id, showcaptions)
             rights = [nodes.entry('') for _ in range(number_of_columns - 1)]
             for relationship in relationships:
-                if REGEXP_EXTERNAL_RELATIONSHIP.search(relationship):
+                if self.is_relation_external(relationship):
                     for target_id in source_item.iter_targets(relationship):
                         for i in range(number_of_columns - 1):
                             rights[i] += self.make_external_item_ref(app, target_id, relationship)

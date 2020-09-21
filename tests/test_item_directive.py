@@ -10,6 +10,8 @@ from mlx.directives.item_directive import Item as dut
 from mlx.traceable_collection import TraceableCollection
 from mlx.traceable_item import TraceableItem
 
+from parameterized import parameterized
+
 
 class TestItemDirective(TestCase):
 
@@ -82,3 +84,14 @@ class TestItemDirective(TestCase):
         self.assertEqual(str(p_node.children[0].children[0]), '<emphasis>some_id</emphasis>')
         self.assertEqual(p_node.children[0].tagname, 'reference')
         self.assertEqual(p_node.children[0].children[0].rawsource, 'some_id')
+
+    @parameterized.expand([
+       ("ext_toolname", True),
+       ("verifies", False),
+       ("is verified by", False),
+       ("prefix_ext_", False),
+       ("", False),
+    ])
+    def test_is_relation_external(self, relation_name, expected):
+        external = self.node.is_relation_external(relation_name)
+        self.assertEqual(external, expected)

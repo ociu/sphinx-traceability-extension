@@ -3,7 +3,7 @@ from docutils.parsers.rst import directives
 
 from mlx.traceability_exception import report_warning, TraceabilityException
 from mlx.traceable_base_directive import TraceableBaseDirective
-from mlx.traceable_base_node import TraceableBaseNode, REGEXP_EXTERNAL_RELATIONSHIP
+from mlx.traceable_base_node import TraceableBaseNode
 from mlx.traceable_item import TraceableItem
 
 
@@ -89,7 +89,7 @@ class Item(TraceableBaseNode):
         for target in targets:
             dd_node = nodes.definition()
             p_node = nodes.paragraph()
-            if REGEXP_EXTERNAL_RELATIONSHIP.search(relation):
+            if self.is_relation_external(relation):
                 link = self.make_external_item_ref(app, target, relation)
             else:
                 showcaptions = not self['nocaptions']
