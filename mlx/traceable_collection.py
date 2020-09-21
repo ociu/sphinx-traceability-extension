@@ -73,7 +73,7 @@ class TraceableCollection:
         ''' Helper function to check if a given relationship (string) is an external relationship or not
 
         Args:
-            relation (string): Name of the relationship to check
+            relation (str): Name of the relationship to check
 
         Returns:
             bool: True if relationship is an external one, False otherwise
