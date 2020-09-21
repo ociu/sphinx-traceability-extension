@@ -36,16 +36,13 @@ class ItemMatrix(TraceableBaseNode):
         if self.get('classes'):
             table.get('classes').extend(self.get('classes'))
         tgroup = nodes.tgroup()
-        colspecs = [nodes.colspec(colwidth=5) for _ in range(number_of_columns)]
-        # print(colspecs, file=sys.stderr)
 
-        tgroup += colspecs
-        headings = []
-        headings.append(nodes.entry('', nodes.paragraph('', self['sourcetitle'])))
-        for target_heading in self['targettitle']:
-            headings.append(nodes.entry('', nodes.paragraph('', target_heading)))
-
+        # Column and heading setup
+        tgroup += [nodes.colspec(colwidth=5) for _ in range(number_of_columns)]
+        headings = [nodes.entry('', nodes.paragraph('', title)) for title in [self['sourcetitle'], *self['targettitle']]]
         tgroup += nodes.thead('', nodes.row('', *headings))
+
+        # The table body
         tbody = nodes.tbody()
         tgroup += tbody
         table += tgroup
@@ -53,8 +50,6 @@ class ItemMatrix(TraceableBaseNode):
         relationships = self['type']
         if not relationships:
             relationships = collection.iter_relations()
-
-        # print(self['targettitle'], file=sys.stderr)
 
         count_total = 0
         count_covered = 0
@@ -70,7 +65,8 @@ class ItemMatrix(TraceableBaseNode):
             for relationship in relationships:
                 if REGEXP_EXTERNAL_RELATIONSHIP.search(relationship):
                     for target_id in source_item.iter_targets(relationship):
-                        rights[0] += self.make_external_item_ref(app, target_id, relationship)
+                        for i in range(number_of_columns - 1):
+                            rights[i] += self.make_external_item_ref(app, target_id, relationship)
                         covered = True
             for idx, target_list in enumerate(target_ids):
                 for target_id in target_list:
@@ -81,8 +77,6 @@ class ItemMatrix(TraceableBaseNode):
             row += left
             for right in rights:
                 row += right
-
-            # print(row, file=sys.stderr)
 
             if covered:
                 count_covered += 1
@@ -168,7 +162,7 @@ class ItemMatrixDirective(TraceableBaseDirective):
         self.add_found_attributes(item_matrix_node)
 
         self.process_options(item_matrix_node,
-                             {'target': [],
+                             {'target': [''],
                               'source': '',
                               'targettitle': ['Target'],
                               'sourcetitle': 'Source',
