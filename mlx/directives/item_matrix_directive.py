@@ -166,6 +166,7 @@ class ItemMatrixDirective(TraceableBaseDirective):
 
         self.add_found_attributes(item_matrix_node)
 
+        # The original
         self.process_options(item_matrix_node,
                              {'target': [''],
                               'source': '',
@@ -173,6 +174,35 @@ class ItemMatrixDirective(TraceableBaseDirective):
                               'sourcetitle': 'Source',
                               'type': [],
                               })
+
+        # Proposal 1
+        self.process_options(item_matrix_node, [
+                             {'name': 'target',         'default': ['']                             },
+                             {'name': 'source',         'default': ''                               },
+                             {'name': 'targettitle',    'default': ['Target'],    'delimiter': ','  },
+                             {'name': 'sourcetitle',    'default': 'Source'                         },
+                             {'name': 'type',           'default': []                               },
+                             ])
+
+        # Proposal 2
+        self.process_options(item_matrix_node,
+                             {'target': { 'default': [''] },
+                              'source': { 'default': '' },
+                              'targettitle': { 'default': ['Target'], 'delimiter': ','},
+                              'sourcetitle': { 'default': 'Source' },
+                              'type': { 'default': [] },
+                              })
+
+        # Proposal 3: Delimiter as argument to process_options directly. Not sure if feasible when checking for
+        # required configurations
+
+        self.process_options(item_matrix_node,
+                        {'target': [''],
+                        'source': '',
+                        'sourcetitle': 'Source',
+                        'type': [],
+                        }, delimiter=' ')
+        self.process_options(item_matrix_node, {'targettitle': ['Target']}, delimiter=',')
 
         # Process ``group`` option, given as a string that is either top or bottom or empty ().
         if 'group' in self.options:
