@@ -54,5 +54,8 @@ class AttributeSortDirective(TraceableBaseDirective):
         node['filter'] = r"\S+"
         node['sort'] = []
 
-        self.process_options(node, {'sort': [], 'filter': r"\S+"})
+        self.process_options(node,
+                             {'sort':   { 'default': [] },
+                              'filter': { 'default': r"\S+" }
+                              })
         return [node]

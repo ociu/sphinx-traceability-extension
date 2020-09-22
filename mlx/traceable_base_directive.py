@@ -5,8 +5,6 @@ from docutils.parsers.rst import Directive
 from mlx.traceability_exception import report_warning
 from mlx.traceable_item import TraceableItem
 
-import shlex
-
 
 class TraceableBaseDirective(Directive, ABC):
     """ Base class for all Traceability directives. """
@@ -103,11 +101,13 @@ class TraceableBaseDirective(Directive, ABC):
         Returns:
             (bool) False if a required option is missing, True otherwise.
         """
-        for option, default_value in options.items():
+        for option, option_config in options.items():
             if option in self.options:
-                if isinstance(default_value, list):
-                    self._warn_if_comma_separated(option, docname)
-                    node[option] = shlex.split(self.options[option])
+                if isinstance(option_config['default'], list):
+                    delimiter = option_config.get('delimiter', ' ')
+                    if delimiter == ' ':
+                        self._warn_if_comma_separated(option, docname)
+                    node[option] = self.options[option].split(delimiter)
                 else:
                     node[option] = self.options[option]
             elif docname:
@@ -116,7 +116,7 @@ class TraceableBaseDirective(Directive, ABC):
                                self.lineno)
                 return False
             else:
-                node[option] = default_value
+                node[option] = option_config['default']
         return True
 
     def check_option_presence(self, node, option):
