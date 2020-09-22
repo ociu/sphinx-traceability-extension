@@ -95,7 +95,21 @@ class TraceableBaseDirective(Directive, ABC):
 
         Args:
             node (TraceableBaseNode): Node object for which to set the target and source options.
-            options (dict): Dictionary with options (str) as keys and default values (str) as values.
+            options (dict): Dictionary with options (str) as keys and a dict of additional configurations as values:
+                Example:
+
+                | {
+                |     'target': { 'default': [''] },
+                |     'source': { 'default': '' },
+                |     'targettitle': { 'default': ['Target'], 'delimiter': ','},
+                |     'sourcetitle': { 'default': 'Source' },
+                |     'type': { 'default': [] },
+                | }
+
+                The 'default' configuration is mandatory. It is used to set the value in case none is given AND it is
+                used to determine the type of the option (list or single value).
+                The 'delimiter' value is optional and defaults to ' ' (single space). It is used to determine what
+                character needs to be used to split the option value into a list.
             docname (str): Document name.
 
         Returns:

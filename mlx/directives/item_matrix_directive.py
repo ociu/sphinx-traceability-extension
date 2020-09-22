@@ -167,11 +167,11 @@ class ItemMatrixDirective(TraceableBaseDirective):
         self.add_found_attributes(item_matrix_node)
 
         self.process_options(item_matrix_node,
-                             {'target': { 'default': [''] },
-                              'source': { 'default': '' },
-                              'targettitle': { 'default': ['Target'], 'delimiter': ','},
-                              'sourcetitle': { 'default': 'Source' },
-                              'type': { 'default': [] },
+                             {'target':         {'default': ['']},
+                              'source':         {'default': ''},
+                              'targettitle':    {'default': ['Target'], 'delimiter': ','},
+                              'sourcetitle':    {'default': 'Source'},
+                              'type':           {'default': []},
                               })
 
         # Process ``group`` option, given as a string that is either top or bottom or empty ().
