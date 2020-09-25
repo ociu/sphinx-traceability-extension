@@ -118,10 +118,10 @@ class TraceableBaseDirective(Directive, ABC):
         for option, option_config in options.items():
             if option in self.options:
                 if isinstance(option_config['default'], list):
-                    delimiter = option_config.get('delimiter', ' ')
+                    delimiter = option_config.get('delimiter', None)
                     if delimiter == ' ':
                         self._warn_if_comma_separated(option, docname)
-                    node[option] = self.options[option].split(delimiter)
+                    node[option] = [x.strip() for x in self.options[option].split(delimiter)]
                 else:
                     node[option] = self.options[option]
             elif docname:
