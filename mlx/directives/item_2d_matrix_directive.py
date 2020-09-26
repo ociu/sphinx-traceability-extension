@@ -97,12 +97,13 @@ class Item2DMatrixDirective(TraceableBaseDirective):
         self.process_title(node, '2D traceability matrix of items')
 
         self.process_options(node,
-                             {'target': {'default': ''},
-                              'source': {'default': ''},
-                              'type':   {'default': []},
-                              'hit':    {'default': 'x'},
-                              'miss':   {'default': ''},
-                              })
+                             {
+                                'target': {'default': ''},
+                                'source': {'default': ''},
+                                'type':   {'default': []},
+                                'hit':    {'default': 'x'},
+                                'miss':   {'default': ''},
+                             })
 
         self.add_found_attributes(node)
 
