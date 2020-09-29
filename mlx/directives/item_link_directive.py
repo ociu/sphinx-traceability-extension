@@ -51,13 +51,15 @@ class ItemLinkDirective(TraceableBaseDirective):
         node['targets'] = []
         node['type'] = None
 
-        process_options_success = self.process_options(node,
-                                                       {
-                                                            'sources': {'default': []},
-                                                            'targets': {'default': []},
-                                                            'type':    {'default': ''},
-                                                       },
-                                                       docname=env.docname)
+        process_options_success = self.process_options(
+            node,
+            {
+                'sources': {'default': []},
+                'targets': {'default': []},
+                'type':    {'default': ''},
+            },
+            docname=env.docname
+        )
         if not process_options_success:
             return []
 
