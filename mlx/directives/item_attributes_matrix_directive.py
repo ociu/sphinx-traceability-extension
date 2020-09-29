@@ -144,7 +144,7 @@ class ItemAttributesMatrixDirective(TraceableBaseDirective):
         # Process ``filter`` options
         self.process_options(node,
                              {
-                                'filter': {'default': ''}
+                                'filter': {'default': ''},
                              })
 
         self.add_found_attributes(node)

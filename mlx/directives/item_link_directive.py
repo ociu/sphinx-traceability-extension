@@ -55,7 +55,7 @@ class ItemLinkDirective(TraceableBaseDirective):
                                                        {
                                                             'sources': {'default': []},
                                                             'targets': {'default': []},
-                                                            'type':    {'default': ''}
+                                                            'type':    {'default': ''},
                                                        },
                                                        docname=env.docname)
         if not process_options_success:
