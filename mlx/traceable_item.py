@@ -160,14 +160,14 @@ class TraceableItem(TraceableBaseClass):
         Returns:
             (list) List of targets to other traceable item(s), naturally sorted by default
         '''
-        relations = []
+        targets = []
         if explicit and relation in self.explicit_relations:
-            relations.extend(self.explicit_relations[relation])
+            targets.extend(self.explicit_relations[relation])
         if implicit and relation in self.implicit_relations:
-            relations.extend(self.implicit_relations[relation])
+            targets.extend(self.implicit_relations[relation])
         if sort:
-            return natsorted(relations)
-        return relations
+            return natsorted(targets)
+        return targets
 
     def iter_relations(self, sort=True):
         ''' Iterates over available relations: naturally sorted by default.
