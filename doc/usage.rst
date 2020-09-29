@@ -507,7 +507,7 @@ Configuration
         'project_key_regex': r'ACTION-(?P<project>\d{5})_',
         'project_key_prefix': 'MLX',
         'default_project': 'SWCC',
-        'relationship_to_parent': 'depends_on',
+        'relationship_to_parent': ('depends_on', r'MEETING-[\w_]+'),
         'components': '[SW],[HW]',
         'description_head': 'Action raised in meeting.\n\n',
         'warn_if_exists': False,
@@ -526,8 +526,10 @@ A warning gets reported when a Jira ticket already exists. These warnings can be
 crash your build, you can set ``errors_to_warnings`` to a falsy value.
 
 The item ID of a linked item can be added to the summary of the Jira ticket to create by specifying the relationship
-to this item with ``relationship_to_parent``. This makes it possible to create a query link in advance to list all
-related Jira tickets.
+to this item in the value for setting ``relationship_to_parent``. The value can be a list or tuple with the relationship
+as the first element and the regular expression to match the linked item's ID as the second element.
+This feature makes it possible to create a query link in advance to list all Jira tickets that are related to this
+linked item.
 
 A string can be added to the start of a ticket's description by configuring ``description_head``. If the item to create
 a ticket for does not have a body, its caption will be used to build the ticket's description.

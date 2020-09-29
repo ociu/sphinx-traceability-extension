@@ -1,5 +1,5 @@
 """Functionality to interact with Jira"""
-from re import search
+from re import match, search
 
 from jira import JIRA, JIRAError
 
@@ -142,14 +142,15 @@ def determine_jira_project(key_regex, key_prefix, default_project, item_id):
         return default_project
 
 
-def get_info_from_relationship(item, relationship, traceability_collection):
+def get_info_from_relationship(item, config_for_parent, traceability_collection):
     """ Gets info from the first item with the given relationship.
 
     Its id is added to the jira field and if it has the 'attendees' attribute, its value is returned as a list.
 
     Args:
         item (TraceableItem): Traceable item to create the Jira ticket for
-        relationship_to_parent (str): Relationship to the item to extract info from
+        config_for_parent (str/tuple/list): Relationship to the item to extract info from / tuple or list with
+            relationship as the first element and regex to match ID of parent item as the second element
         traceability_collection (TraceableCollection): Collection of all traceability items
 
     Returns:
@@ -158,11 +159,23 @@ def get_info_from_relationship(item, relationship, traceability_collection):
     """
     attendees = []
     jira_field = item.caption
-    if relationship:
+    if config_for_parent:
+        if isinstance(config_for_parent, (tuple, list)):
+            relationship = config_for_parent[0]
+            parent_regex = config_for_parent[1]
+        else:
+            relationship = config_for_parent
+            parent_regex = '.+'
         parent_ids = item.iter_targets(relationship)
-        if parent_ids:
-            parent_id = parent_ids[0]
+        parent_id = None
+        for id_ in parent_ids:
+            if match(parent_regex, id_):
+                parent_id = id_
+                break
+        if parent_id:
             parent = traceability_collection.get_item(parent_id)
             jira_field = "{id}: {field}".format(id=parent_id, field=jira_field)  # prepend item ID of parent
-            attendees = parent.get_attribute('attendees').split(',')
+            attr_value = parent.get_attribute('attendees')
+            if attr_value:
+                attendees = attr_value.split(',')
     return attendees, jira_field
