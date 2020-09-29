@@ -298,3 +298,71 @@ class TestJiraInteraction(TestCase):
             cm.output,
             [error_msg, error_msg]
         )
+
+    def test_tuple_for_relationship_to_parent(self, jira):
+        """
+        Tests that the linked item, added in this test case, is selected by configured tuple for
+        ``relationship_to_parent``
+        """
+        self.settings['relationship_to_parent'] = ('depends_on', 'ZZZ-[\w_]+')
+        alternative_parent = TraceableItem('ZZZ-TO_BE_PRIORITIZED')
+        self.coll.add_relation('ACTION-12345_ACTION_1', 'depends_on', alternative_parent.id)  # to be prioritized over MEETING-12345_2
+
+        jira_mock = jira.return_value
+        jira_mock.search_issues.return_value = []
+        with self.assertLogs(level=WARNING) as cm:
+            warning('Dummy log')
+            dut.create_jira_issues(self.settings, self.coll)
+
+        self.assertEqual(
+            cm.output,
+            ['WARNING:root:Dummy log']
+        )
+
+        self.assertEqual(jira_mock.search_issues.call_args_list,
+                         [
+                             mock.call("project=MLX12345 and summary ~ 'ZZZ-TO_BE_PRIORITIZED: Caption for action 1'"),
+                             mock.call("project=MLX12345 and summary ~ 'Caption for action 2'"),
+                         ])
+
+        issue = jira_mock.create_issue.return_value
+        self.assertEqual(
+            jira_mock.create_issue.call_args_list,
+            [
+                mock.call(
+                    summary='ZZZ-TO_BE_PRIORITIZED: Caption for action 1',
+                    description='Description for action 1',
+                    assignee={'name': 'ABC'},
+                    **self.general_fields
+                ),
+                mock.call(
+                    summary='Caption for action 2',
+                    description='Caption for action 2',
+                    assignee={'name': 'ZZZ'},
+                    **self.general_fields
+                ),
+            ])
+
+    def test_get_info_from_relationship_tuple(self, _):
+        """ Tests dut.get_info_from_relationship with a config_for_parent parameter as tuple """
+        relationship_to_parent = ('depends_on', r'ZZZ-[\w_]+')
+        alternative_parent = TraceableItem('ZZZ-TO_BE_PRIORITIZED')
+        self.coll.add_relation('ACTION-12345_ACTION_1', 'depends_on', alternative_parent.id)  # to be prioritized over MEETING-12345_2
+        action1 = self.coll.get_item('ACTION-12345_ACTION_1')
+
+        attendees, jira_field = dut.get_info_from_relationship(action1, relationship_to_parent, self.coll)
+
+        self.assertEqual(attendees, [])
+        self.assertEqual(jira_field, 'ZZZ-TO_BE_PRIORITIZED: Caption for action 1')
+
+    def test_get_info_from_relationship_str(self, _):
+        """ Tests dut.get_info_from_relationship with a config_for_parent parameter as str """
+        relationship_to_parent = 'depends_on'
+        alternative_parent = TraceableItem('ZZZ-TO_BE_IGNORED')
+        self.coll.add_relation('ACTION-12345_ACTION_1', 'depends_on', alternative_parent.id)  # not to be prioritized over MEETING-12345_2 (natural sorting)
+        action1 = self.coll.get_item('ACTION-12345_ACTION_1')
+
+        attendees, jira_field = dut.get_info_from_relationship(action1, relationship_to_parent, self.coll)
+
+        self.assertEqual(attendees, ['ABC', ' ZZZ'])
+        self.assertEqual(jira_field, 'MEETING-12345_2: Caption for action 1')
