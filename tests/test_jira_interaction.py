@@ -306,7 +306,8 @@ class TestJiraInteraction(TestCase):
         """
         self.settings['relationship_to_parent'] = ('depends_on', r'ZZZ-[\w_]+')
         alternative_parent = TraceableItem('ZZZ-TO_BE_PRIORITIZED')
-        self.coll.add_relation('ACTION-12345_ACTION_1', 'depends_on', alternative_parent.id)  # to be prioritized over MEETING-12345_2
+        # to be prioritized over MEETING-12345_2
+        self.coll.add_relation('ACTION-12345_ACTION_1', 'depends_on', alternative_parent.id)
 
         jira_mock = jira.return_value
         jira_mock.search_issues.return_value = []
@@ -325,7 +326,6 @@ class TestJiraInteraction(TestCase):
                              mock.call("project=MLX12345 and summary ~ 'Caption for action 2'"),
                          ])
 
-        issue = jira_mock.create_issue.return_value
         self.assertEqual(
             jira_mock.create_issue.call_args_list,
             [
@@ -347,7 +347,8 @@ class TestJiraInteraction(TestCase):
         """ Tests dut.get_info_from_relationship with a config_for_parent parameter as tuple """
         relationship_to_parent = ('depends_on', r'ZZZ-[\w_]+')
         alternative_parent = TraceableItem('ZZZ-TO_BE_PRIORITIZED')
-        self.coll.add_relation('ACTION-12345_ACTION_1', 'depends_on', alternative_parent.id)  # to be prioritized over MEETING-12345_2
+        # to be prioritized over MEETING-12345_2
+        self.coll.add_relation('ACTION-12345_ACTION_1', 'depends_on', alternative_parent.id)
         action1 = self.coll.get_item('ACTION-12345_ACTION_1')
 
         attendees, jira_field = dut.get_info_from_relationship(action1, relationship_to_parent, self.coll)
@@ -359,7 +360,8 @@ class TestJiraInteraction(TestCase):
         """ Tests dut.get_info_from_relationship with a config_for_parent parameter as str """
         relationship_to_parent = 'depends_on'
         alternative_parent = TraceableItem('ZZZ-TO_BE_IGNORED')
-        self.coll.add_relation('ACTION-12345_ACTION_1', 'depends_on', alternative_parent.id)  # not to be prioritized over MEETING-12345_2 (natural sorting)
+        # not to be prioritized over MEETING-12345_2 (natural sorting)
+        self.coll.add_relation('ACTION-12345_ACTION_1', 'depends_on', alternative_parent.id)
         action1 = self.coll.get_item('ACTION-12345_ACTION_1')
 
         attendees, jira_field = dut.get_info_from_relationship(action1, relationship_to_parent, self.coll)
