@@ -65,7 +65,10 @@ class ItemListDirective(TraceableBaseDirective):
         self.process_title(item_list_node, 'List of items')
 
         # Process ``filter`` option
-        self.process_options(item_list_node, {'filter': ''})
+        self.process_options(item_list_node,
+                             {
+                                'filter': {'default': ''},
+                             })
 
         self.add_found_attributes(item_list_node)
 
