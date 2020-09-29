@@ -304,7 +304,7 @@ class TestJiraInteraction(TestCase):
         Tests that the linked item, added in this test case, is selected by configured tuple for
         ``relationship_to_parent``
         """
-        self.settings['relationship_to_parent'] = ('depends_on', 'ZZZ-[\w_]+')
+        self.settings['relationship_to_parent'] = ('depends_on', r'ZZZ-[\w_]+')
         alternative_parent = TraceableItem('ZZZ-TO_BE_PRIORITIZED')
         self.coll.add_relation('ACTION-12345_ACTION_1', 'depends_on', alternative_parent.id)  # to be prioritized over MEETING-12345_2
 
