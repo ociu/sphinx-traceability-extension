@@ -1,4 +1,5 @@
 """Functionality to interact with Jira"""
+from collections.abc import Sequence
 from re import match, search
 
 from jira import JIRA, JIRAError
@@ -149,7 +150,7 @@ def get_info_from_relationship(item, config_for_parent, traceability_collection)
 
     Args:
         item (TraceableItem): Traceable item to create the Jira ticket for
-        config_for_parent (str/tuple): Relationship to the item to extract info from or tuple with
+        config_for_parent (str/Sequence): Relationship to the item to extract info from / sequence with
             relationship as the first element and regex to match ID of parent item as the second element
         traceability_collection (TraceableCollection): Collection of all traceability items
 
@@ -160,7 +161,7 @@ def get_info_from_relationship(item, config_for_parent, traceability_collection)
     attendees = []
     jira_field = item.caption
     if config_for_parent:
-        if isinstance(config_for_parent, tuple):
+        if isinstance(config_for_parent, Sequence):
             relationship = config_for_parent[0]
             parent_regex = config_for_parent[1]
         else:
