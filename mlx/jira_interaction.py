@@ -175,5 +175,7 @@ def get_info_from_relationship(item, config_for_parent, traceability_collection)
         if parent_id:
             parent = traceability_collection.get_item(parent_id)
             jira_field = "{id}: {field}".format(id=parent_id, field=jira_field)  # prepend item ID of parent
-            attendees = parent.get_attribute('attendees').split(',')
+            attr_value = parent.get_attribute('attendees')
+            if attr_value:
+                attendees = attr_value.split(',')
     return attendees, jira_field
