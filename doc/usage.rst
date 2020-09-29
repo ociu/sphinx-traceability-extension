@@ -526,8 +526,8 @@ A warning gets reported when a Jira ticket already exists. These warnings can be
 crash your build, you can set ``errors_to_warnings`` to a falsy value.
 
 The item ID of a linked item can be added to the summary of the Jira ticket to create by specifying the relationship
-to this item in the value for setting ``relationship_to_parent``. The value can be a sequence with the relationship as
-the first element and the regular expression to match the linked item's ID as the second element.
+to this item in the value for setting ``relationship_to_parent``. The value can be a list or tuple with the relationship
+as the first element and the regular expression to match the linked item's ID as the second element.
 This feature makes it possible to create a query link in advance to list all Jira tickets that are related to this
 linked item.
 
