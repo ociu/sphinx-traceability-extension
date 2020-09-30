@@ -55,6 +55,9 @@ class ItemMatrix(TraceableBaseNode):
         if not relationships:
             # if no explicit relationships were given, we consider all of them (except for external ones)
             relationships = [rel for rel in collection.iter_relations() if not self.is_relation_external(rel)]
+            external_relationships = []
+        else:
+            external_relationships = [rel for rel in relationships if self.is_relation_external(rel)]
 
         count_total = 0
         count_covered = 0
@@ -67,12 +70,11 @@ class ItemMatrix(TraceableBaseNode):
             left = nodes.entry()
             left += self.make_internal_item_ref(app, source_id, showcaptions)
             rights = [nodes.entry('') for _ in range(number_of_columns - 1)]
-            for relationship in relationships:
-                if self.is_relation_external(relationship):
-                    for target_id in source_item.iter_targets(relationship):
-                        for i in range(number_of_columns - 1):
-                            rights[i] += self.make_external_item_ref(app, target_id, relationship)
-                        covered = True
+            for ext_relationship in external_relationships:
+                for target_id in source_item.iter_targets(ext_relationship):
+                    for i in range(number_of_columns - 1):
+                        rights[i] += self.make_external_item_ref(app, target_id, ext_relationship)
+                    covered = True
             for idx, target_list in enumerate(target_ids):
                 for target_id in target_list:
                     if collection.are_related(source_id, relationships, target_id):
