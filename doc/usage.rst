@@ -235,9 +235,9 @@ A traceability matrix of documentation items can be generated using:
         :nocaptions:
         :stats:
 
-Documentation items matching their ID to the given *source* regular expression end up in the left column of the
-generated table. Documentation items matching their ID to the given *target* regular expression with a matching
-relationship (see *type* argument) will end up in the right column of the generated table.\
+Documentation items matching their ID to the given *source* regular expression end up in the leftmost column of the
+generated table. Documentation items matching their ID to the given *target* regular expression(s) with a matching
+relationship (see *type* argument) will end up in the right-hand column(s) of the generated table.\
 
 **Special note on external relations**: This directive allows showing external relationships, but has some
 limitations in doing so:
@@ -268,7 +268,7 @@ limitations in doing so:
 
 :targettitle: *optional*, *multiple arguments (comma-separated)*
 
-    Title(s) of the right "Target" column(s). In case multiple arguments are given for the *target* configuration, the
+    Title(s) of the right "Target" column(s). In case multiple arguments are given for the *target* option, the
     same amount of *targettitle* arguments must be given.
     When omitted (only possible if 0 or 1 *target* argument is given), the right column title defaults to "Target"
 
