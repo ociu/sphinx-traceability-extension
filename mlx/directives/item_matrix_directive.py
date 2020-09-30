@@ -27,9 +27,9 @@ class ItemMatrix(TraceableBaseNode):
         Rows = namedtuple('Rows', "covered uncovered")
         showcaptions = not self['nocaptions']
         source_ids = collection.get_items(self['source'], self['filter-attributes'])
-        target_ids = []
-        for target in self['target']:
-            target_ids.append(collection.get_items(target))
+        targets_with_ids = []
+        for target_regex in self['target']:
+            targets_with_ids.append(collection.get_items(target_regex))
         top_node = self.create_top_node(self['title'])
         table = nodes.table()
         if self.get('classes'):
@@ -75,8 +75,8 @@ class ItemMatrix(TraceableBaseNode):
                     for i in range(number_of_columns - 1):
                         rights[i] += self.make_external_item_ref(app, target_id, ext_relationship)
                     covered = True
-            for idx, target_list in enumerate(target_ids):
-                for target_id in target_list:
+            for idx, target_ids in enumerate(targets_with_ids):
+                for target_id in target_ids:
                     if collection.are_related(source_id, relationships, target_id):
                         rights[idx] += self.make_internal_item_ref(app, target_id, showcaptions)
                         covered = True
