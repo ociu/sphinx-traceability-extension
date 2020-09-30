@@ -381,7 +381,7 @@ Coverage to requirements and implementation
     :source: DESIGN
     :target: RQT IMPL
     :sourcetitle: Design
-    :targettitle: Linked Requirements, Linked implementation
+    :targettitle: Linked Requirements, Linked Implementation
     :nocaptions:
     :stats:
 
