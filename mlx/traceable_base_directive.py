@@ -5,8 +5,6 @@ from docutils.parsers.rst import Directive
 from mlx.traceability_exception import report_warning
 from mlx.traceable_item import TraceableItem
 
-import shlex
-
 
 class TraceableBaseDirective(Directive, ABC):
     """ Base class for all Traceability directives. """
@@ -97,17 +95,33 @@ class TraceableBaseDirective(Directive, ABC):
 
         Args:
             node (TraceableBaseNode): Node object for which to set the target and source options.
-            options (dict): Dictionary with options (str) as keys and default values (str) as values.
+            options (dict): Dictionary with options (str) as keys and a dict of additional configurations as values:
+                Example:
+
+                | {
+                |     'target': { 'default': [''] },
+                |     'source': { 'default': '' },
+                |     'targettitle': { 'default': ['Target'], 'delimiter': ','},
+                |     'sourcetitle': { 'default': 'Source' },
+                |     'type': { 'default': [] },
+                | }
+
+                The 'default' configuration is mandatory. It is used to set the value in case none is given AND it is
+                used to determine the type of the option (list or single value).
+                The 'delimiter' value is optional and defaults to ' ' (single space). It is used to determine what
+                character needs to be used to split the option value into a list.
             docname (str): Document name.
 
         Returns:
             (bool) False if a required option is missing, True otherwise.
         """
-        for option, default_value in options.items():
+        for option, option_config in options.items():
             if option in self.options:
-                if isinstance(default_value, list):
-                    self._warn_if_comma_separated(option, docname)
-                    node[option] = shlex.split(self.options[option])
+                if isinstance(option_config['default'], list):
+                    delimiter = option_config.get('delimiter', None)
+                    if delimiter == ' ':
+                        self._warn_if_comma_separated(option, docname)
+                    node[option] = [x.strip() for x in self.options[option].split(delimiter)]
                 else:
                     node[option] = self.options[option]
             elif docname:
@@ -116,7 +130,7 @@ class TraceableBaseDirective(Directive, ABC):
                                self.lineno)
                 return False
             else:
-                node[option] = default_value
+                node[option] = option_config['default']
         return True
 
     def check_option_presence(self, node, option):

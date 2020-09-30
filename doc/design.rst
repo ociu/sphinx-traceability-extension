@@ -384,7 +384,7 @@ Design reverse coverage
     :source: DESIGN
     :target: RQT IMPL
     :sourcetitle: Design
-    :targettitle: "Linked Requirements" "Linked implementation"
+    :targettitle: Linked Requirements, Linked implementation
     :nocaptions:
     :stats:
 
@@ -406,20 +406,20 @@ Implementation coverage
 
 .. item-matrix:: Ext_toolname
     :target: namespace:class namespace:group
-    :targettitle: Class Group
+    :targettitle: Class, Group
     :nocaptions:
     :stats:
     :type: ext_toolname implements
 
 .. item-matrix:: Ext_toolname
     :target: namespace:class RQT
-    :targettitle: Class RQT
+    :targettitle: Class, RQT
     :nocaptions:
     :stats:
 
 .. item-matrix:: Ext_toolname
     :source: r00
     :target: r00 late001
-    :targettitle: "First title" "Second title"
+    :targettitle: First title, Second title
     :nocaptions:
     :stats:
