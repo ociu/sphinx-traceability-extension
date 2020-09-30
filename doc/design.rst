@@ -401,8 +401,8 @@ Implementation coverage
 
 .. item-matrix:: Trace design to implementation
     :source: DESIGN
+    :target: IMPL
     :sourcetitle: Design
     :targettitle: Implementation
-    :type: fulfilled_by
     :nocaptions:
     :stats:
