@@ -227,10 +227,10 @@ A traceability matrix of documentation items can be generated using:
     .. item-matrix:: Requirements to test case description traceability
         :source: SWRQT
         :target: [IU]TEST
-        :status: Appr
         :sourcetitle: Software requirements
         :targettitle: Integration and unit test cases
         :type: validated_by
+        :status: Appr
         :group: bottom
         :nocaptions:
         :stats:
@@ -256,12 +256,6 @@ limitations in doing so:
     Multiple arguments will result in multiple target columns, each filtered by their respective regex.
     When omitted no regex filtering is done on the target item names
 
-:status: *optional*, *multiple arguments (space-separated)*
-
-    Python-style regular expression used to filter the source items (left column) based on their attributes.
-    The attribute value is **not** used as a filter on the *target* part.
-    When omitted, no filtering is done on the source item attributes
-
 :sourcetitle: *optional*, *single argument*
 
     Title of the left "Source" column in the matrix. When omitted, the column title defaults to "Source"
@@ -279,6 +273,12 @@ limitations in doing so:
     When multiple arguments are provided the target column will show items that match *any* of the given relationships
     provided. The same filtering is applied to all "Target" columns in the matrix.
     When omitted all possible relations are considered **except for external relations**.
+
+:status: *optional*, *multiple arguments (space-separated)*
+
+    Python-style regular expression used to filter the source items (left column) based on their attributes.
+    The attribute value is **not** used as a filter on the *target* part.
+    When omitted, no filtering is done on the source item attributes
 
 :group: *optional*, *choice: top/bottom*
 
