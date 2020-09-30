@@ -374,6 +374,17 @@ Tree of design
     :top_relation_filter: depends_on
     :type: impacts_on
 
+Coverage to requirements and implementation
+===========================================
+
+.. item-matrix:: Trace design to requirements
+    :source: DESIGN
+    :target: RQT IMPL
+    :sourcetitle: Design
+    :targettitle: Linked Requirements, Linked Implementation
+    :nocaptions:
+    :stats:
+
 Design reverse coverage
 =======================
 
@@ -381,7 +392,7 @@ Design reverse coverage
     :source: DESIGN
     :target: RQT
     :sourcetitle: Design
-    :targettitle: Requirements
+    :targettitle: Linked Requirements
     :nocaptions:
     :stats:
 

@@ -227,44 +227,83 @@ A traceability matrix of documentation items can be generated using:
     .. item-matrix:: Requirements to test case description traceability
         :source: SWRQT
         :target: [IU]TEST
-        :status: Appr
         :sourcetitle: Software requirements
         :targettitle: Integration and unit test cases
         :type: validated_by
+        :status: Appr
         :group: bottom
         :nocaptions:
         :stats:
 
+Documentation items matching their ID to the given *source* regular expression end up in the leftmost column of the
+generated table. Documentation items matching their ID to the given *target* regular expression(s) with a matching
+relationship (see *type* argument) will end up in the right-hand column(s) of the generated table.\
 
-where the *source* and *target* arguments can be replaced by any Python regular expression.
+**Special note on external relations**: This directive allows showing external relationships, but has some
+limitations in doing so:
 
-where *status* can be replaced by any configured attribute, and *Appr* can be replaced by any Python regular
-expression. Only documentation items where the *status* attribute matches the given regular expression end up in
-the *source* part of the matrix. The attribute value is **not** used as a filter on the *target* part.
+  - The external relation needs to be specified explicitly in the *type* option
+  - No regex filtering on target item names is supported.
 
-The *type* argument
-is a space-separated list of relationships that should be matched in the matrix. The *sourcetitle* and *targettitle*
-arguments are the titles of the columns in the generated matrix.
+:source: *optional*, *single argument*
 
-Documentation items matching their ID to the given *source* regular expression end up in the left column of the
-generated table. Documentation items matching their ID to the given *target* regular expression with a matching
-relationship (see *type* argument) will end up in the right column of the generated table.
+    Python-style regular expression used to filter the source items (left column) based on their names.
+    When omitted, no filtering is done on the source item names
 
-By default, the caption for every item in the table is shown. By providing the *nocaptions* flag, the
-caption can be omitted. This gives a smaller table, but also less details.
+:target: *optional*, *multiple arguments (space-separated)*
 
-By providing the *stats* flag, some statistics (coverage percentage) are calculated and displayed above the
-matrix. The plugin counts the number of items having a target item in the target-column (=covered or allocated),
-and the number of items having no target in the target-column (=not covered or allocated). And calculates a
-coverage/allocation percentage from these counts. If the *stats* flag is not given, this percentage is not
-displayed.
+    Python-style regular expression used to filter the target items (right columns) based on their names.
+    Multiple arguments will result in multiple target columns, each filtered by their respective regex.
+    When omitted no regex filtering is done on the target item names
 
-The *group* argument can be used to group source items that don't have any target items. You can explicitly specify to
-have them grouped at the *top* or *bottom* of the matrix. If no argument is given, they will be grouped at the top.
+:sourcetitle: *optional*, *single argument*
 
-Optionally, the *class* attribute can be specified to customize table output, especially useful when rendering to
-LaTeX. Normally the *longtable* class is used when the number of rows is greater than 30 which allows long tables to
-span multiple pages. By setting *class* to *longtable* manually, you can force the use of this environment.
+    Title of the left "Source" column in the matrix. When omitted, the column title defaults to "Source"
+
+:targettitle: *optional*, *multiple arguments (comma-separated)*
+
+    Title(s) of the right "Target" column(s). In case multiple arguments are given for the *target* option, the
+    same amount of *targettitle* arguments must be given.
+    When omitted (only possible if 0 or 1 *target* argument is given), the right column title defaults to "Target"
+
+:type: *optional*, *multiple arguments (space-separated)*
+
+    The list of relationships that should be used to filter the target columns. The relationships considered for
+    filtering are from the "Source" items to the "Target" items.
+    When multiple arguments are provided the target column will show items that match *any* of the given relationships
+    provided. The same filtering is applied to all "Target" columns in the matrix.
+    When omitted all possible relations are considered **except for external relations**.
+
+:status: *optional*, *multiple arguments (space-separated)*
+
+    Python-style regular expression used to filter the source items (left column) based on their attributes.
+    The attribute value is **not** used as a filter on the *target* part.
+    When omitted, no filtering is done on the source item attributes
+
+:group: *optional*, *choice: top/bottom*
+
+    The *group* argument can be used to group source items that don't have any target items. You can explicitly specify to
+    have them grouped at the *top* or *bottom* of the matrix.
+    When omitted the grouping defaults to "top"
+
+:nocaptions: *optional*, *flag*
+
+    By default, the caption for every item in the table is shown. By providing the *nocaptions* flag, the
+    caption can be omitted. This gives a smaller table, but also less details.
+
+:stats: *optional*, *flag*
+
+    By providing the *stats* flag, some statistics (coverage percentage) are calculated and displayed above the
+    matrix. The plugin counts the number of items having a target item in the target-column(s) (=covered or allocated),
+    and the number of items having no target in the target-column(s) (=not covered or allocated). And calculates a
+    coverage/allocation percentage from these counts.
+    When omitted this percentage is not displayed.
+
+:class: *optional*, *single argument*
+
+    The *class* attribute can be specified to customize table output, especially useful when rendering to LaTeX.
+    Normally the *longtable* class is used when the number of rows is greater than 30 which allows long tables to
+    span multiple pages. By setting *class* to *longtable* manually, you can force the use of this environment.
 
 .. _traceability_usage_2d_matrix:
 

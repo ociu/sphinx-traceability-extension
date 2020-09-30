@@ -101,11 +101,14 @@ class ItemTreeDirective(TraceableBaseDirective):
 
         self.process_title(item_tree_node, 'Tree of items')
 
-        self.process_options(item_tree_node,
-                             {'top': '',
-                              'top_relation_filter': [],
-                              'type': [],
-                              })
+        self.process_options(
+            item_tree_node,
+            {
+                'top':                 {'default': ''},
+                'top_relation_filter': {'default': []},
+                'type':                {'default': []},
+            },
+        )
 
         self.add_found_attributes(item_tree_node)
 
