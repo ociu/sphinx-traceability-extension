@@ -200,7 +200,8 @@ The matching attribute values end up as columns in the generated table. Document
 that don't have a value for a certain attribute will have an empty cell at the corresponding location.
 
 By default, the caption for every item in the table is shown. By providing the *nocaptions* flag, the
-caption can be omitted. This gives a smaller table, but also less details.
+caption can be omitted. This gives a smaller table, but also less details. If you only care about the captions and want
+to hide the item IDs, set the *onlycaptions* flag instead.
 
 By default, items are sorted naturally based on their name. With the *sort* argument it is possible to sort on one
 or more attribute values alphabetically. When providing multiple attributes to sort on, the attribute keys are
@@ -384,7 +385,8 @@ the nested bullet list. This action is repeated recursively.
     checks the *item-tree* directives for this mistake!
 
 By default, the caption for every item in the tree is shown. By providing the *nocaptions* flag, the
-caption can be omitted. This gives a smaller tree, but also less details.
+caption can be omitted. This gives a smaller tree, but also less details. If you only care about the captions and want
+to hide the item IDs, set the *onlycaptions* flag instead.
 
 .. _traceability_usage_piechart:
 

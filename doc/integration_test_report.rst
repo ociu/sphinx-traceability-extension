@@ -469,6 +469,13 @@ Succesfull SYS tree
     :type: fulfilled_by
     :nocaptions:
 
+.. item-tree:: SYS (only captions)
+    :top: SYS
+    :top_relation_filter: depends_on
+    :type: fulfilled_by
+    :nocaptions:
+    :onlycaptions:
+
 .. item-tree:: r
     :top: r
     :top_relation_filter: trace
