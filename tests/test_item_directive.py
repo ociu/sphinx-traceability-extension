@@ -34,11 +34,13 @@ class TestItemDirective(TestCase):
         self.app.builder.env.traceability_collection = TraceableCollection()
         self.app.builder.env.traceability_collection.add_item(self.item)
         p_node = self.node.make_internal_item_ref(self.app, self.node['id'])
-
-        self.assertEqual(len(p_node.children[0].children[0].children), 1)
-        self.assertEqual(str(p_node.children[0].children[0]), '<emphasis>some_id</emphasis>')
-        self.assertEqual(p_node.children[0].tagname, 'reference')
-        self.assertEqual(p_node.children[0].children[0].rawsource, 'some_id')
+        ref_node = p_node.children[0]
+        em_node = ref_node.children[0]
+        self.assertEqual(len(em_node.children), 1)
+        self.assertEqual(str(em_node), '<emphasis>some_id</emphasis>')
+        self.assertEqual(ref_node.tagname, 'reference')
+        self.assertEqual(em_node.rawsource, 'some_id')
+        self.assertEqual(str(em_node.children[0]), 'some_id')
 
     def test_make_internal_item_ref_show_caption(self):
         mock_builder = MagicMock(spec=StandaloneHTMLBuilder)
@@ -48,11 +50,32 @@ class TestItemDirective(TestCase):
         self.app.builder.env.traceability_collection.add_item(self.item)
         self.item.set_caption('caption text')
         p_node = self.node.make_internal_item_ref(self.app, self.node['id'])
+        ref_node = p_node.children[0]
+        em_node = ref_node.children[0]
 
-        self.assertEqual(len(p_node.children[0].children[0].children), 1)
-        self.assertEqual(str(p_node.children[0].children[0]), '<emphasis>some_id : caption text</emphasis>')
-        self.assertEqual(p_node.children[0].tagname, 'reference')
-        self.assertEqual(p_node.children[0].children[0].rawsource, 'some_id : caption text')
+        self.assertEqual(len(em_node.children), 1)
+        self.assertEqual(len(em_node.children), 1)
+        self.assertEqual(str(em_node), '<emphasis>some_id : caption text</emphasis>')
+        self.assertEqual(ref_node.tagname, 'reference')
+        self.assertEqual(em_node.rawsource, 'some_id : caption text')
+
+    def test_make_internal_item_ref_only_caption(self):
+        mock_builder = MagicMock(spec=StandaloneHTMLBuilder)
+        mock_builder.env = BuildEnvironment()
+        self.app.builder = mock_builder
+        self.app.builder.env.traceability_collection = TraceableCollection()
+        self.app.builder.env.traceability_collection.add_item(self.item)
+        self.item.set_caption('caption text')
+        self.node['nocaptions'] = True
+        self.node['onlycaptions'] = True
+        p_node = self.node.make_internal_item_ref(self.app, self.node['id'])
+        ref_node = p_node.children[0]
+        em_node = ref_node.children[0]
+
+        self.assertEqual(len(em_node.children), 2)
+        self.assertEqual(str(em_node), '<emphasis classes="has_hidden_caption">caption text<inline classes="popup_caption">some_id</inline></emphasis>')
+        self.assertEqual(ref_node.tagname, 'reference')
+        self.assertEqual(em_node.rawsource, 'caption text')
 
     def test_make_internal_item_ref_hide_caption(self):
         mock_builder = MagicMock(spec=StandaloneHTMLBuilder)
@@ -63,14 +86,16 @@ class TestItemDirective(TestCase):
         self.item.set_caption('caption text')
         self.node['nocaptions'] = True
         p_node = self.node.make_internal_item_ref(self.app, self.node['id'])
+        ref_node = p_node.children[0]
+        em_node = ref_node.children[0]
 
-        self.assertEqual(len(p_node.children[0].children[0].children), 2)
-        self.assertEqual(str(p_node.children[0].children[0]),
+        self.assertEqual(len(em_node.children), 2)
+        self.assertEqual(str(em_node),
                          '<emphasis classes="has_hidden_caption">some_id'
                          '<inline classes="popup_caption">caption text</inline>'
                          '</emphasis>')
-        self.assertEqual(p_node.children[0].tagname, 'reference')
-        self.assertEqual(p_node.children[0].children[0].rawsource, 'some_id')
+        self.assertEqual(ref_node.tagname, 'reference')
+        self.assertEqual(em_node.rawsource, 'some_id')
 
     def test_make_internal_item_ref_hide_caption_latex(self):
         mock_builder = MagicMock(spec=LaTeXBuilder)
@@ -81,11 +106,13 @@ class TestItemDirective(TestCase):
         self.item.set_caption('caption text')
         self.node['nocaptions'] = True
         p_node = self.node.make_internal_item_ref(self.app, self.node['id'])
+        ref_node = p_node.children[0]
+        em_node = ref_node.children[0]
 
-        self.assertEqual(len(p_node.children[0].children[0].children), 1)
-        self.assertEqual(str(p_node.children[0].children[0]), '<emphasis>some_id</emphasis>')
-        self.assertEqual(p_node.children[0].tagname, 'reference')
-        self.assertEqual(p_node.children[0].children[0].rawsource, 'some_id')
+        self.assertEqual(len(em_node.children), 1)
+        self.assertEqual(str(em_node), '<emphasis>some_id</emphasis>')
+        self.assertEqual(ref_node.tagname, 'reference')
+        self.assertEqual(em_node.rawsource, 'some_id')
 
     @parameterized.expand([
        ("ext_toolname", True),
