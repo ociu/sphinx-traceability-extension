@@ -15,7 +15,6 @@ class ItemAttributesMatrix(TraceableBaseNode):
             app: Sphinx application object to use.
             collection (TraceableCollection): Collection for which to generate the nodes.
         """
-        showcaptions = not self['nocaptions']
         item_ids = collection.get_items(self['filter'],
                                         attributes=self['filter-attributes'],
                                         sortattributes=self['sort'],
@@ -30,7 +29,7 @@ class ItemAttributesMatrix(TraceableBaseNode):
         hrow = nodes.row('', nodes.entry('', nodes.paragraph('', '')))
 
         for item_id in item_ids:
-            p_node = self.make_internal_item_ref(app, item_id, showcaptions)  # 1st col
+            p_node = self.make_internal_item_ref(app, item_id)  # 1st col
             if self['transpose']:
                 colspecs.append(nodes.colspec(colwidth=5))
                 hrow.append(nodes.entry('', p_node))
@@ -107,6 +106,8 @@ class ItemAttributesMatrixDirective(TraceableBaseDirective):
          :sort: <attribute>> ...
          :reverse:
          :nocaptions:
+         :onlycaptions:
+         :transpose:
     """
     # Optional argument: title (whitespace allowed)
     optional_arguments = 1
@@ -118,6 +119,7 @@ class ItemAttributesMatrixDirective(TraceableBaseDirective):
         'sort': directives.unchanged,
         'reverse': directives.flag,
         'nocaptions': directives.flag,
+        'onlycaptions': directives.flag,
         'transpose': directives.flag,
     }
     # Content disallowed
@@ -172,6 +174,6 @@ class ItemAttributesMatrixDirective(TraceableBaseDirective):
         self.check_option_presence(node, 'reverse')
         self.check_option_presence(node, 'transpose')
 
-        self.check_no_captions_flag(node, app.config.traceability_attributes_matrix_no_captions)
+        self.check_caption_flags(node, app.config.traceability_attributes_matrix_no_captions)
 
         return [node]
