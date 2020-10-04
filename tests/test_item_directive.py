@@ -73,8 +73,10 @@ class TestItemDirective(TestCase):
         em_node = ref_node.children[0]
 
         self.assertEqual(len(em_node.children), 2)
-        self.assertEqual(str(em_node), '<emphasis classes="has_hidden_caption">'
-            'caption text<inline classes="popup_caption">some_id</inline></emphasis>')
+        self.assertEqual(
+            str(em_node),
+            '<emphasis classes="has_hidden_caption">caption text<inline classes="popup_caption">some_id</inline>'
+            '</emphasis>')
         self.assertEqual(ref_node.tagname, 'reference')
         self.assertEqual(em_node.rawsource, 'caption text')
 
