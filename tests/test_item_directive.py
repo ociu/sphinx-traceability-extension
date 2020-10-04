@@ -33,7 +33,7 @@ class TestItemDirective(TestCase):
         self.app.builder = mock_builder
         self.app.builder.env.traceability_collection = TraceableCollection()
         self.app.builder.env.traceability_collection.add_item(self.item)
-        p_node = self.node.make_internal_item_ref(self.app, self.node['id'], True)
+        p_node = self.node.make_internal_item_ref(self.app, self.node['id'])
 
         self.assertEqual(len(p_node.children[0].children[0].children), 1)
         self.assertEqual(str(p_node.children[0].children[0]), '<emphasis>some_id</emphasis>')
@@ -47,7 +47,7 @@ class TestItemDirective(TestCase):
         self.app.builder.env.traceability_collection = TraceableCollection()
         self.app.builder.env.traceability_collection.add_item(self.item)
         self.item.set_caption('caption text')
-        p_node = self.node.make_internal_item_ref(self.app, self.node['id'], True)
+        p_node = self.node.make_internal_item_ref(self.app, self.node['id'])
 
         self.assertEqual(len(p_node.children[0].children[0].children), 1)
         self.assertEqual(str(p_node.children[0].children[0]), '<emphasis>some_id : caption text</emphasis>')
@@ -61,7 +61,8 @@ class TestItemDirective(TestCase):
         self.app.builder.env.traceability_collection = TraceableCollection()
         self.app.builder.env.traceability_collection.add_item(self.item)
         self.item.set_caption('caption text')
-        p_node = self.node.make_internal_item_ref(self.app, self.node['id'], False)
+        self.node['nocaptions'] = True
+        p_node = self.node.make_internal_item_ref(self.app, self.node['id'])
 
         self.assertEqual(len(p_node.children[0].children[0].children), 2)
         self.assertEqual(str(p_node.children[0].children[0]),
@@ -78,7 +79,8 @@ class TestItemDirective(TestCase):
         self.app.builder.env.traceability_collection = TraceableCollection()
         self.app.builder.env.traceability_collection.add_item(self.item)
         self.item.set_caption('caption text')
-        p_node = self.node.make_internal_item_ref(self.app, self.node['id'], False)
+        self.node['nocaptions'] = True
+        p_node = self.node.make_internal_item_ref(self.app, self.node['id'])
 
         self.assertEqual(len(p_node.children[0].children[0].children), 1)
         self.assertEqual(str(p_node.children[0].children[0]), '<emphasis>some_id</emphasis>')
