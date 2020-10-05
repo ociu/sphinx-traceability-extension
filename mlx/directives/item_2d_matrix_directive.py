@@ -28,7 +28,7 @@ class Item2DMatrix(TraceableBaseNode):
         hrow = nodes.row('', nodes.entry('', nodes.paragraph('', '')))
         for source_id in source_ids:
             colspecs.append(nodes.colspec(colwidth=5))
-            src_cell = self.make_internal_item_ref(app, source_id, False)
+            src_cell = self.make_internal_item_ref(app, source_id)
             hrow.append(nodes.entry('', src_cell))
         tgroup += colspecs
         tgroup += nodes.thead('', hrow)
@@ -36,7 +36,7 @@ class Item2DMatrix(TraceableBaseNode):
         for target_id in target_ids:
             row = nodes.row()
             tgt_cell = nodes.entry()
-            tgt_cell += self.make_internal_item_ref(app, target_id, False)
+            tgt_cell += self.make_internal_item_ref(app, target_id)
             row += tgt_cell
             for source_id in source_ids:
                 cell = nodes.entry()

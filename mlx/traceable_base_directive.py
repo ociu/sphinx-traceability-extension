@@ -78,14 +78,19 @@ class TraceableBaseDirective(Directive, ABC):
                 report_warning('Traceability: unknown relation for %s: %s' % (self.name, rel),
                                env.docname, self.lineno)
 
-    def check_no_captions_flag(self, node, no_captions_config):
-        """ Checks the nocaptions flag.
+    def check_caption_flags(self, node, no_captions_config):
+        """ Checks the nocaptions and onlycaptions flags.
 
         Args:
             node (TraceableBaseNode): Node object for which to set the nocaptions flag.
             no_captions_config (bool): Value for nocaptions option in configuration.
         """
-        node['nocaptions'] = bool(no_captions_config or 'nocaptions' in self.options)
+        if 'onlycaptions' in self.options:
+            node['nocaptions'] = False
+            node['onlycaptions'] = True
+        else:
+            node['nocaptions'] = bool(no_captions_config or 'nocaptions' in self.options)
+            node['onlycaptions'] = False
 
     def process_options(self, node, options, docname=None):
         """ Processes given options.

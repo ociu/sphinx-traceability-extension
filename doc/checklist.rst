@@ -44,7 +44,7 @@ Checklist items
 
     Checklist item with hidden caption.
 
-.. checklist-item:: CL-ANOTHER_ONE Another checklist item
+.. checklist-item:: CL-ANOTHER_ONE
 
     Checklist items inherit from regular items.
 
@@ -60,7 +60,9 @@ Matrices of checklist items
 .. item-attributes-matrix:: Questions and answers
     :filter: QUE-
     :attributes: checked
+    :onlycaptions:
 
 .. item-attributes-matrix:: Checklist attribute matrix
     :filter: ^CL-
     :attributes: checked
+    :onlycaptions:

@@ -92,8 +92,7 @@ class Item(TraceableBaseNode):
             if self.is_relation_external(relation):
                 link = self.make_external_item_ref(app, target, relation)
             else:
-                showcaptions = not self['nocaptions']
-                link = self.make_internal_item_ref(app, target, showcaptions)
+                link = self.make_internal_item_ref(app, target)
             p_node.append(link)
             dd_node.append(p_node)
             li_node.append(dd_node)
@@ -163,7 +162,7 @@ class ItemDirective(TraceableBaseDirective):
             template.append('    ' + line)
         self.state_machine.insert_input(template, self.state_machine.document.attributes['source'])
 
-        self.check_no_captions_flag(item_node, app.config.traceability_item_no_captions)
+        self.check_caption_flags(item_node, app.config.traceability_item_no_captions)
 
         return [target_node, item_node]
 

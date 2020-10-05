@@ -30,8 +30,7 @@ class TraceableBaseNode(nodes.General, nodes.Element, ABC):
         admon_node['classes'].append('item')
         title_node = nodes.title()
         if app:
-            showcaptions = not self['nocaptions']
-            title_node += self.make_internal_item_ref(app, title, showcaptions).children[0]
+            title_node += self.make_internal_item_ref(app, title).children[0]
         else:
             title_node += nodes.Text(title)
         admon_node += title_node
@@ -47,7 +46,7 @@ class TraceableBaseNode(nodes.General, nodes.Element, ABC):
             collection (TraceableCollection): Collection for which to generate the nodes.
         """
 
-    def make_internal_item_ref(self, app, item_id, show_caption=True):
+    def make_internal_item_ref(self, app, item_id):
         """
         Creates a reference node for an item, embedded in a
         paragraph. Reference text adds also a caption if it exists.
@@ -68,10 +67,10 @@ class TraceableBaseNode(nodes.General, nodes.Element, ABC):
                 p_node.append(txt)
                 return p_node
 
-        caption, caption_on_hover = self._get_caption_info(item_info, show_caption=show_caption)
+        display_text, text_on_hover_node = self._get_caption_info(item_info)
 
         newnode = nodes.reference('', '')
-        innernode = nodes.emphasis(item_id + caption, item_id + caption)
+        innernode = nodes.emphasis(display_text, display_text)
         try:
             if not notification_item:
                 newnode['refuri'] = app.builder.get_relative_uri(self['document'], item_info.docname)
@@ -90,9 +89,9 @@ class TraceableBaseNode(nodes.General, nodes.Element, ABC):
         if colors:
             class_name = app.config.traceability_class_names[colors]
             newnode['classes'].append(class_name)
-        if caption_on_hover and not isinstance(app.builder, LaTeXBuilder):
+        if text_on_hover_node and not isinstance(app.builder, LaTeXBuilder):
             innernode['classes'].append('has_hidden_caption')
-            innernode.append(caption_on_hover)  # set to hidden in traceability.js
+            innernode.append(text_on_hover_node)  # set to hidden in traceability.js
         newnode.append(innernode)
         p_node += newnode
 
@@ -201,28 +200,30 @@ class TraceableBaseNode(nodes.General, nodes.Element, ABC):
                 return tuple(colors)
         return None
 
-    @staticmethod
-    def _get_caption_info(item_info, show_caption=True):
-        """ Gets either the caption or the caption to show on hover, depending on the item's configuration.
+    def _get_caption_info(self, item_info):
+        """ Determines the text to show and the text to show on hover, depending on the item's configuration.
 
         Args:
             item_info (TraceableItem): TraceableItem object.
-            show_caption (bool): True if the caption should always be shown, False to only show caption on hover.
 
         Returns:
-            str: Caption to append to the item's ID, or empty string when item has no caption or it is configured to be
-                shown on hover
-            nodes.inline/None: Inline node containing the item's caption, or None if caption should always be shown.
+            str: Text to display; contains item ID and/or caption
+            nodes.inline/None: Inline node containing the item's caption or ID to be shown on hover, or None to not
+                show anything on hover.
         """
-        caption = ''
-        caption_on_hover = None
+        display_text = item_info.id
+        hidden_node = None
         if item_info and item_info.caption:
-            if show_caption:
-                caption = ' : {}'.format(item_info.caption)
+            if self.get('onlycaptions'):
+                display_text = item_info.caption
+                hidden_node = nodes.inline('', item_info.id)
+                hidden_node['classes'].append('popup_caption')
+            elif not self.get('nocaptions'):
+                display_text = '{0.id} : {0.caption}'.format(item_info)
             else:
-                caption_on_hover = nodes.inline('', item_info.caption)
-                caption_on_hover['classes'].append('popup_caption')
-        return caption, caption_on_hover
+                hidden_node = nodes.inline('', item_info.caption)
+                hidden_node['classes'].append('popup_caption')
+        return display_text, hidden_node
 
     def has_warned_about_undefined(self, item_info):
         """

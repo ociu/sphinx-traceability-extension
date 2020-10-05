@@ -18,7 +18,6 @@ class ItemTree(TraceableBaseNode):
             collection (TraceableCollection): Collection for which to generate the nodes.
         """
         top_item_ids = collection.get_items(self['top'], self['filter-attributes'])
-        showcaptions = not self['nocaptions']
         top_node = self.create_top_node(self['title'])
         if isinstance(app.builder, LaTeXBuilder):
             p_node = nodes.paragraph()
@@ -27,13 +26,13 @@ class ItemTree(TraceableBaseNode):
         else:
             ul_node = nodes.bullet_list()
             ul_node.set_class('bonsai')
-            for i in top_item_ids:
-                if self.is_item_top_level(app.env, i):
-                    ul_node.append(self._generate_bullet_list_tree(app, collection, i, showcaptions))
+            for id_ in top_item_ids:
+                if self.is_item_top_level(app.env, id_):
+                    ul_node.append(self._generate_bullet_list_tree(app, collection, id_))
             top_node += ul_node
         self.replace_self(top_node)
 
-    def _generate_bullet_list_tree(self, app, collection, item_id, captions=True):
+    def _generate_bullet_list_tree(self, app, collection, item_id):
         '''
         Generates a bullet list tree for the given item ID.
 
@@ -46,7 +45,7 @@ class ItemTree(TraceableBaseNode):
         p_node = nodes.paragraph()
         p_node.set_class('thumb')
         bullet_list_item.append(p_node)
-        bullet_list_item.append(self.make_internal_item_ref(app, item_id, captions))
+        bullet_list_item.append(self.make_internal_item_ref(app, item_id))
         bullet_list_item.set_class('has-children')
         bullet_list_item.set_class('collapsed')
         childcontent = nodes.bullet_list()
@@ -57,7 +56,7 @@ class ItemTree(TraceableBaseNode):
             for target in tgts:
                 # print('%s has child %s for relation %s' % (item_id, target, relation))
                 if collection.get_item(target).attributes_match(self['filter-attributes']):
-                    childcontent.append(self._generate_bullet_list_tree(app, collection, target, captions))
+                    childcontent.append(self._generate_bullet_list_tree(app, collection, target))
         bullet_list_item.append(childcontent)
         return bullet_list_item
 
@@ -75,6 +74,7 @@ class ItemTreeDirective(TraceableBaseDirective):
          :<<attribute>>: regexp
          :type: <<relationship>> ...
          :nocaptions:
+         :onlycaptions:
 
     """
     # Optional argument: title (whitespace allowed)
@@ -86,6 +86,7 @@ class ItemTreeDirective(TraceableBaseDirective):
         'top_relation_filter': directives.unchanged,  # a string with relationship types separated by space
         'type': directives.unchanged,  # a string with relationship types separated by space
         'nocaptions': directives.flag,
+        'onlycaptions': directives.flag,
     }
     # Content disallowed
     has_content = False
@@ -126,6 +127,6 @@ class ItemTreeDirective(TraceableBaseDirective):
                                env.docname, self.lineno)
                 raise ValueError('Traceability: combination of forward+reverse relations for item-tree: %s' % rel)
 
-        self.check_no_captions_flag(item_tree_node, app.config.traceability_tree_no_captions)
+        self.check_caption_flags(item_tree_node, app.config.traceability_tree_no_captions)
 
         return [item_tree_node]

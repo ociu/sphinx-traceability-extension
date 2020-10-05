@@ -25,7 +25,6 @@ class ItemMatrix(TraceableBaseNode):
         # column
         number_of_columns = max(2, len(self['target']) + 1)
         Rows = namedtuple('Rows', "covered uncovered")
-        showcaptions = not self['nocaptions']
         source_ids = collection.get_items(self['source'], self['filter-attributes'])
         targets_with_ids = []
         for target_regex in self['target']:
@@ -68,7 +67,7 @@ class ItemMatrix(TraceableBaseNode):
             covered = False
             row = nodes.row()
             left = nodes.entry()
-            left += self.make_internal_item_ref(app, source_id, showcaptions)
+            left += self.make_internal_item_ref(app, source_id)
             rights = [nodes.entry('') for _ in range(number_of_columns - 1)]
             for ext_relationship in external_relationships:
                 for target_id in source_item.iter_targets(ext_relationship):
@@ -78,7 +77,7 @@ class ItemMatrix(TraceableBaseNode):
             for idx, target_ids in enumerate(targets_with_ids):
                 for target_id in target_ids:
                     if collection.are_related(source_id, relationships, target_id):
-                        rights[idx] += self.make_internal_item_ref(app, target_id, showcaptions)
+                        rights[idx] += self.make_internal_item_ref(app, target_id)
                         covered = True
 
             row += left
@@ -204,6 +203,6 @@ class ItemMatrixDirective(TraceableBaseDirective):
 
         self.check_option_presence(item_matrix_node, 'stats')
 
-        self.check_no_captions_flag(item_matrix_node, app.config.traceability_matrix_no_captions)
+        self.check_caption_flags(item_matrix_node, app.config.traceability_matrix_no_captions)
 
         return [item_matrix_node]

@@ -16,14 +16,13 @@ class ItemList(TraceableBaseNode):
             collection (TraceableCollection): Collection for which to generate the nodes.
         """
         item_ids = collection.get_items(self['filter'], self['filter-attributes'])
-        showcaptions = not self['nocaptions']
         top_node = self.create_top_node(self['title'])
         if item_ids:
             ul_node = nodes.bullet_list()
             for i in item_ids:
                 bullet_list_item = nodes.list_item()
                 p_node = nodes.paragraph()
-                p_node.append(self.make_internal_item_ref(app, i, showcaptions))
+                p_node.append(self.make_internal_item_ref(app, i))
                 bullet_list_item.append(p_node)
                 ul_node.append(bullet_list_item)
             top_node += ul_node
@@ -74,6 +73,6 @@ class ItemListDirective(TraceableBaseDirective):
 
         self.add_found_attributes(item_list_node)
 
-        self.check_no_captions_flag(item_list_node, app.config.traceability_list_no_captions)
+        self.check_caption_flags(item_list_node, app.config.traceability_list_no_captions)
 
         return [item_list_node]
