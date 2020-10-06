@@ -18,7 +18,6 @@ from sphinx.errors import NoUri
 from docutils import nodes
 from docutils.parsers.rst import directives
 
-from mlx.jira_interaction import create_jira_issues
 from mlx.traceable_attribute import TraceableAttribute
 from mlx.traceable_base_node import TraceableBaseNode
 from mlx.traceable_item import TraceableItem
@@ -107,21 +106,6 @@ def warn_missing_checklist_items(regex):
             item_info = ChecklistItemDirective.query_results.pop(item_id)
             report_warning("List item {!r} in merge/pull request {} is not defined as a checklist-item."
                            .format(item_id, item_info.mr_id))
-
-
-def jira_interaction(app):
-    """ Execute the functionality that creates Jira tickets based on traceable items.
-
-    Args:
-        app: Sphinx application object to use.
-    """
-    try:
-        create_jira_issues(app.config.traceability_jira_automation, app.builder.env.traceability_collection)
-    except Exception as err:  # pylint: disable=broad-except
-        if app.config.traceability_jira_automation.get('errors_to_warnings', True):
-            report_warning("Jira interaction failed: {}".format(err))
-        else:
-            raise err
 
 
 # -----------------------------------------------------------------------------
@@ -235,9 +219,6 @@ def perform_consistency_check(app, doctree):
     regex = app.config.traceability_checklist.get('checklist_item_regex')
     if regex is not None and app.config.traceability_checklist['has_checklist_items']:
         warn_missing_checklist_items(regex)
-
-    if app.config.traceability_jira_automation:
-        jira_interaction(app)
 
 
 def process_item_nodes(app, doctree, fromdocname):
@@ -588,9 +569,6 @@ def setup(app):
 
     # Configuration for notification item about missing items
     app.add_config_value('traceability_notifications', {}, 'env')
-
-    # Configuration for automated issue creation in JIRA
-    app.add_config_value('traceability_jira_automation', {}, 'env')
 
     app.add_node(ItemTree)
     app.add_node(ItemMatrix)
