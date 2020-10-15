@@ -51,8 +51,6 @@ class AttributeSortDirective(TraceableBaseDirective):
         node = AttributeSort('')
         node['document'] = env.docname
         node['line'] = self.lineno
-        node['filter'] = r"\S+"
-        node['sort'] = []
 
         self.process_options(
             node,
