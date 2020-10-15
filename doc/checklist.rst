@@ -53,6 +53,10 @@ Checklist items
     The item ID is present in the queried PR description, but won't get the configured checklist-attribute added since
     it's defined with the regular *item* directive.
 
+.. attribute-link::
+    :filter: CL-
+    :asil: A
+
 ---------------------------
 Matrices of checklist items
 ---------------------------
@@ -64,5 +68,5 @@ Matrices of checklist items
 
 .. item-attributes-matrix:: Checklist attribute matrix
     :filter: ^CL-
-    :attributes: checked
+    :attributes: checked asil
     :onlycaptions:
