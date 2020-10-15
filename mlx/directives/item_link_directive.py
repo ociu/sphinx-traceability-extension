@@ -47,9 +47,6 @@ class ItemLinkDirective(TraceableBaseDirective):
         node = ItemLink('')
         node['document'] = env.docname
         node['line'] = self.lineno
-        node['sources'] = []
-        node['targets'] = []
-        node['type'] = None
 
         process_options_success = self.process_options(
             node,
