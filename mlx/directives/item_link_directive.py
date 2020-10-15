@@ -7,7 +7,7 @@ from mlx.traceable_base_node import TraceableBaseNode
 
 
 class ItemLink(TraceableBaseNode):
-    '''List of documentation items'''
+    '''Linking of documentation items'''
 
     def perform_replacement(self, app, collection):
         """ Processes the item-link items. The ItemLink node has no final representation, so is removed from the tree.
