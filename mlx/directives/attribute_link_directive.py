@@ -36,7 +36,7 @@ class AttributeLinkDirective(TraceableBaseDirective):
 
     Syntax::
 
-      .. attribute-sort::
+      .. attribute-link::
          :filter: regex
          :<<attribute>>: attribute_value
     """
