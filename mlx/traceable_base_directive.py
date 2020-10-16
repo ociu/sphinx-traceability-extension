@@ -71,10 +71,9 @@ class TraceableBaseDirective(Directive, ABC):
             relationships (list): List of relationships (str).
             env (sphinx.environment.BuildEnvironment): Sphinx's build environment.
         """
-        for rel in relationships:
-            if rel not in env.traceability_collection.relations:
-                report_warning('Traceability: unknown relation for %s: %s' % (self.name, rel),
-                               env.docname, self.lineno)
+        for rel in set(relationships) - set(env.traceability_collection.relations):
+            report_warning('Traceability: unknown relation for %s: %s' % (self.name, rel),
+                           env.docname, self.lineno)
 
     def check_caption_flags(self, node, no_captions_config):
         """ Checks the nocaptions and onlycaptions flags.
