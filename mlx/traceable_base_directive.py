@@ -10,7 +10,7 @@ class TraceableBaseDirective(Directive, ABC):
     """ Base class for all Traceability directives. """
 
     final_argument_whitespace = True
-    conflicting_options = []
+    conflicting_options = set()
 
     @abstractmethod
     def run(self):
@@ -48,9 +48,8 @@ class TraceableBaseDirective(Directive, ABC):
             node (TraceableBaseNode): Node object for which to add found attributes to.
         """
         node['filter-attributes'] = {}
-        for attr in TraceableItem.defined_attributes:
-            if attr in self.options and attr not in self.conflicting_options:
-                node['filter-attributes'][attr] = self.options[attr]
+        for attr in set(TraceableItem.defined_attributes) & set(self.options) - self.conflicting_options:
+            node['filter-attributes'][attr] = self.options[attr]
 
     def remove_unknown_attributes(self, attributes, description, docname):
         """ Removes any unknown attributes from the given list while reporting a warning.

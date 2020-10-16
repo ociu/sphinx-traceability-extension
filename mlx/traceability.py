@@ -286,7 +286,7 @@ def init_available_relationships(app):
         for directive_class in directive_classes:
             if attr in directive_class.option_spec:
                 conflicting_directives.append(directive_class.__name__)
-                directive_class.conflicting_options.append(attr)
+                directive_class.conflicting_options.add(attr)
             else:
                 directive_class.option_spec[attr] = directives.unchanged
         define_attribute(attr, app)
