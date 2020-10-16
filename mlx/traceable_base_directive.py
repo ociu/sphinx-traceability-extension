@@ -59,11 +59,10 @@ class TraceableBaseDirective(Directive, ABC):
             description (str): Description of an element in the attributes list.
             docname (str): Document name.
         """
-        for attr in attributes:
-            if attr not in TraceableItem.defined_attributes:
-                report_warning('Traceability: unknown %s for item-attributes-matrix: %s' % (description, attr),
-                               docname, self.lineno)
-                attributes.remove(attr)
+        for attr in set(attributes) - set(TraceableItem.defined_attributes):
+            report_warning('Traceability: unknown %s for item-attributes-matrix: %s' % (description, attr),
+                           docname, self.lineno)
+            attributes.remove(attr)
 
     def check_relationships(self, relationships, env):
         """  Checks if given relationships are in configuration.
