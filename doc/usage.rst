@@ -119,7 +119,7 @@ items *RQT-1* and *RQT-11*, but you only want to add an attribute to item *RQT-1
 should use the ``filter`` option with value *RQT-1$*. If the ``filter`` option is missing,
 all items will be affected.
 
-This directive overwrites any attribute values configured in the `item` directive.
+.. note:: This directive overwrites any attribute values configured in the ``item`` directive.
 
 --------------------------------
 Adding description to attributes
