@@ -224,9 +224,8 @@ class ItemDirective(TraceableBaseDirective):
             item (TraceableItem): Item to add the attributes to.
             docname (str): Document name.
         """
-        for attribute in TraceableItem.defined_attributes:
-            if attribute in self.options:
-                try:
-                    item.add_attribute(attribute, self.options[attribute])
-                except TraceabilityException as err:
-                    report_warning(err, docname, self.lineno)
+        for attribute in set(TraceableItem.defined_attributes) & set(self.options) - self.conflicting_options:
+            try:
+                item.add_attribute(attribute, self.options[attribute])
+            except TraceabilityException as err:
+                report_warning(err, docname, self.lineno)
