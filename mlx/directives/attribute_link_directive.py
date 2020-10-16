@@ -3,7 +3,6 @@ from docutils.parsers.rst import directives
 from mlx.traceability_exception import TraceabilityException, report_warning
 from mlx.traceable_base_directive import TraceableBaseDirective
 from mlx.traceable_base_node import TraceableBaseNode
-from mlx.traceable_item import TraceableItem
 
 
 class AttributeLink(TraceableBaseNode):
