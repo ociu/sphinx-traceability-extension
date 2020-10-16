@@ -42,7 +42,6 @@ class AttributeLinkDirective(TraceableBaseDirective):
     """
     # Options
     option_spec = {
-        'class': directives.class_option,
         'filter': directives.unchanged,
     }
     # Content disallowed
