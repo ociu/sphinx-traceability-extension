@@ -191,11 +191,10 @@ class ItemDirective(TraceableBaseDirective):
 
         # Add found relationships to item. All relationship data is a string of
         # item ids separated by space. It is split in a list of item ids.
-        for rel in env.traceability_collection.relations:
-            if rel in self.options:
-                self._warn_if_comma_separated(rel, env.docname)
-                related_ids = self.options[rel].split()
-                self._add_relation_to_ids(rel, target_id, related_ids, env)
+        for rel in set(env.traceability_collection.relations) & set(self.options):
+            self._warn_if_comma_separated(rel, env.docname)
+            related_ids = self.options[rel].split()
+            self._add_relation_to_ids(rel, target_id, related_ids, env)
 
         return target_node
 
