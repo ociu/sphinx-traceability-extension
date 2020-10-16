@@ -19,7 +19,7 @@ class AttributeLink(TraceableBaseNode):
             collection (TraceableCollection): Collection for which to generate the nodes.
         """
         filtered_item_ids = collection.get_items(self['filter'])
-        for attribute, value in self['attributes'].items():
+        for attribute, value in self['filter-attributes'].items():
             for item_id in filtered_item_ids:
                 item = collection.get_item(item_id)
                 try:
@@ -62,10 +62,6 @@ class AttributeLinkDirective(TraceableBaseDirective):
                 'filter': {'default': r"\S+"},
             },
         )
-
-        node['attributes'] = {}
-        for attribute in TraceableItem.defined_attributes:
-            if attribute in self.options:
-                node['attributes'][attribute] = self.options[attribute]
+        self.add_found_attributes(node)
 
         return [node]
