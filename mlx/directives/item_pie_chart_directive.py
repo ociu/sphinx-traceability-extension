@@ -299,18 +299,17 @@ class ItemPieChartDirective(TraceableBaseDirective):
     def _process_attribute(self, node):
         """
         Processes the <<attribute>> option. Attribute data is a comma-separated list of attribute values.
-        A warning is reported when this option is given while the id_set does not contan 3 IDs.
+        A warning is reported when this option is given while the id_set does not contain 3 IDs.
         """
         node['attribute'] = ''
         node['priorities'] = []
-        for attr in TraceableItem.defined_attributes:
-            if attr in self.options:
-                if len(node['id_set']) == 3:
-                    node['attribute'] = attr
-                    node['priorities'] = [x.strip(' ') for x in self.options[attr].split(',')]
-                else:
-                    report_warning('Traceability: The <<attribute>> option is only viable with an id_set with 3 '
-                                   'arguments.',
-                                   node['document'],
-                                   node['line'],)
-                break
+        for attr in set(TraceableItem.defined_attributes) & set(self.options):
+            if len(node['id_set']) == 3:
+                node['attribute'] = attr
+                node['priorities'] = [x.strip(' ') for x in self.options[attr].split(',')]
+            else:
+                report_warning('Traceability: The <<attribute>> option is only viable with an id_set with 3 '
+                               'arguments.',
+                               node['document'],
+                               node['line'],)
+            break  # only one <<attribute>> option is valid
