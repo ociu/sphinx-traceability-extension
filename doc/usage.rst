@@ -96,6 +96,29 @@ This directive has no representation in the documentation build output. It will
 just add an additional relationship to the items mentioned in ``sources`` and
 ``targets``.
 
+-------------------------------------------------
+Adding attributes outside of the item definitions
+-------------------------------------------------
+
+In some cases, it's useful to add attributes outside of the definition of the items
+involved. In that case, you can use the ``attribute-link`` directive as follows:
+
+.. code-block:: rest
+
+    .. attribute-link::
+        :filter: RQT-
+        :asil: D
+        :status: Approved
+
+This directive has no representation in the documentation build output. It will
+just add an additional attribute(s) to the items of which their ID.
+
+In the above example, the *asil* and *status* attributes with given values get
+added to all items that have an ID that starts with *RQT-*. If your documentation defines
+items *RQT-1* and *RQT-11*, but you only want to add an attribute to item *RQT-1*, you
+should use the ``filter`` option with value *RQT-1$*. If the ``filter`` option is missing,
+all items will be affected.
+
 --------------------------------
 Adding description to attributes
 --------------------------------
