@@ -10,7 +10,7 @@ class TraceableBaseDirective(Directive, ABC):
     """ Base class for all Traceability directives. """
 
     final_argument_whitespace = True
-    conflicting_options = []
+    conflicting_options = set()
 
     @abstractmethod
     def run(self):
@@ -48,9 +48,8 @@ class TraceableBaseDirective(Directive, ABC):
             node (TraceableBaseNode): Node object for which to add found attributes to.
         """
         node['filter-attributes'] = {}
-        for attr in TraceableItem.defined_attributes:
-            if attr in self.options and attr not in self.conflicting_options:
-                node['filter-attributes'][attr] = self.options[attr]
+        for attr in set(TraceableItem.defined_attributes) & set(self.options) - self.conflicting_options:
+            node['filter-attributes'][attr] = self.options[attr]
 
     def remove_unknown_attributes(self, attributes, description, docname):
         """ Removes any unknown attributes from the given list while reporting a warning.
@@ -60,11 +59,10 @@ class TraceableBaseDirective(Directive, ABC):
             description (str): Description of an element in the attributes list.
             docname (str): Document name.
         """
-        for attr in attributes:
-            if attr not in TraceableItem.defined_attributes:
-                report_warning('Traceability: unknown %s for item-attributes-matrix: %s' % (description, attr),
-                               docname, self.lineno)
-                attributes.remove(attr)
+        for attr in set(attributes) - set(TraceableItem.defined_attributes):
+            report_warning('Traceability: unknown %s for item-attributes-matrix: %s' % (description, attr),
+                           docname, self.lineno)
+            attributes.remove(attr)
 
     def check_relationships(self, relationships, env):
         """  Checks if given relationships are in configuration.
@@ -73,10 +71,9 @@ class TraceableBaseDirective(Directive, ABC):
             relationships (list): List of relationships (str).
             env (sphinx.environment.BuildEnvironment): Sphinx's build environment.
         """
-        for rel in relationships:
-            if rel not in env.traceability_collection.relations:
-                report_warning('Traceability: unknown relation for %s: %s' % (self.name, rel),
-                               env.docname, self.lineno)
+        for rel in set(relationships) - set(env.traceability_collection.relations):
+            report_warning('Traceability: unknown relation for %s: %s' % (self.name, rel),
+                           env.docname, self.lineno)
 
     def check_caption_flags(self, node, no_captions_config):
         """ Checks the nocaptions and onlycaptions flags.

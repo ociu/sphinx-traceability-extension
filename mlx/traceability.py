@@ -23,6 +23,7 @@ from mlx.traceable_base_node import TraceableBaseNode
 from mlx.traceable_item import TraceableItem
 from mlx.traceable_collection import TraceableCollection
 from mlx.traceability_exception import TraceabilityException, MultipleTraceabilityExceptions, report_warning
+from mlx.directives.attribute_link_directive import AttributeLink, AttributeLinkDirective
 from mlx.directives.attribute_sort_directive import AttributeSort, AttributeSortDirective
 from mlx.directives.checkbox_result_directive import CheckboxResultDirective
 from mlx.directives.checklist_item_directive import ChecklistItemDirective
@@ -229,9 +230,19 @@ def process_item_nodes(app, doctree, fromdocname):
     Augment each item with a backlink to the original location.
     """
     env = app.builder.env
-
-    for node_class in (AttributeSort, ItemLink, ItemMatrix, ItemPieChart, ItemAttributesMatrix, Item2DMatrix, ItemList,
-                       ItemTree, ItemAttribute, Item):  # order is important: e.g. AttributeSort before Item
+    node_classes = (
+        AttributeLink,
+        AttributeSort,
+        ItemLink, ItemMatrix,
+        ItemPieChart,
+        ItemAttributesMatrix,
+        Item2DMatrix,
+        ItemList,
+        ItemTree,
+        ItemAttribute,
+        Item,
+    )
+    for node_class in node_classes:  # order is important: e.g. AttributeSort before Item
         for node in doctree.traverse(node_class):
             node.perform_replacement(app, env.traceability_collection)
 
@@ -267,6 +278,7 @@ def init_available_relationships(app):
         ItemAttributesMatrixDirective,
         Item2DMatrixDirective,
         ItemTreeDirective,
+        AttributeLinkDirective,
     )
 
     for attr in app.config.traceability_attributes:
@@ -274,7 +286,7 @@ def init_available_relationships(app):
         for directive_class in directive_classes:
             if attr in directive_class.option_spec:
                 conflicting_directives.append(directive_class.__name__)
-                directive_class.conflicting_options.append(attr)
+                directive_class.conflicting_options.add(attr)
             else:
                 directive_class.option_spec[attr] = directives.unchanged
         define_attribute(attr, app)
@@ -591,6 +603,7 @@ def setup(app):
     app.add_directive('item-2d-matrix', Item2DMatrixDirective)
     app.add_directive('item-tree', ItemTreeDirective)
     app.add_directive('item-link', ItemLinkDirective)
+    app.add_directive('attribute-link', AttributeLinkDirective)
     app.add_directive('attribute-sort', AttributeSortDirective)
 
     app.connect('doctree-resolved', process_item_nodes)
