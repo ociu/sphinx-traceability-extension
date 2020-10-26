@@ -260,7 +260,7 @@ class TraceableCollection:
             relations (list): list of relations, empty list for wildcard
             target_id (str): id of the target item
         Returns:
-            (boolean) True if both items are related through the given relationships, false otherwise
+            bool: True if both items are related through the given relationships, false otherwise
         '''
         if source_id not in self.items:
             return False
@@ -288,7 +288,7 @@ class TraceableCollection:
             sortattributes (list): List of attributes on which to alphabetically sort the items
             reverse (bool): True for reverse sorting
         Returns:
-            A sorted list of item-id's matching the given regex. Sorting is done naturally when sortattributes is
+            list: A sorted list of item-id's matching the given regex. Sorting is done naturally when sortattributes is
             unused.
         '''
         matches = []
