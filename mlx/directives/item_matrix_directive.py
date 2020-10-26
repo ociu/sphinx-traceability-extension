@@ -1,3 +1,4 @@
+import re
 from collections import namedtuple
 from docutils import nodes
 from docutils.parsers.rst import directives
@@ -24,7 +25,7 @@ class ItemMatrix(TraceableBaseNode):
         # number_of_columns to 2 (one source, one target). In other cases, it's the number of target settings + 1 source
         # column
         number_of_columns = max(2, len(self['target']) + 1)
-        Rows = namedtuple('Rows', "covered uncovered")
+        Rows = namedtuple('Rows', "sorted covered uncovered")
         source_ids = collection.get_items(self['source'], self['filter-attributes'])
         targets_with_ids = []
         for target_regex in self['target']:
@@ -58,48 +59,58 @@ class ItemMatrix(TraceableBaseNode):
         else:
             external_relationships = [rel for rel in relationships if self.is_relation_external(rel)]
 
-        count_total = 0
+        ext_relations_to_target_map = {}
+        for relation in external_relationships:
+            ext_targets_to_item_ids = collection.get_external_targets(self['source'], relation)
+            ext_relations_to_target_map[relation] = ext_targets_to_item_ids
+
         count_covered = 0
-        rows_container = Rows([], [])
+        rows = Rows([], [], [])
         for source_id in source_ids:
             source_item = collection.get_item(source_id)
-            count_total += 1
             covered = False
-            row = nodes.row()
             left = nodes.entry()
             left += self.make_internal_item_ref(app, source_id)
             rights = [nodes.entry('') for _ in range(number_of_columns - 1)]
             for ext_relationship in external_relationships:
                 for target_id in source_item.iter_targets(ext_relationship):
-                    for i in range(number_of_columns - 1):
-                        rights[i] += self.make_external_item_ref(app, target_id, ext_relationship)
+                    ext_item_ref = self.make_external_item_ref(app, target_id, ext_relationship)
+                    for right in rights:
+                        right += ext_item_ref
                     covered = True
             for idx, target_ids in enumerate(targets_with_ids):
                 for target_id in target_ids:
                     if collection.are_related(source_id, relationships, target_id):
                         rights[idx] += self.make_internal_item_ref(app, target_id)
                         covered = True
+            self._store_row(rows, left, rights, covered)
 
-            row += left
-            for right in rights:
-                row += right
+        for ext_rel, ext_targets_to_item_ids in ext_relations_to_target_map.items():
+            for ext_source, item_ids in ext_targets_to_item_ids.items():
+                covered = False
+                left = nodes.entry()
+                left += self.make_external_item_ref(app, ext_source, ext_rel)
+                rights = [nodes.entry('') for _ in range(number_of_columns - 1)]
+                for idx, target_regex in enumerate(self['target']):
+                    for target_id in item_ids:
+                        if re.match(target_regex, target_id):
+                            rights[idx] += self.make_internal_item_ref(app, target_id)
+                            covered = True
 
-            if covered:
-                count_covered += 1
-                rows_container.covered.append(row)
-            else:
-                rows_container.uncovered.append(row)
+                self._store_row(rows, left, rights, covered)
 
-            if not self['group']:
-                tbody += row
 
-        if self['group'] == 'top':
-            tbody += rows_container.uncovered
-            tbody += rows_container.covered
+        if not self['group']:
+            tbody += rows.sorted
+        elif self['group'] == 'top':
+            tbody += rows.uncovered
+            tbody += rows.covered
         elif self['group'] == 'bottom':
-            tbody += rows_container.covered
-            tbody += rows_container.uncovered
+            tbody += rows.covered
+            tbody += rows.uncovered
 
+        count_total = len(rows.sorted)
+        count_covered = len(rows.covered)
         try:
             percentage = int(100 * count_covered / count_total)
         except ZeroDivisionError:
@@ -115,6 +126,19 @@ class ItemMatrix(TraceableBaseNode):
 
         top_node += table
         self.replace_self(top_node)
+
+    @staticmethod
+    def _store_row(rows, left, rights, covered):
+        row = nodes.row()
+        row += left
+        for right in rights:  # TODO refactor
+            row += right
+
+        rows.sorted.append(row)
+        if covered:
+            rows.covered.append(row)
+        else:
+            rows.uncovered.append(row)
 
 
 class ItemMatrixDirective(TraceableBaseDirective):

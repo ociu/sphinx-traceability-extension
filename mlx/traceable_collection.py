@@ -2,6 +2,7 @@
 Storage classes for collection of traceable items
 '''
 import json
+import re
 from pathlib import Path
 
 from natsort import natsorted
@@ -303,3 +304,23 @@ class TraceableCollection:
         else:
             matches = natsorted(matches, reverse=reverse)
         return matches
+
+    def get_external_targets(self, regex, relation):
+        ''' Get all external targets for a given external relation with the IDs of their linked internal items
+
+        Args:
+            regex (str): Regex to match the external target
+            relation (str): External relation
+        Returns:
+            dict: Dictionary mapping external targets to the IDs of their linked internal items
+        '''
+        external_targets_to_item_ids = {}
+        for item_id, item in self.items.items():
+            for target in item.iter_targets(relation):
+                if not re.match(regex, target):
+                    continue
+                if target not in external_targets_to_item_ids:
+                    external_targets_to_item_ids[target] = [item_id]
+                else:
+                    external_targets_to_item_ids[target].append(item_id)
+        return external_targets_to_item_ids
