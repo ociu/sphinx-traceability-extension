@@ -306,6 +306,15 @@ Another matrix that should spawn a warning as the relation in *type* does not ex
     :targettitle: system requirement
     :sourcetitle: software requirement
 
+Traceability from external sources
+----------------------------------
+
+.. item-matrix:: External sources with all of their internal items
+    :source: namespace
+    :sourcetitle: external items
+    :targettitle: internal items
+    :type: ext_toolname
+
 Item attribute matrix
 =====================
 

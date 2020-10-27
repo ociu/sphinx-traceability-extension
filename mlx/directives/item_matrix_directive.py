@@ -1,10 +1,17 @@
+import re
 from collections import namedtuple
+
 from docutils import nodes
 from docutils.parsers.rst import directives
 
 from mlx.traceability_exception import report_warning
 from mlx.traceable_base_directive import TraceableBaseDirective
 from mlx.traceable_base_node import TraceableBaseNode
+
+
+def group(argument):
+    """Conversion function for the "group" option."""
+    return directives.choice(argument, ('top', 'bottom'))
 
 
 class ItemMatrix(TraceableBaseNode):
@@ -24,7 +31,7 @@ class ItemMatrix(TraceableBaseNode):
         # number_of_columns to 2 (one source, one target). In other cases, it's the number of target settings + 1 source
         # column
         number_of_columns = max(2, len(self['target']) + 1)
-        Rows = namedtuple('Rows', "covered uncovered")
+        Rows = namedtuple('Rows', "sorted covered uncovered")
         source_ids = collection.get_items(self['source'], self['filter-attributes'])
         targets_with_ids = []
         for target_regex in self['target']:
@@ -58,48 +65,49 @@ class ItemMatrix(TraceableBaseNode):
         else:
             external_relationships = [rel for rel in relationships if self.is_relation_external(rel)]
 
-        count_total = 0
         count_covered = 0
-        rows_container = Rows([], [])
+        rows = Rows([], [], [])
         for source_id in source_ids:
             source_item = collection.get_item(source_id)
-            count_total += 1
             covered = False
-            row = nodes.row()
             left = nodes.entry()
             left += self.make_internal_item_ref(app, source_id)
             rights = [nodes.entry('') for _ in range(number_of_columns - 1)]
             for ext_relationship in external_relationships:
                 for target_id in source_item.iter_targets(ext_relationship):
-                    for i in range(number_of_columns - 1):
-                        rights[i] += self.make_external_item_ref(app, target_id, ext_relationship)
+                    ext_item_ref = self.make_external_item_ref(app, target_id, ext_relationship)
+                    for right in rights:
+                        right += ext_item_ref
                     covered = True
             for idx, target_ids in enumerate(targets_with_ids):
                 for target_id in target_ids:
                     if collection.are_related(source_id, relationships, target_id):
                         rights[idx] += self.make_internal_item_ref(app, target_id)
                         covered = True
+            self._store_row(rows, left, rights, covered)
 
-            row += left
-            for right in rights:
-                row += right
+        if not source_ids:
+            # try to use external targets as source
+            for ext_rel in external_relationships:
+                for ext_source, target_ids in collection.get_external_targets(self['source'], ext_rel).items():
+                    covered = False
+                    left = nodes.entry()
+                    left += self.make_external_item_ref(app, ext_source, ext_rel)
+                    rights = [nodes.entry('') for _ in range(number_of_columns - 1)]
+                    covered = self._fill_target_cells(app, rights, target_ids)
+                    self._store_row(rows, left, rights, covered)
 
-            if covered:
-                count_covered += 1
-                rows_container.covered.append(row)
-            else:
-                rows_container.uncovered.append(row)
-
-            if not self['group']:
-                tbody += row
-
-        if self['group'] == 'top':
-            tbody += rows_container.uncovered
-            tbody += rows_container.covered
+        if not self['group']:
+            tbody += rows.sorted
+        elif self['group'] == 'top':
+            tbody += rows.uncovered
+            tbody += rows.covered
         elif self['group'] == 'bottom':
-            tbody += rows_container.covered
-            tbody += rows_container.uncovered
+            tbody += rows.covered
+            tbody += rows.uncovered
 
+        count_total = len(rows.sorted)
+        count_covered = len(rows.covered)
         try:
             percentage = int(100 * count_covered / count_total)
         except ZeroDivisionError:
@@ -115,6 +123,47 @@ class ItemMatrix(TraceableBaseNode):
 
         top_node += table
         self.replace_self(top_node)
+
+    @staticmethod
+    def _store_row(rows, left, rights, covered):
+        """ Stores the leftmost cell and righthand cells in a row in the given Rows object.
+
+        Args:
+            rows (Rows): Rows namedtuple object to extend
+            left (nodes.entry): Leftmost cell, to be added to the row first
+            rights (list[nodes.entry]): List of cells, to be added to the row last
+            covered (bool): True if the row shall be stored in the covered attribute, False for uncovered attribute
+        """
+        row = nodes.row()
+        row += left
+        row += rights
+
+        rows.sorted.append(row)
+        if covered:
+            rows.covered.append(row)
+        else:
+            rows.uncovered.append(row)
+
+    def _fill_target_cells(self, app, target_cells, item_ids):
+        """ Fills target cells with linked items, filtered by target option.
+
+        Returns whether the source has been covered or not.
+
+        Args:
+            app: Sphinx application object to use
+            target_cells (list): List of empty cells
+            item_ids (list): List of item IDs
+
+        Returns:
+            bool: True if a target cell contains an item, False otherwise
+        """
+        covered = False
+        for idx, target_regex in enumerate(self['target']):
+            for target_id in item_ids:
+                if re.match(target_regex, target_id):
+                    target_cells[idx] += self.make_internal_item_ref(app, target_id)
+                    covered = True
+        return covered
 
 
 class ItemMatrixDirective(TraceableBaseDirective):
@@ -145,7 +194,7 @@ class ItemMatrixDirective(TraceableBaseDirective):
         'targettitle': directives.unchanged,
         'sourcetitle': directives.unchanged,
         'type': directives.unchanged,  # a string with relationship types separated by space
-        'group': directives.unchanged,
+        'group': group,
         'stats': directives.flag,
         'nocaptions': directives.flag,
     }
@@ -179,17 +228,7 @@ class ItemMatrixDirective(TraceableBaseDirective):
         )
 
         # Process ``group`` option, given as a string that is either top or bottom or empty ().
-        if 'group' in self.options:
-            group_attr = self.options['group']
-            if group_attr == 'bottom':
-                item_matrix_node['group'] = 'bottom'
-            else:
-                if group_attr and group_attr != 'top':
-                    report_warning("Argument for 'group' attribute should be 'top' or 'bottom'; got '{}'. "
-                                   "Using default 'top'.".format(group_attr), env.docname, self.lineno)
-                item_matrix_node['group'] = 'top'
-        else:
-            item_matrix_node['group'] = ''
+        item_matrix_node['group'] = self.options.get('group', '')
 
         number_of_targets = len(item_matrix_node['target'])
         number_of_targettitles = len(item_matrix_node['targettitle'])

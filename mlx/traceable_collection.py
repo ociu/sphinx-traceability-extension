@@ -2,6 +2,7 @@
 Storage classes for collection of traceable items
 '''
 import json
+import re
 from pathlib import Path
 
 from natsort import natsorted
@@ -259,7 +260,7 @@ class TraceableCollection:
             relations (list): list of relations, empty list for wildcard
             target_id (str): id of the target item
         Returns:
-            (boolean) True if both items are related through the given relationships, false otherwise
+            bool: True if both items are related through the given relationships, false otherwise
         '''
         if source_id not in self.items:
             return False
@@ -287,7 +288,7 @@ class TraceableCollection:
             sortattributes (list): List of attributes on which to alphabetically sort the items
             reverse (bool): True for reverse sorting
         Returns:
-            A sorted list of item-id's matching the given regex. Sorting is done naturally when sortattributes is
+            list: A sorted list of item-id's matching the given regex. Sorting is done naturally when sortattributes is
             unused.
         '''
         matches = []
@@ -303,3 +304,23 @@ class TraceableCollection:
         else:
             matches = natsorted(matches, reverse=reverse)
         return matches
+
+    def get_external_targets(self, regex, relation):
+        ''' Get all external targets for a given external relation with the IDs of their linked internal items
+
+        Args:
+            regex (str): Regex to match the external target
+            relation (str): External relation
+        Returns:
+            dict: Dictionary mapping external targets to the IDs of their linked internal items
+        '''
+        external_targets_to_item_ids = {}
+        for item_id, item in self.items.items():
+            for target in item.iter_targets(relation):
+                if not re.match(regex, target):
+                    continue
+                if target not in external_targets_to_item_ids:
+                    external_targets_to_item_ids[target] = [item_id]
+                else:
+                    external_targets_to_item_ids[target].append(item_id)
+        return external_targets_to_item_ids
