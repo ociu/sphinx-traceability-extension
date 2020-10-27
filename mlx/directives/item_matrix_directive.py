@@ -126,6 +126,14 @@ class ItemMatrix(TraceableBaseNode):
 
     @staticmethod
     def _store_row(rows, left, rights, covered):
+        """ Stores the leftmost cell and righthand cells in a row in the given Rows object.
+
+        Args:
+            rows (Rows): Rows namedtuple object to extend
+            left (nodes.entry): Leftmost cell, to be added to the row first
+            rights (list[nodes.entry]): List of cells, to be added to the row last
+            covered (bool): True if the row shall be stored in the covered attribute, False for uncovered attribute
+        """
         row = nodes.row()
         row += left
         row += rights
