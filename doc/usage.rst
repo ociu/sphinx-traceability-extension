@@ -268,13 +268,14 @@ relationship (see *type* argument) will end up in the right-hand column(s) of th
 **Special note on external relations**: This directive allows showing external relationships, but has some
 limitations in doing so:
 
-  - The external relation needs to be specified explicitly in the *type* option
+  - The external relation needs to be specified explicitly in the *type* option.
   - No regex filtering on target item names is supported.
+  - External items can only be used as source when the regex of the source option does not match any internal items.
 
 :source: *optional*, *single argument*
 
     Python-style regular expression used to filter the source items (left column) based on their names.
-    When omitted, no filtering is done on the source item names
+    When omitted, no filtering is done on the source item names.
 
 :target: *optional*, *multiple arguments (space-separated)*
 
