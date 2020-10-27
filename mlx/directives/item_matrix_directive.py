@@ -128,8 +128,7 @@ class ItemMatrix(TraceableBaseNode):
     def _store_row(rows, left, rights, covered):
         row = nodes.row()
         row += left
-        for right in rights:  # TODO refactor
-            row += right
+        row += rights
 
         rows.sorted.append(row)
         if covered:
