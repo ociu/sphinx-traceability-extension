@@ -65,11 +65,6 @@ class ItemMatrix(TraceableBaseNode):
         else:
             external_relationships = [rel for rel in relationships if self.is_relation_external(rel)]
 
-        ext_relations_to_target_map = {}
-        for relation in external_relationships:
-            ext_targets_to_item_ids = collection.get_external_targets(self['source'], relation)
-            ext_relations_to_target_map[relation] = ext_targets_to_item_ids
-
         count_covered = 0
         rows = Rows([], [], [])
         for source_id in source_ids:
@@ -91,20 +86,16 @@ class ItemMatrix(TraceableBaseNode):
                         covered = True
             self._store_row(rows, left, rights, covered)
 
-        for ext_rel, ext_targets_to_item_ids in ext_relations_to_target_map.items():
-            for ext_source, item_ids in ext_targets_to_item_ids.items():
-                covered = False
-                left = nodes.entry()
-                left += self.make_external_item_ref(app, ext_source, ext_rel)
-                rights = [nodes.entry('') for _ in range(number_of_columns - 1)]
-                for idx, target_regex in enumerate(self['target']):
-                    for target_id in item_ids:
-                        if re.match(target_regex, target_id):
-                            rights[idx] += self.make_internal_item_ref(app, target_id)
-                            covered = True
-
-                self._store_row(rows, left, rights, covered)
-
+        if not source_ids:
+            # try to use external targets as source
+            for ext_rel in external_relationships:
+                for ext_source, target_ids in collection.get_external_targets(self['source'], ext_rel).items():
+                    covered = False
+                    left = nodes.entry()
+                    left += self.make_external_item_ref(app, ext_source, ext_rel)
+                    rights = [nodes.entry('') for _ in range(number_of_columns - 1)]
+                    covered = self._fill_target_cells(app, rights, target_ids)
+                    self._store_row(rows, left, rights, covered)
 
         if not self['group']:
             tbody += rows.sorted
@@ -145,6 +136,27 @@ class ItemMatrix(TraceableBaseNode):
             rows.covered.append(row)
         else:
             rows.uncovered.append(row)
+
+    def _fill_target_cells(self, app, target_cells, item_ids):
+        """ Fills target cells with linked items, filtered by target option.
+
+        Returns whether the source has been covered or not.
+
+        Args:
+            app: Sphinx application object to use
+            target_cells (list): List of empty cells
+            item_ids (list): List of item IDs
+
+        Returns:
+            bool: True if a target cell contains an item, False otherwise
+        """
+        covered = False
+        for idx, target_regex in enumerate(self['target']):
+            for target_id in item_ids:
+                if re.match(target_regex, target_id):
+                    target_cells[idx] += self.make_internal_item_ref(app, target_id)
+                    covered = True
+        return covered
 
 
 class ItemMatrixDirective(TraceableBaseDirective):
