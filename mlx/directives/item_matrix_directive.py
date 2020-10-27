@@ -8,6 +8,11 @@ from mlx.traceable_base_directive import TraceableBaseDirective
 from mlx.traceable_base_node import TraceableBaseNode
 
 
+def group(argument):
+    """Conversion function for the "group" option."""
+    return directives.choice(argument, ('top', 'bottom'))
+
+
 class ItemMatrix(TraceableBaseNode):
     '''Matrix for cross referencing documentation items'''
 
@@ -169,7 +174,7 @@ class ItemMatrixDirective(TraceableBaseDirective):
         'targettitle': directives.unchanged,
         'sourcetitle': directives.unchanged,
         'type': directives.unchanged,  # a string with relationship types separated by space
-        'group': directives.unchanged,
+        'group': group,
         'stats': directives.flag,
         'nocaptions': directives.flag,
     }
