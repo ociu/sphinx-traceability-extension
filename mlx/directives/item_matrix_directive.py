@@ -1,5 +1,6 @@
 import re
 from collections import namedtuple
+
 from docutils import nodes
 from docutils.parsers.rst import directives
 
@@ -208,17 +209,7 @@ class ItemMatrixDirective(TraceableBaseDirective):
         )
 
         # Process ``group`` option, given as a string that is either top or bottom or empty ().
-        if 'group' in self.options:
-            group_attr = self.options['group']
-            if group_attr == 'bottom':
-                item_matrix_node['group'] = 'bottom'
-            else:
-                if group_attr and group_attr != 'top':
-                    report_warning("Argument for 'group' attribute should be 'top' or 'bottom'; got '{}'. "
-                                   "Using default 'top'.".format(group_attr), env.docname, self.lineno)
-                item_matrix_node['group'] = 'top'
-        else:
-            item_matrix_node['group'] = ''
+        item_matrix_node['group'] = self.options.get('group', '')
 
         number_of_targets = len(item_matrix_node['target'])
         number_of_targettitles = len(item_matrix_node['targettitle'])

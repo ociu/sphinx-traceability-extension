@@ -308,9 +308,8 @@ limitations in doing so:
 
 :group: *optional*, *choice: top/bottom*
 
-    The *group* argument can be used to group source items that don't have any target items. You can explicitly specify to
-    have them grouped at the *top* or *bottom* of the matrix.
-    When omitted the grouping defaults to "top"
+    The *group* argument can be used to group source items that don't have any target items. You can explicitly specify
+    to have them grouped at the *top* or *bottom* of the matrix.
 
 :nocaptions: *optional*, *flag*
 
