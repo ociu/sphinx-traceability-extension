@@ -1,8 +1,9 @@
 import re
-from collections import namedtuple
+from collections import namedtuple, OrderedDict
 
 from docutils import nodes
 from docutils.parsers.rst import directives
+from natsort import natsorted
 
 from mlx.traceability_exception import report_warning
 from mlx.traceable_base_directive import TraceableBaseDirective
@@ -89,7 +90,9 @@ class ItemMatrix(TraceableBaseNode):
         if not source_ids:
             # try to use external targets as source
             for ext_rel in external_relationships:
-                for ext_source, target_ids in collection.get_external_targets(self['source'], ext_rel).items():
+                external_targets = collection.get_external_targets(self['source'], ext_rel)
+                # natural sorting on source
+                for ext_source, target_ids in OrderedDict(natsorted(external_targets.items())).items():
                     covered = False
                     left = nodes.entry()
                     left += self.make_external_item_ref(app, ext_source, ext_rel)
