@@ -1,5 +1,5 @@
-# Include the readme file
-include README.md
+# Include Markdown files
+include *.md
 
 # Include the assets - javascript
 include mlx/assets/*.js
