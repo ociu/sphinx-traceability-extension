@@ -25,8 +25,8 @@ development and it helps fixing regression bugs.
 Documentation
 -------------
 Basic documentation is expected, but every bit of detail you can include will help in
-the future. It might look obvious, but it will also help person reviewing the code to
-correctly understand the intended functionality, so that he/she can focus more on implementation
+the future. It might look obvious, but it will also help everyone reviewing the code to
+correctly understand the intended functionality, so that they can focus more on the implementation
 aspect.
 
 Code Review
@@ -36,7 +36,6 @@ benefits from fresh eyes looking at new features or bug fixes and it also improv
 coding skills of all included. Remember to act politely. Since some people might not be
 frequent contributors to various repositories, do not intimidate them, but rather
 help them improve. We are all learning.
-
 
 Reporting Issues or Requesting a New Feature
 ============================================
