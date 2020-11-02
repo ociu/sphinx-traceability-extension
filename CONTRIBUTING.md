@@ -1,8 +1,8 @@
 Contribution Guide
 ==================
-Anyone is more than welcome to contribute to the development of warnings-plugin,
-no matter of your prorgamming skill level. It is reviewers obligation to help bring your
-contribution to our desired quality level and you should do your best to help reviewer
+Anyone is more than welcome to contribute to the development of this traceability plugin,
+no matter of your programming skill level. It is the reviewer's obligation to help bring your
+contribution to our desired quality level and you should do your best to help the reviewer
 understand your decisions. Standard GitHub flow is used https://guides.github.com/introduction/flow/
 to start Pull Requests, which are then merged. We also prefer to make a Work In Progress
 Merge request once you starting your work just in case someone else is not working on the
@@ -13,7 +13,7 @@ Getting Started
 There should always be few issues opened for new features, otherwise you are also
 more than welcome to create some on your own suggestions. The `help wanted` label
 indicates that it is easy enough task for anyone to start, so go and pick up the
-feature you feel most excited by and start implementing it.
+feature you feel most excited about and start implementing it.
 
 Quality of Contribution
 -----------------------
@@ -39,7 +39,7 @@ help them improve. We are all learning.
 
 Reporting Issues or Requesting a New Feature
 ============================================
-Please open a new Issue if you have any problems with the usage plugin. We will be happy
+Please open a new Issue if you have any problems with the plugin. We will be happy
 to fix them as soon as possible. If you want some feature to be included, but do not know
 where to start, you should also open an Issue with label `enhancement` and we
 can implement it when we have time and it fits in our view.
