@@ -1,7 +1,7 @@
 Contribution Guide
 ==================
 Anyone is more than welcome to contribute to the development of this traceability plugin,
-no matter of your programming skill level. It is the reviewer's obligation to help bring your
+no matter your programming skill level. It is the reviewer's obligation to help bring your
 contribution to our desired quality level and you should do your best to help the reviewer
 understand your decisions. Standard GitHub flow is used https://guides.github.com/introduction/flow/
 to start Pull Requests, which are then merged. We also prefer to make a Work In Progress
