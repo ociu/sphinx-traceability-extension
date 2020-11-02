@@ -10,15 +10,15 @@ same issue.
 
 Getting Started
 ===============
-There should always be few issues opened for new features, otherwise you are also
-more than welcome to create some on your own suggestions. The `help wanted` label
-indicates that it is easy enough task for anyone to start, so go and pick up the
+There may be a few issues opened to request new features, but you are also
+more than welcome to make some of your own suggestions. The `help wanted` label
+indicates that it is an easy enough task for anyone to start with, so go and pick up the
 feature you feel most excited about and start implementing it.
 
 Quality of Contribution
 -----------------------
 All new contributions need to be properly tested. We are not targeting some coverage
-percentage, but rather focus on regression testing to confirm expected functionality
+percentage but rather focus on regression testing to confirm expected functionality
 and border cases. This will help us keep existing features even after years of constant
 development and it helps fixing regression bugs.
 
