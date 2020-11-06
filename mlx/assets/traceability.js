@@ -6,6 +6,7 @@ jQuery(function () {
 $(document).ready(function () {
     $('div.collapsible_links div.admonition:first-child').each(function (i) {
         $(this).siblings('dl').first().addCollapseButton($(this));
+        $(this).css('clear', 'left');  // sphinx-rtd-theme==0.5.0 sets `clear: both` which pushes button out of bar
     });
 
     // show an item's hidden caption on hover
