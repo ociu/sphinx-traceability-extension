@@ -16,6 +16,7 @@ as a requirements management tool for e.g. ISO26262 projects.
     installation
     configuration
     usage
+    contributing
 
 -------
 Process
