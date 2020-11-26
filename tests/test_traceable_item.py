@@ -395,3 +395,13 @@ class TestTraceableItem(TestCase):
         # Self test should fail
         with self.assertRaises(exception.TraceabilityException):
             item.self_test()
+
+    def test_has_relations(self):
+        item = dut.TraceableItem(self.identification)
+        item.set_document(self.docname)
+        item.add_target(self.fwd_relation, self.identification_tgt)
+        self.assertEqual(item.has_relations([]), True)
+        self.assertEqual(item.has_relations([self.fwd_relation]), True)
+        self.assertEqual(item.has_relations([self.rev_relation]), False)
+        self.assertEqual(item.has_relations([self.fwd_relation, self.rev_relation]), False)
+        self.assertEqual(item.has_relations([self.rev_relation, self.fwd_relation]), False)
