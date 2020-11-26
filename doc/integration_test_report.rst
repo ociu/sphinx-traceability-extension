@@ -297,6 +297,15 @@ Traceability from SSS to SRS
     :type: fulfilled_by
     :stats:
 
+.. item-matrix:: System requirements fulfilled by software requirements - only show covered
+    :target: SRS
+    :source: SYS
+    :targettitle: software requirement
+    :sourcetitle: system requirement
+    :type: fulfilled_by
+    :stats:
+    :onlycovered:
+
 Another matrix that should spawn a warning as the relation in *type* does not exist
 -----------------------------------------------------------------------------------
 
