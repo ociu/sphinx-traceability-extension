@@ -258,6 +258,7 @@ A traceability matrix of documentation items can be generated using:
         :type: validated_by
         :status: Appr
         :group: bottom
+        :onlycovered:
         :nocaptions:
         :stats:
 
@@ -311,6 +312,11 @@ limitations in doing so:
 
     The *group* argument can be used to group source items that don't have any target items. You can explicitly specify
     to have them grouped at the *top* or *bottom* of the matrix.
+
+:onlycovered: *optional*, *flag*
+
+    By default, all source items are included. By providing the *onlycovered* flag, only covered items are shown in the
+    output.
 
 :nocaptions: *optional*, *flag*
 
