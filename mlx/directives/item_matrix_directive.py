@@ -70,6 +70,8 @@ class ItemMatrix(TraceableBaseNode):
         rows = Rows([], [], [])
         for source_id in source_ids:
             source_item = collection.get_item(source_id)
+            if self['sourcetype'] and not source_item.has_relations(self['sourcetype']):
+                continue
             covered = False
             left = nodes.entry()
             left += self.make_internal_item_ref(app, source_id)
@@ -189,6 +191,7 @@ class ItemMatrixDirective(TraceableBaseDirective):
          :targettitle: Target column header
          :sourcetitle: Source column header
          :type: <<relationship>> ...
+         :sourcetype: <<relationship>> ...
          :group: top | bottom
          :onlycovered:
          :stats:
@@ -204,6 +207,7 @@ class ItemMatrixDirective(TraceableBaseDirective):
         'targettitle': directives.unchanged,
         'sourcetitle': directives.unchanged,
         'type': directives.unchanged,  # a string with relationship types separated by space
+        'sourcetype': directives.unchanged,  # a string with relationship types separated by space
         'group': group,
         'onlycovered': directives.flag,
         'stats': directives.flag,
@@ -235,6 +239,7 @@ class ItemMatrixDirective(TraceableBaseDirective):
                 'targettitle': {'default': ['Target'], 'delimiter': ','},
                 'sourcetitle': {'default': 'Source'},
                 'type':        {'default': []},
+                'sourcetype':  {'default': []},
             },
         )
 
@@ -250,6 +255,7 @@ class ItemMatrixDirective(TraceableBaseDirective):
                            env.docname, self.lineno)
 
         self.check_relationships(item_matrix_node['type'], env)
+        self.check_relationships(item_matrix_node['sourcetype'], env)
 
         self.check_option_presence(item_matrix_node, 'onlycovered')
         self.check_option_presence(item_matrix_node, 'stats')
