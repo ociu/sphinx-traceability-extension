@@ -119,6 +119,8 @@ class ItemMatrix(TraceableBaseNode):
                                                                            total=count_total,
                                                                            pct=percentage)
         if self['stats']:
+            if self['onlycovered']:
+                disp += ' (uncovered items are ignored)'
             p_node = nodes.paragraph()
             txt = nodes.Text(disp)
             p_node += txt
@@ -127,8 +129,7 @@ class ItemMatrix(TraceableBaseNode):
         top_node += table
         self.replace_self(top_node)
 
-    @staticmethod
-    def _store_row(rows, left, rights, covered):
+    def _store_row(self, rows, left, rights, covered):
         """ Stores the leftmost cell and righthand cells in a row in the given Rows object.
 
         Args:
@@ -141,11 +142,12 @@ class ItemMatrix(TraceableBaseNode):
         row += left
         row += rights
 
-        rows.sorted.append(row)
         if covered:
             rows.covered.append(row)
-        else:
+            rows.sorted.append(row)
+        elif not self['onlycovered']:
             rows.uncovered.append(row)
+            rows.sorted.append(row)
 
     def _fill_target_cells(self, app, target_cells, item_ids):
         """ Fills target cells with linked items, filtered by target option.
@@ -184,6 +186,7 @@ class ItemMatrixDirective(TraceableBaseDirective):
          :sourcetitle: Source column header
          :type: <<relationship>> ...
          :group: top | bottom
+         :onlycovered:
          :stats:
          :nocaptions:
     """
@@ -198,6 +201,7 @@ class ItemMatrixDirective(TraceableBaseDirective):
         'sourcetitle': directives.unchanged,
         'type': directives.unchanged,  # a string with relationship types separated by space
         'group': group,
+        'onlycovered': directives.flag,
         'stats': directives.flag,
         'nocaptions': directives.flag,
     }
@@ -243,6 +247,7 @@ class ItemMatrixDirective(TraceableBaseDirective):
 
         self.check_relationships(item_matrix_node['type'], env)
 
+        self.check_option_presence(item_matrix_node, 'onlycovered')
         self.check_option_presence(item_matrix_node, 'stats')
 
         self.check_caption_flags(item_matrix_node, app.config.traceability_matrix_no_captions)
