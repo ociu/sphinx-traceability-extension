@@ -325,6 +325,24 @@ Traceability from external sources
     :targettitle: internal items
     :type: ext_toolname
 
+Traceability from integration tests to requirements
+---------------------------------------------------
+
+.. item-matrix:: All integration tests
+    :source: ITEST-
+    :sourcetitle: integration tests
+    :targettitle: requirements
+    :type: validates
+    :stats:
+
+.. item-matrix:: All integration tests that have a report
+    :source: ITEST-
+    :sourcetitle: integration tests
+    :targettitle: requirements
+    :type: validates
+    :sourcetype: impacts_on
+    :stats:
+
 Item attribute matrix
 =====================
 
