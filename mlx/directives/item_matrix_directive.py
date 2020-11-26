@@ -109,7 +109,7 @@ class ItemMatrix(TraceableBaseNode):
             tbody += rows.covered
             tbody += rows.uncovered
 
-        count_total = len(rows.sorted)
+        count_total = len(rows.covered) + len(rows.uncovered)
         count_covered = len(rows.covered)
         try:
             percentage = int(100 * count_covered / count_total)
@@ -120,7 +120,7 @@ class ItemMatrix(TraceableBaseNode):
                                                                            pct=percentage)
         if self['stats']:
             if self['onlycovered']:
-                disp += ' (uncovered items are ignored)'
+                disp += ' (uncovered items are hidden)'
             p_node = nodes.paragraph()
             txt = nodes.Text(disp)
             p_node += txt
@@ -145,9 +145,10 @@ class ItemMatrix(TraceableBaseNode):
         if covered:
             rows.covered.append(row)
             rows.sorted.append(row)
-        elif not self['onlycovered']:
+        else:
             rows.uncovered.append(row)
-            rows.sorted.append(row)
+            if not self['onlycovered']:
+                rows.sorted.append(row)
 
     def _fill_target_cells(self, app, target_cells, item_ids):
         """ Fills target cells with linked items, filtered by target option.
