@@ -305,7 +305,7 @@ limitations in doing so:
 
 :sourcetype: *optional*, *multiple arguments (space-separated)*
 
-    The list of relationships that should all source items should have. This option is unrelated to the *target* option
+    The list of relationships that all source items should have. This option is unrelated to the *target* option
     and is solely used to filter source items - in addition to the *source* filter.
 
 :status: *optional*, *multiple arguments (space-separated)*
