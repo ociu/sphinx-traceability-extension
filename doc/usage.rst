@@ -256,6 +256,7 @@ A traceability matrix of documentation items can be generated using:
         :sourcetitle: Software requirements
         :targettitle: Integration and unit test cases
         :type: validated_by
+        :sourcetype: fulfilled_by
         :status: Appr
         :group: bottom
         :onlycovered:
@@ -301,6 +302,11 @@ limitations in doing so:
     When multiple arguments are provided the target column will show items that match *any* of the given relationships
     provided. The same filtering is applied to all "Target" columns in the matrix.
     When omitted all possible relations are considered **except for external relations**.
+
+:sourcetype: *optional*, *multiple arguments (space-separated)*
+
+    The list of relationships that all source items should have. This option is unrelated to the *target* option
+    and is solely used to filter source items - in addition to the *source* filter.
 
 :status: *optional*, *multiple arguments (space-separated)*
 

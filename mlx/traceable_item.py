@@ -341,6 +341,21 @@ class TraceableItem(TraceableBaseClass):
                 return True
         return False
 
+    def has_relations(self, relations):
+        ''' Checks if the item has every relationship in given list.
+
+        Args:
+            relations (list): List of relations.
+
+        Returns:
+            (bool) True if the item has every relationship in given list of list is empty, False otherwise.
+        '''
+        own_relations = self.iter_relations(sort=False)
+        for relation in relations:
+            if relation not in own_relations:
+                return False
+        return True
+
     def to_dict(self):
         ''' Exports item to a dictionary.
 
