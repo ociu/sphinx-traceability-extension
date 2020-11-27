@@ -85,7 +85,7 @@ class ItemMatrix(TraceableBaseNode):
                     if collection.are_related(source_id, relationships, target_id):
                         rights[idx] += self.make_internal_item_ref(app, target_id)
                         covered = True
-            self._store_row(rows, left, rights, covered)
+            self._store_row(rows, left, rights, covered, self['onlycovered'])
 
         if not source_ids:
             # try to use external targets as source
@@ -98,7 +98,7 @@ class ItemMatrix(TraceableBaseNode):
                     left += self.make_external_item_ref(app, ext_source, ext_rel)
                     rights = [nodes.entry('') for _ in range(number_of_columns - 1)]
                     covered = self._fill_target_cells(app, rights, target_ids)
-                    self._store_row(rows, left, rights, covered)
+                    self._store_row(rows, left, rights, covered, self['onlycovered'])
 
         if not self['group']:
             tbody += rows.sorted
@@ -109,7 +109,7 @@ class ItemMatrix(TraceableBaseNode):
             tbody += rows.covered
             tbody += rows.uncovered
 
-        count_total = len(rows.sorted)
+        count_total = len(rows.covered) + len(rows.uncovered)
         count_covered = len(rows.covered)
         try:
             percentage = int(100 * count_covered / count_total)
@@ -119,6 +119,8 @@ class ItemMatrix(TraceableBaseNode):
                                                                            total=count_total,
                                                                            pct=percentage)
         if self['stats']:
+            if self['onlycovered']:
+                disp += ' (uncovered items are hidden)'
             p_node = nodes.paragraph()
             txt = nodes.Text(disp)
             p_node += txt
@@ -128,7 +130,7 @@ class ItemMatrix(TraceableBaseNode):
         self.replace_self(top_node)
 
     @staticmethod
-    def _store_row(rows, left, rights, covered):
+    def _store_row(rows, left, rights, covered, onlycovered):
         """ Stores the leftmost cell and righthand cells in a row in the given Rows object.
 
         Args:
@@ -136,16 +138,20 @@ class ItemMatrix(TraceableBaseNode):
             left (nodes.entry): Leftmost cell, to be added to the row first
             rights (list[nodes.entry]): List of cells, to be added to the row last
             covered (bool): True if the row shall be stored in the covered attribute, False for uncovered attribute
+            onlycovered (bool): True if rows with an uncovered source item shall not be added to the sorted rows attr,
+                False to add all rows
         """
         row = nodes.row()
         row += left
         row += rights
 
-        rows.sorted.append(row)
         if covered:
             rows.covered.append(row)
+            rows.sorted.append(row)
         else:
             rows.uncovered.append(row)
+            if not onlycovered:
+                rows.sorted.append(row)
 
     def _fill_target_cells(self, app, target_cells, item_ids):
         """ Fills target cells with linked items, filtered by target option.
@@ -184,6 +190,7 @@ class ItemMatrixDirective(TraceableBaseDirective):
          :sourcetitle: Source column header
          :type: <<relationship>> ...
          :group: top | bottom
+         :onlycovered:
          :stats:
          :nocaptions:
     """
@@ -198,6 +205,7 @@ class ItemMatrixDirective(TraceableBaseDirective):
         'sourcetitle': directives.unchanged,
         'type': directives.unchanged,  # a string with relationship types separated by space
         'group': group,
+        'onlycovered': directives.flag,
         'stats': directives.flag,
         'nocaptions': directives.flag,
     }
@@ -243,6 +251,7 @@ class ItemMatrixDirective(TraceableBaseDirective):
 
         self.check_relationships(item_matrix_node['type'], env)
 
+        self.check_option_presence(item_matrix_node, 'onlycovered')
         self.check_option_presence(item_matrix_node, 'stats')
 
         self.check_caption_flags(item_matrix_node, app.config.traceability_matrix_no_captions)
