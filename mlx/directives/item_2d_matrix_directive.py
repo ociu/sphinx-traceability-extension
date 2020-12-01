@@ -17,8 +17,13 @@ class Item2DMatrix(TraceableBaseNode):
             app: Sphinx application object to use.
             collection (TraceableCollection): Collection for which to generate the nodes.
         """
-        source_ids = collection.get_items(self['source'], self['filter-attributes'])
-        target_ids = collection.get_items(self['target'])
+        attributes_of_sources = self['filter-attributes']
+        attributes_of_targets = None
+        if self['filtertarget']:
+            attributes_of_sources = None
+            attributes_of_targets = self['filter-attributes']
+        source_ids = collection.get_items(self['source'], attributes_of_sources)
+        target_ids = collection.get_items(self['target'], attributes_of_targets)
         top_node = self.create_top_node(self['title'])
         table = nodes.table()
         if self.get('classes'):
@@ -67,7 +72,7 @@ class Item2DMatrixDirective(TraceableBaseDirective):
          :source: regexp
          :<<attribute>>: regexp
          :type: <<relationship>> ...
-
+         :filtertarget:
     """
     # Optional argument: title (whitespace allowed)
     optional_arguments = 1
@@ -79,6 +84,7 @@ class Item2DMatrixDirective(TraceableBaseDirective):
         'hit': directives.unchanged,
         'miss': directives.unchanged,
         'type': directives.unchanged,  # a string with relationship types separated by space
+        'filtertarget': directives.flag,
     }
     # Content disallowed
     has_content = False
@@ -106,6 +112,7 @@ class Item2DMatrixDirective(TraceableBaseDirective):
                 'miss':   {'default': ''},
             },
         )
+        self.check_option_presence(node, 'filtertarget')
 
         self.add_found_attributes(node)
 
