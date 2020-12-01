@@ -357,15 +357,17 @@ A 2D-matrix of documentation items can be generated using:
         :source: SWRQT
         :target: [IU]TEST
         :status: Appr
+        :filtertarget:
+        :type: validated_by
         :hit: x
         :miss:
-        :type: validated_by
 
 where the *source* and *target* arguments can be replaced by any Python regular expression.
 
 where *status* can be replaced by any configured attribute, and *Appr* can be replaced by any Python regular
 expression. Only documentation items where the *status* attribute matches the given regular expression end up in
-the *source* part of the matrix. The attribute value is **not** used as a filter on the *target* part.
+the *source* part of the matrix. The attribute value is **not** used as a filter on the *target* part. To filter on the
+*target* part instead of the *source* part, add the optional *filtertarget* flag.
 
 The *type* argument is a space-separated list of relationships that should be matched in the matrix.
 
@@ -374,7 +376,7 @@ generated table. Documentation items matching their ID to the given *target* reg
 rows of the generated table. Where source and target items have a matching relationship (see *type* argument)
 an 'x' will be placed in the cell at co-ordinates of source/target.
 
-Captions for items in the 2D table are never shown, as it would give a too heavy loaded table.
+Captions for items in the 2D table are never shown, as it would overload the table.
 
 Optionally, the *class* attribute can be specified to customize table output, especially useful when rendering to
 LaTeX. Normally the *longtable* class is used when the number of rows is greater than 30 which allows long tables to
