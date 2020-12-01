@@ -17,11 +17,8 @@ class Item2DMatrix(TraceableBaseNode):
             app: Sphinx application object to use.
             collection (TraceableCollection): Collection for which to generate the nodes.
         """
-        attributes_of_sources = self['filter-attributes']
-        attributes_of_targets = None
-        if self['filtertarget']:
-            attributes_of_sources = None
-            attributes_of_targets = self['filter-attributes']
+        attributes_of_sources = self['filter-attributes'] if not self['filtertarget'] else None
+        attributes_of_targets = self['filter-attributes'] if self['filtertarget'] else None
         source_ids = collection.get_items(self['source'], attributes_of_sources)
         target_ids = collection.get_items(self['target'], attributes_of_targets)
         top_node = self.create_top_node(self['title'])
