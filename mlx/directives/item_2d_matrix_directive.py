@@ -17,10 +17,8 @@ class Item2DMatrix(TraceableBaseNode):
             app: Sphinx application object to use.
             collection (TraceableCollection): Collection for which to generate the nodes.
         """
-        attributes_of_sources = self['filter-attributes'] if not self['filtertarget'] else None
-        attributes_of_targets = self['filter-attributes'] if self['filtertarget'] else None
-        source_ids = collection.get_items(self['source'], attributes_of_sources)
-        target_ids = collection.get_items(self['target'], attributes_of_targets)
+        source_ids, target_ids = self.get_source_and_target_ids(collection, self['source'], self['target'],
+                                                                self['filter-attributes'], self['filtertarget'])
         top_node = self.create_top_node(self['title'])
         table = nodes.table()
         if self.get('classes'):
@@ -55,6 +53,27 @@ class Item2DMatrix(TraceableBaseNode):
         table += tgroup
         top_node += table
         self.replace_self(top_node)
+
+    @staticmethod
+    def get_source_and_target_ids(collection, source_regex, target_regex, filter_attributes, filter_target):
+        """ Gets IDs of source and target items, filtered by source, target and attribute options.
+
+        Args:
+            collection (TraceableCollection): Collection for which to generate the nodes.
+            source_regex (str): Regex for filtering source items.
+            target_regex (str): Regex for filtering target items.
+            filter_attributes (dict): Dictionary of attribute-value pairs.
+            filter_target (bool): True to use attributes to filter target items, False to filter source items.
+
+        Returns:
+            list: List of IDs of source items.
+            list: List of IDs of target items.
+        """
+        attributes_of_sources = filter_attributes if not filter_target else None
+        attributes_of_targets = filter_attributes if filter_target else None
+        source_ids = collection.get_items(source_regex, attributes_of_sources)
+        target_ids = collection.get_items(target_regex, attributes_of_targets)
+        return source_ids, target_ids
 
 
 class Item2DMatrixDirective(TraceableBaseDirective):
