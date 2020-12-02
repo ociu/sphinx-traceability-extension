@@ -463,6 +463,11 @@ SRS to SSS
     :asil: [CD]
     :type: trace traced_by
 
+.. item-2d-matrix:: r-items to all with ASIL-A/B attribute
+    :source: r\d+
+    :asil: [AB]
+    :filtertarget:
+
 SSS to SRS
 ----------
 
