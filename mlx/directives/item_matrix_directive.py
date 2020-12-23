@@ -58,12 +58,12 @@ class ItemMatrix(TraceableBaseNode):
         # - External references are only shown if explicitly requested in the "type" configuration
         # - No target filtering is done on external references
 
-        relationships = self['type']
-        if not relationships:
+        if not self['type']:
             # if no explicit relationships were given, we consider all of them (except for external ones)
             relationships = [rel for rel in collection.iter_relations() if not self.is_relation_external(rel)]
             external_relationships = []
         else:
+            relationships = self['type']
             external_relationships = [rel for rel in relationships if self.is_relation_external(rel)]
 
         count_covered = 0
