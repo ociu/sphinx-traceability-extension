@@ -343,6 +343,17 @@ Traceability from integration tests to requirements
     :sourcetype: impacts_on
     :stats:
 
+Traceability via intermediate items
+-----------------------------------
+
+.. item-matrix::
+    :source: DESIGN-
+    :target: UTEST ITEST
+    :targettitle: Unit tests, Integration tests
+    :type: fulfills | validated_by
+    :group: bottom
+    :nocaptions:
+
 Item attribute matrix
 =====================
 
