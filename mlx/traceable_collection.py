@@ -276,7 +276,7 @@ class TraceableCollection:
             relations = self.relations
         return self.items[source_id].is_related(relations, target_id)
 
-    def get_items(self, regex, attributes=None, sortattributes=None, reverse=False):
+    def get_items(self, regex, attributes=None, sortattributes=None, reverse=False, sort=True):
         '''
         Get all items that match a given regular expression
 
@@ -287,6 +287,8 @@ class TraceableCollection:
             attributes (dict): Dictionary with attribute-regex pairs to match the items in this collection against
             sortattributes (list): List of attributes on which to alphabetically sort the items
             reverse (bool): True for reverse sorting
+            sort (bool): When sortattributes is falsy: True to enable natural sorting, False to disable sorting
+
         Returns:
             list: A sorted list of item-id's matching the given regex. Sorting is done naturally when sortattributes is
             unused.
@@ -299,10 +301,10 @@ class TraceableCollection:
                     (not attributes or self.items[itemid].attributes_match(attributes)):
                 matches.append(itemid)
         if sortattributes:
-            matches = sorted(matches, key=lambda itemid: self.get_item(itemid).get_attributes(sortattributes),
-                             reverse=reverse)
-        else:
-            matches = natsorted(matches, reverse=reverse)
+            return sorted(matches, key=lambda itemid: self.get_item(itemid).get_attributes(sortattributes),
+                            reverse=reverse)
+        elif sort:
+            return natsorted(matches, reverse=reverse)
         return matches
 
     def get_external_targets(self, regex, relation):
