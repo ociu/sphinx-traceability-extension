@@ -169,7 +169,6 @@ class ItemMatrix(TraceableBaseNode):
                 links_with_relationships[0][idx] = collection.get_reverse_relation(rel)
 
         source_to_targets = {}
-        #raise SystemError(collection.get_items(self['intermediate'], sort=False))
         for intermediate_id in collection.get_items(self['intermediate'], sort=False):
             intermediate_item = collection.get_item(intermediate_id)
 
