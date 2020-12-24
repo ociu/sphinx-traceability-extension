@@ -168,7 +168,7 @@ class ItemMatrix(TraceableBaseNode):
         for idx, rel in enumerate(links_with_relationships[0]):
                 links_with_relationships[0][idx] = collection.get_reverse_relation(rel)
 
-        source_to_targets = {}
+        source_to_targets_map = {}
         for intermediate_id in collection.get_items(self['intermediate'], sort=False):
             intermediate_item = collection.get_item(intermediate_id)
 
@@ -197,12 +197,12 @@ class ItemMatrix(TraceableBaseNode):
             # store all targets for each source id if covered
             if covered:
                 for source_id in potential_source_ids:
-                    if source_id not in source_to_targets:
-                        source_to_targets[source_id] = actual_targets
+                    if source_id not in source_to_targets_map:
+                        source_to_targets_map[source_id] = actual_targets
                     else:
                         for idx, targets in enumerate(actual_targets):
-                            source_to_targets[source_id][idx].update(targets)
-        return source_to_targets
+                            source_to_targets_map[source_id][idx].update(targets)
+        return source_to_targets_map
 
     @staticmethod
     def _store_row(rows, left, rights, covered, onlycovered):
