@@ -61,10 +61,10 @@ class ItemMatrix(TraceableBaseNode):
         if not self['type']:
             # if no explicit relationships were given, we consider all of them (except for external ones)
             relationships = [rel for rel in collection.iter_relations() if not self.is_relation_external(rel)]
-            ext_relationships = []
+            external_relationships = []
         else:
             relationships = self['type'].split(' ')
-            ext_relationships = [rel for rel in relationships if self.is_relation_external(rel)]
+            external_relationships = [rel for rel in relationships if self.is_relation_external(rel)]
             if ' | ' in self['type']:
                 mapping_via_intermediate = self.linking_via_intermediate(source_ids, targets_with_ids, collection)
 
@@ -85,7 +85,7 @@ class ItemMatrix(TraceableBaseNode):
                         for target_id in target_ids:
                             rights[idx] += self.make_internal_item_ref(app, target_id)
             else:
-                has_external_target = self.add_external_targets(rights, source_item, ext_relationships, app)
+                has_external_target = self.add_external_targets(rights, source_item, external_relationships, app)
                 has_internal_target = self.add_internal_targets(rights, source_id, targets_with_ids, relationships, collection, app)
                 covered = has_external_target or has_internal_target
 
@@ -93,7 +93,7 @@ class ItemMatrix(TraceableBaseNode):
 
         if not source_ids:
             # try to use external targets as source
-            for ext_rel in ext_relationships:
+            for ext_rel in external_relationships:
                 external_targets = collection.get_external_targets(self['source'], ext_rel)
                 # natural sorting on source
                 for ext_source, target_ids in OrderedDict(natsorted(external_targets.items())).items():
@@ -137,11 +137,11 @@ class ItemMatrix(TraceableBaseNode):
             tbody += rows.covered
             tbody += rows.uncovered
 
-    def add_external_targets(self, rights, source_item, ext_relationships, app):
+    def add_external_targets(self, rights, source_item, external_relationships, app):
         has_external_target = False
-        for ext_relationship in ext_relationships:
-            for target_id in source_item.iter_targets(ext_relationship):
-                ext_item_ref = self.make_external_item_ref(app, target_id, ext_relationship)
+        for external_relationship in external_relationships:
+            for target_id in source_item.iter_targets(external_relationship):
+                ext_item_ref = self.make_external_item_ref(app, target_id, external_relationship)
                 for right in rights:
                     right += ext_item_ref
                 has_external_target = True
