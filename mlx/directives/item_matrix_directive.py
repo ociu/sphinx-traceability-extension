@@ -198,7 +198,7 @@ class ItemMatrix(TraceableBaseNode):
             collection (TraceableCollection): Collection of TraceableItems
 
         Returns:
-            dict: Mapping of source IDs as key with a list of linked target item IDs per target as value
+            dict: Mapping of source IDs as key with a list of linked target item IDs (set) per target as value
         """
         links_with_relationships = []
         for relationships_str in self['type'].split(' | '):
@@ -237,15 +237,26 @@ class ItemMatrix(TraceableBaseNode):
                     covered = True
                 actual_targets.append(linked_target_ids)
 
-            # store all targets for each source id if covered
             if covered:
-                for source_id in potential_source_ids:
-                    if source_id not in source_to_targets_map:
-                        source_to_targets_map[source_id] = actual_targets
-                    else:
-                        for idx, targets in enumerate(actual_targets):
-                            source_to_targets_map[source_id][idx].update(targets)
+                self._store_targets(source_to_targets_map, potential_source_ids, actual_targets)
         return source_to_targets_map
+
+    @staticmethod
+    def _store_targets(source_to_targets_map, source_ids, targets_with_ids):
+        """ Extends given mapping with target IDs per target as value for each source ID as key
+
+        Args:
+            source_to_targets_map (dict): Mapping of source IDs as key with a list of linked target item IDs (set) per
+                target as value
+            source_ids (set): Source IDs to store targets for
+            targets_with_ids (list): List of linked target item IDs (set) per target
+        """
+        for source_id in source_ids:
+            if source_id not in source_to_targets_map:
+                source_to_targets_map[source_id] = targets_with_ids
+            else:
+                for idx, target_ids in enumerate(targets_with_ids):
+                    source_to_targets_map[source_id][idx].update(target_ids)
 
     @staticmethod
     def _store_row(rows, left, rights, covered, onlycovered):
