@@ -84,7 +84,8 @@ class ItemMatrix(TraceableBaseNode):
                     self.add_all_targets(rights, mapping_via_intermediate[source_id], app)
             else:
                 has_external_target = self.add_external_targets(rights, source_item, external_relationships, app)
-                has_internal_target = self.add_internal_targets(rights, source_id, targets_with_ids, relationships, collection, app)
+                has_internal_target = self.add_internal_targets(rights, source_id, targets_with_ids, relationships,
+                                                                collection, app)
                 covered = has_external_target or has_internal_target
 
             self._store_row(rows, left, rights, covered, self['onlycovered'])
