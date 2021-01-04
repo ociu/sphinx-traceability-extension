@@ -10,7 +10,7 @@ from mlx.traceable_base_directive import TraceableBaseDirective
 from mlx.traceable_base_node import TraceableBaseNode
 
 
-def group(argument):
+def group_choice(argument):
     """Conversion function for the "group" option."""
     return directives.choice(argument, ('top', 'bottom'))
 
@@ -325,7 +325,7 @@ class ItemMatrixDirective(TraceableBaseDirective):
         'sourcetitle': directives.unchanged,
         'type': directives.unchanged,  # a string with relationship types separated by space
         'sourcetype': directives.unchanged,  # a string with relationship types separated by space
-        'group': group,
+        'group': group_choice,
         'onlycovered': directives.flag,
         'stats': directives.flag,
         'nocaptions': directives.flag,
