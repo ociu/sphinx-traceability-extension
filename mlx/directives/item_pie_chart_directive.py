@@ -208,8 +208,8 @@ class ItemPieChart(TraceableBaseNode):
         labels = list(chart_labels)
         sizes = list(chart_labels.values())
         explode = [0] * len(labels)
-        uncoverd_index = labels.index(self['label_set'][0])
-        explode[uncoverd_index] = 0.05  # slightly detaches slice of first state, default is "uncovered"
+        uncovered_index = labels.index(self['label_set'][0])
+        explode[uncovered_index] = 0.05  # slightly detaches slice of first state, default is "uncovered"
 
         fig, axes = plt.subplots()
         axes.pie(sizes, explode=explode, labels=labels, autopct=pct_wrapper(sizes), startangle=90)
