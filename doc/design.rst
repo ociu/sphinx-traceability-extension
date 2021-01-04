@@ -287,7 +287,7 @@ Design for mlx.traceability
 
 .. item:: DESIGN-DOCUMENTATION_ID Identification of documentation part
     :depends_on: DESIGN-ITEMIZE
-    :fulfills: RQT-ITEMIZE
+    :fulfills: RQT-DOCUMENTATION_ID
 
     A first argument to the `item` directive is used as a unique identifier for the documentation part. The
     identifier can be any string - not containing spaces.
@@ -306,6 +306,7 @@ Design for mlx.traceability
 
 .. item:: DESIGN-CONTENT Content of documentation part
     :depends_on: DESIGN-ITEMIZE
+    :fulfills: RQT-CONTENT
 
     The content of the `item` directive is used as the content of the documentation part.
     The caption is stored in the `TraceableItem` object. The content is forwarded through the sphinx
@@ -314,6 +315,7 @@ Design for mlx.traceability
 
 .. item:: DESIGN-ATTRIBUTES Documentation parts can have attributes
     :depends_on: DESIGN-ITEMIZE
+    :fulfills: RQT-ATTRIBUTES
 
     Attributes can be added to the documentation parts.
     Attributes have a key and an optional value.
@@ -321,39 +323,46 @@ Design for mlx.traceability
 
 .. item:: DESIGN-RELATIONS Documentation parts can be linked to each other
     :depends_on: DESIGN-ITEMIZE
+    :fulfills: RQT-RELATIONS
 
     Documentation parts can be linked to other documentation parts.
     The set of relations is configurable.
 
 .. item:: DESIGN-AUTO_REVERSE Automatic creation of reverse relations
     :depends_on: DESIGN-RELATIONS
+    :fulfills: RQT-AUTO_REVERSE
 
     When a documentation part <A> is related to a documentation part <B> (forward relation), the reverse
     relation from documentation part <B> to documentation part <A> gets created automatically.
 
 .. item:: DESIGN-LIST Listing documentation parts
     :depends_on: DESIGN-ITEMIZE
+    :fulfills: RQT-LIST
 
     A list of documentation parts matching a certain query can be retrieved.
 
 .. item:: DESIGN-COVERAGE Calculation of coverage for relations between documentation parts
     :depends_on: DESIGN-RELATIONS
+    :fulfills: RQT-COVERAGE
 
     The plugin is able to calculate the coverage for a certain type of relation between
     documentation parts.
 
 .. item:: DESIGN-MATRIX Auto-generation of a traceability matrix
     :depends_on: DESIGN-RELATIONS
+    :fulfills: RQT-MATRIX
 
     The relations between documentation parts can be queried, and an overview matrix can be generated.
 
 .. item:: DESIGN-TREE Auto-generation of a traceability tree
     :depends_on: DESIGN-RELATIONS
+    :fulfills: RQT-TREE
 
     The relations between documentation parts can be queried, and an overview tree can be generated.
 
 .. item:: DESIGN-ATTRIBUTES_MATRIX Overview of attributes on documentation parts
     :depends_on: DESIGN-ATTRIBUTES
+    :fulfills: RQT-ATTRIBUTES_MATRIX
 
     An overview table of the attribute values for documentation parts can be generated.
 

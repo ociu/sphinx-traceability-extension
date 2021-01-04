@@ -352,7 +352,7 @@ Traceability via intermediate items
     :target: UTEST ITEST
     :sourcetitle: design items
     :targettitle: unit tests, integration tests
-    :type: fulfill | validated_by
+    :type: fulfills | validated_by
     :group: bottom
     :nocaptions:
 
