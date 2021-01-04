@@ -350,8 +350,9 @@ Traceability via intermediate items
     :source: DESIGN-
     :intermediate: RQT-
     :target: UTEST ITEST
-    :targettitle: Unit tests, Integration tests
-    :type: fulfills | validated_by
+    :sourcetitle: design items
+    :targettitle: unit tests, integration tests
+    :type: fulfill | validated_by
     :group: bottom
     :nocaptions:
 
