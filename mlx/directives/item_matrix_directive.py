@@ -190,13 +190,15 @@ class ItemMatrix(TraceableBaseNode):
     def linking_via_intermediate(self, source_ids, targets_with_ids, collection):
         """ Creates mapping of source IDs with a list of IDs of target items that are linked via an itermediate item
 
+        Only covered source IDs are stored.
+
         Args:
             source_ids (list): List of item IDs of source items
             targets_with_ids (list): List of lists per target, listing target IDs to take into consideration
             collection (TraceableCollection): Collection of TraceableItems
 
         Returns:
-            dict: Mapping of source IDs as key with a list of target item IDs as value
+            dict: Mapping of source IDs as key with a list of linked target item IDs as value
         """
         links_with_relationships = []
         for relationships_str in self['type'].split(' | '):
