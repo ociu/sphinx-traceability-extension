@@ -6,3 +6,7 @@
 .rst-content .section ul.bonsai li {
     margin-left: 0!important;
 }
+
+.wy-nav-content {
+    max-width: 1250px;
+}
