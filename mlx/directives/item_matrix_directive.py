@@ -209,7 +209,7 @@ class ItemMatrix(TraceableBaseNode):
                                         docname=self["document"])
         # reverse relationship(s) specified for linking source to intermediate
         for idx, rel in enumerate(links_with_relationships[0]):
-                links_with_relationships[0][idx] = collection.get_reverse_relation(rel)
+            links_with_relationships[0][idx] = collection.get_reverse_relation(rel)
 
         source_to_targets_map = {}
         for intermediate_id in collection.get_items(self['intermediate'], sort=False):
