@@ -302,7 +302,7 @@ class TraceableCollection:
                 matches.append(itemid)
         if sortattributes:
             return sorted(matches, key=lambda itemid: self.get_item(itemid).get_attributes(sortattributes),
-                            reverse=reverse)
+                          reverse=reverse)
         elif sort:
             return natsorted(matches, reverse=reverse)
         return matches
