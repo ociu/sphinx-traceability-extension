@@ -81,9 +81,7 @@ class ItemMatrix(TraceableBaseNode):
             if mapping_via_intermediate:
                 covered = source_id in mapping_via_intermediate
                 if covered:
-                    for idx, target_ids in enumerate(mapping_via_intermediate[source_id]):
-                        for target_id in target_ids:
-                            rights[idx] += self.make_internal_item_ref(app, target_id)
+                    self.add_all_targets(rights, mapping_via_intermediate[source_id], app)
             else:
                 has_external_target = self.add_external_targets(rights, source_item, external_relationships, app)
                 has_internal_target = self.add_internal_targets(rights, source_id, targets_with_ids, relationships, collection, app)
@@ -143,6 +141,17 @@ class ItemMatrix(TraceableBaseNode):
         elif group == 'bottom':
             tbody += rows.covered
             tbody += rows.uncovered
+
+    def add_all_targets(self, rights, targets_with_ids, app):
+        """ Adds links to internal targets
+
+            rights (list): List of empty cells (node.entry) to replace with target link(s)
+            targets_with_ids (list): List of linked target item IDs (set) per target
+            app (sphinx.application.Sphinx): Sphinx application object
+        """
+        for idx, target_ids in enumerate(targets_with_ids):
+            for target_id in target_ids:
+                rights[idx] += self.make_internal_item_ref(app, target_id)
 
     def add_external_targets(self, rights, source_item, external_relationships, app):
         """ Adds links to external targets for given source to the list of target cells
