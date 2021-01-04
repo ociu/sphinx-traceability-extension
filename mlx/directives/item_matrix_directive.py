@@ -128,6 +128,13 @@ class ItemMatrix(TraceableBaseNode):
 
     @staticmethod
     def _fill_table_body(tbody, rows, group):
+        """ Fills the table body with rows
+
+        Args:
+            tbody (nodes.tbody): Table body to extend
+            rows (Rows): Rows namedtuple object
+            group (str): Optional group option
+        """
         if not group:
             tbody += rows.sorted
         elif group == 'top':
@@ -138,6 +145,17 @@ class ItemMatrix(TraceableBaseNode):
             tbody += rows.uncovered
 
     def add_external_targets(self, rights, source_item, external_relationships, app):
+        """ Adds links to external targets for given source to the list of target cells
+
+        Args:
+            rights (list): List of empty cells (node.entry) to replace with target link(s) when covered
+            source_item (TraceableItem): Source item
+            external_relationships (list): List of all valid external relationships between source and target(s)
+            app (sphinx.application.Sphinx): Sphinx application object
+
+        Returns:
+            bool: True if one or more external targets have been found for the given source item, False otherwise
+        """
         has_external_target = False
         for external_relationship in external_relationships:
             for target_id in source_item.iter_targets(external_relationship):
@@ -148,6 +166,19 @@ class ItemMatrix(TraceableBaseNode):
         return has_external_target
 
     def add_internal_targets(self, rights, source_id, targets_with_ids, relationships, collection, app):
+        """ Adds links to internal targets for given source to the list of target cells
+
+        Args:
+            rights (list): List of empty cells (node.entry) to replace with target link(s) when covered
+            source_id (str): Item ID of source item
+            targets_with_ids (list): List of lists per target, listing target IDs to take into consideration
+            relationships (list): List of all valid relationships between source and target(s)
+            collection (TraceableCollection): Collection of TraceableItems
+            app (sphinx.application.Sphinx): Sphinx application object
+
+        Returns:
+            bool: True if one or more internal targets have been found for the given source item, False otherwise
+        """
         has_internal_target = False
         for idx, target_ids in enumerate(targets_with_ids):
             for target_id in target_ids:
@@ -157,6 +188,16 @@ class ItemMatrix(TraceableBaseNode):
         return has_internal_target
 
     def linking_via_intermediate(self, source_ids, targets_with_ids, collection):
+        """ Creates mapping of source IDs with a list of IDs of target items that are linked via an itermediate item
+
+        Args:
+            source_ids (list): List of item IDs of source items
+            targets_with_ids (list): List of lists per target, listing target IDs to take into consideration
+            collection (TraceableCollection): Collection of TraceableItems
+
+        Returns:
+            dict: Mapping of source IDs as key with a list of target item IDs as value
+        """
         links_with_relationships = []
         for relationships_str in self['type'].split(' | '):
             links_with_relationships.append(relationships_str.split(' '))
