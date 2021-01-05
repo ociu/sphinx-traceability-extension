@@ -251,7 +251,7 @@ A traceability matrix of documentation items can be generated using:
 .. code-block:: rest
 
     .. item-matrix:: Requirements to test case description traceability
-        :source: SWRQT
+        :source: RQT-
         :target: [IU]TEST
         :sourcetitle: Software requirements
         :targettitle: Integration and unit test cases
@@ -273,6 +273,7 @@ limitations in doing so:
   - The external relation needs to be specified explicitly in the *type* option.
   - No regex filtering on target item names is supported.
   - External items can only be used as source when the regex of the source option does not match any internal items.
+  - External relationships are ignored when linking via intermediate items.
 
 :source: *optional*, *single argument*
 
@@ -281,7 +282,7 @@ limitations in doing so:
 
 :target: *optional*, *multiple arguments (space-separated)*
 
-    Python-style regular expression used to filter the target items (right columns) based on their names.
+    Python-style regular expression(s) used to filter the target items (right columns) based on their names.
     Multiple arguments will result in multiple target columns, each filtered by their respective regex.
     When omitted no regex filtering is done on the target item names
 
@@ -342,6 +343,40 @@ limitations in doing so:
     The *class* attribute can be specified to customize table output, especially useful when rendering to LaTeX.
     Normally the *longtable* class is used when the number of rows is greater than 30 which allows long tables to
     span multiple pages. By setting *class* to *longtable* manually, you can force the use of this environment.
+
+Link targets via intermediate items (advanced)
+==============================================
+
+Let's say you have DESIGN-, RQT-, and TEST- items and you want to generate an item-matrix with DESIGN-items as
+``:source:`` and TEST-items as ``:target:``. These source and target items are not directly linked to each other. They are
+linked via the ``:intermediate:`` RQT-items:
+
+.. uml::
+
+    @startuml
+    DESIGN -> RQT : fulfills
+    RQT -> TEST : validated_by
+    @enduml
+
+.. code-block:: rest
+
+    .. item-matrix:: Design to test case description via requirement traceability
+        :source: DESIGN-
+        :intermediate: RQT-
+        :target: TEST-
+        :type: fulfills | validated_by
+
+:intermediate: *optional*, *single argument*
+
+    Python-style regular expression used to select intermediate items, meaning items that have to be linked to both
+    the source and target items.
+
+:type: *required*, *multiple arguments (space-separated)*
+
+    The *type* option must contain at least two relationships, separated by a ``|`` character. The relationships on
+    the lefthand side of this separator are used to link the *source* items to the *intermediate* items. The ones on
+    the righthand side are used to link the *intermediate* items to the *target* items.
+    External relationships are not compatible with this feature (yet).
 
 .. _traceability_usage_2d_matrix:
 

@@ -5,12 +5,12 @@ from docutils import nodes
 from docutils.parsers.rst import directives
 from natsort import natsorted
 
-from mlx.traceability_exception import report_warning
+from mlx.traceability_exception import report_warning, TraceabilityException
 from mlx.traceable_base_directive import TraceableBaseDirective
 from mlx.traceable_base_node import TraceableBaseNode
 
 
-def group(argument):
+def group_choice(argument):
     """Conversion function for the "group" option."""
     return directives.choice(argument, ('top', 'bottom'))
 
@@ -48,23 +48,21 @@ class ItemMatrix(TraceableBaseNode):
         headings = [nodes.entry('', nodes.paragraph('', title))
                     for title in [self['sourcetitle'], *self['targettitle']]]
         tgroup += nodes.thead('', nodes.row('', *headings))
-
-        # The table body
-        tbody = nodes.tbody()
-        tgroup += tbody
         table += tgroup
 
         # External relationships are treated a bit special in item-matrices:
         # - External references are only shown if explicitly requested in the "type" configuration
         # - No target filtering is done on external references
-
-        relationships = self['type']
-        if not relationships:
+        mapping_via_intermediate = {}
+        if not self['type']:
             # if no explicit relationships were given, we consider all of them (except for external ones)
             relationships = [rel for rel in collection.iter_relations() if not self.is_relation_external(rel)]
             external_relationships = []
         else:
+            relationships = self['type'].split(' ')
             external_relationships = [rel for rel in relationships if self.is_relation_external(rel)]
+            if ' | ' in self['type']:
+                mapping_via_intermediate = self.linking_via_intermediate(source_ids, targets_with_ids, collection)
 
         count_covered = 0
         rows = Rows([], [], [])
@@ -76,17 +74,16 @@ class ItemMatrix(TraceableBaseNode):
             left = nodes.entry()
             left += self.make_internal_item_ref(app, source_id)
             rights = [nodes.entry('') for _ in range(number_of_columns - 1)]
-            for ext_relationship in external_relationships:
-                for target_id in source_item.iter_targets(ext_relationship):
-                    ext_item_ref = self.make_external_item_ref(app, target_id, ext_relationship)
-                    for right in rights:
-                        right += ext_item_ref
-                    covered = True
-            for idx, target_ids in enumerate(targets_with_ids):
-                for target_id in target_ids:
-                    if collection.are_related(source_id, relationships, target_id):
-                        rights[idx] += self.make_internal_item_ref(app, target_id)
-                        covered = True
+            if mapping_via_intermediate:
+                covered = source_id in mapping_via_intermediate
+                if covered:
+                    self.add_all_targets(rights, mapping_via_intermediate[source_id], app)
+            else:
+                has_external_target = self.add_external_targets(rights, source_item, external_relationships, app)
+                has_internal_target = self.add_internal_targets(rights, source_id, targets_with_ids, relationships,
+                                                                collection, app)
+                covered = has_external_target or has_internal_target
+
             self._store_row(rows, left, rights, covered, self['onlycovered'])
 
         if not source_ids:
@@ -102,14 +99,7 @@ class ItemMatrix(TraceableBaseNode):
                     covered = self._fill_target_cells(app, rights, target_ids)
                     self._store_row(rows, left, rights, covered, self['onlycovered'])
 
-        if not self['group']:
-            tbody += rows.sorted
-        elif self['group'] == 'top':
-            tbody += rows.uncovered
-            tbody += rows.covered
-        elif self['group'] == 'bottom':
-            tbody += rows.covered
-            tbody += rows.uncovered
+        tgroup += self._build_table_body(rows, self['group'])
 
         count_total = len(rows.covered) + len(rows.uncovered)
         count_covered = len(rows.covered)
@@ -130,6 +120,153 @@ class ItemMatrix(TraceableBaseNode):
 
         top_node += table
         self.replace_self(top_node)
+
+    @staticmethod
+    def _build_table_body(rows, group):
+        """ Creates the table body and fills it with rows, grouping when desired
+
+        Args:
+            rows (Rows): Rows namedtuple object
+            group (str): Group option, falsy to disable grouping, 'top' or 'bottom' otherwise
+
+        Returns:
+            nodes.tbody: Filled table body
+        """
+        tbody = nodes.tbody()
+        if not group:
+            tbody += rows.sorted
+        elif group == 'top':
+            tbody += rows.uncovered
+            tbody += rows.covered
+        elif group == 'bottom':
+            tbody += rows.covered
+            tbody += rows.uncovered
+        return tbody
+
+    def add_all_targets(self, rights, targets_with_ids, app):
+        """ Adds links to internal targets
+
+            rights (list): List of empty cells (node.entry) to replace with target link(s)
+            targets_with_ids (list): List of linked target item IDs (set) per target
+            app (sphinx.application.Sphinx): Sphinx application object
+        """
+        for idx, target_ids in enumerate(targets_with_ids):
+            for target_id in target_ids:
+                rights[idx] += self.make_internal_item_ref(app, target_id)
+
+    def add_external_targets(self, rights, source_item, external_relationships, app):
+        """ Adds links to external targets for given source to the list of target cells
+
+        Args:
+            rights (list): List of empty cells (node.entry) to replace with target link(s) when covered
+            source_item (TraceableItem): Source item
+            external_relationships (list): List of all valid external relationships between source and target(s)
+            app (sphinx.application.Sphinx): Sphinx application object
+
+        Returns:
+            bool: True if one or more external targets have been found for the given source item, False otherwise
+        """
+        has_external_target = False
+        for external_relationship in external_relationships:
+            for target_id in source_item.iter_targets(external_relationship):
+                ext_item_ref = self.make_external_item_ref(app, target_id, external_relationship)
+                for right in rights:
+                    right += ext_item_ref
+                has_external_target = True
+        return has_external_target
+
+    def add_internal_targets(self, rights, source_id, targets_with_ids, relationships, collection, app):
+        """ Adds links to internal targets for given source to the list of target cells
+
+        Args:
+            rights (list): List of empty cells (node.entry) to replace with target link(s) when covered
+            source_id (str): Item ID of source item
+            targets_with_ids (list): List of lists per target, listing target IDs to take into consideration
+            relationships (list): List of all valid relationships between source and target(s)
+            collection (TraceableCollection): Collection of TraceableItems
+            app (sphinx.application.Sphinx): Sphinx application object
+
+        Returns:
+            bool: True if one or more internal targets have been found for the given source item, False otherwise
+        """
+        has_internal_target = False
+        for idx, target_ids in enumerate(targets_with_ids):
+            for target_id in target_ids:
+                if collection.are_related(source_id, relationships, target_id):
+                    rights[idx] += self.make_internal_item_ref(app, target_id)
+                    has_internal_target = True
+        return has_internal_target
+
+    def linking_via_intermediate(self, source_ids, targets_with_ids, collection):
+        """ Maps source IDs to IDs of target items that are linked via an itermediate item per target
+
+        Only covered source IDs are stored.
+
+        Args:
+            source_ids (list): List of item IDs of source items
+            targets_with_ids (list): List of lists per target, listing target IDs to take into consideration
+            collection (TraceableCollection): Collection of TraceableItems
+
+        Returns:
+            dict: Mapping of source IDs as key with a list of linked target item IDs (set) per target as value
+        """
+        links_with_relationships = []
+        for relationships_str in self['type'].split(' | '):
+            links_with_relationships.append(relationships_str.split(' '))
+        if len(links_with_relationships) > 2:
+            raise TraceabilityException("Type option of item-matrix must not contain more than one '|' "
+                                        "character; got {}".format(self['type']),
+                                        docname=self["document"])
+        # reverse relationship(s) specified for linking source to intermediate
+        for idx, rel in enumerate(links_with_relationships[0]):
+            links_with_relationships[0][idx] = collection.get_reverse_relation(rel)
+
+        source_to_targets_map = {}
+        for intermediate_id in collection.get_items(self['intermediate'], sort=False):
+            intermediate_item = collection.get_item(intermediate_id)
+
+            potential_source_ids = set()
+            for reverse_rel in links_with_relationships[0]:
+                potential_source_ids.update(intermediate_item.iter_targets(reverse_rel, sort=False))
+            # apply :source: filter
+            potential_source_ids = potential_source_ids.intersection(source_ids)
+            if not potential_source_ids:
+                continue
+
+            potential_target_ids = set()
+            for forward_rel in links_with_relationships[1]:
+                potential_target_ids.update(intermediate_item.iter_targets(forward_rel, sort=False))
+            if not potential_target_ids:
+                continue
+            # apply :target: filter
+            covered = False
+            actual_targets = []
+            for target_ids in targets_with_ids:
+                linked_target_ids = potential_target_ids.intersection(target_ids)
+                if linked_target_ids:
+                    covered = True
+                actual_targets.append(linked_target_ids)
+
+            if covered:
+                self._store_targets(source_to_targets_map, potential_source_ids, actual_targets)
+        return source_to_targets_map
+
+    @staticmethod
+    def _store_targets(source_to_targets_map, source_ids, targets_with_ids):
+        """ Extends given mapping with target IDs per target as value for each source ID as key
+
+        Args:
+            source_to_targets_map (dict): Mapping of source IDs as key with a list of linked target item IDs (set) per
+                target as value
+            source_ids (set): Source IDs to store targets for
+            targets_with_ids (list): List of linked target item IDs (set) per target
+        """
+        for source_id in source_ids:
+            if source_id not in source_to_targets_map:
+                source_to_targets_map[source_id] = targets_with_ids
+            else:
+                for idx, target_ids in enumerate(targets_with_ids):
+                    source_to_targets_map[source_id][idx].update(target_ids)
 
     @staticmethod
     def _store_row(rows, left, rights, covered, onlycovered):
@@ -204,11 +341,12 @@ class ItemMatrixDirective(TraceableBaseDirective):
         'class': directives.class_option,
         'target': directives.unchanged,
         'source': directives.unchanged,
+        'intermediate': directives.unchanged,
         'targettitle': directives.unchanged,
         'sourcetitle': directives.unchanged,
         'type': directives.unchanged,  # a string with relationship types separated by space
         'sourcetype': directives.unchanged,  # a string with relationship types separated by space
-        'group': group,
+        'group': group_choice,
         'onlycovered': directives.flag,
         'stats': directives.flag,
         'nocaptions': directives.flag,
@@ -234,14 +372,21 @@ class ItemMatrixDirective(TraceableBaseDirective):
         self.process_options(
             item_matrix_node,
             {
-                'target':      {'default': ['']},
-                'source':      {'default': ''},
-                'targettitle': {'default': ['Target'], 'delimiter': ','},
-                'sourcetitle': {'default': 'Source'},
-                'type':        {'default': []},
-                'sourcetype':  {'default': []},
+                'target':       {'default': ['']},
+                'intermediate': {'default': ''},
+                'source':       {'default': ''},
+                'targettitle':  {'default': ['Target'], 'delimiter': ','},
+                'sourcetitle':  {'default': 'Source'},
+                'type':         {'default': ''},
+                'sourcetype':   {'default': []},
             },
         )
+
+        if item_matrix_node['intermediate'] and ' | ' not in item_matrix_node['type']:
+            raise TraceabilityException("The :intermediate: option is used, expected at least two relationships "
+                                        "separated by ' | ' in the :type: option; got {!r}"
+                                        .format(item_matrix_node['type']),
+                                        docname=env.docname)
 
         # Process ``group`` option, given as a string that is either top or bottom or empty ().
         item_matrix_node['group'] = self.options.get('group', '')
@@ -254,7 +399,8 @@ class ItemMatrixDirective(TraceableBaseDirective):
                            .format(targets=item_matrix_node['target'], titles=item_matrix_node['targettitle']),
                            env.docname, self.lineno)
 
-        self.check_relationships(item_matrix_node['type'], env)
+        if item_matrix_node['type']:
+            self.check_relationships(item_matrix_node['type'].replace(' | ', ' ').split(' '), env)
         self.check_relationships(item_matrix_node['sourcetype'], env)
 
         self.check_option_presence(item_matrix_node, 'onlycovered')
