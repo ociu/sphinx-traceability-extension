@@ -48,10 +48,6 @@ class ItemMatrix(TraceableBaseNode):
         headings = [nodes.entry('', nodes.paragraph('', title))
                     for title in [self['sourcetitle'], *self['targettitle']]]
         tgroup += nodes.thead('', nodes.row('', *headings))
-
-        # The table body
-        tbody = nodes.tbody()
-        tgroup += tbody
         table += tgroup
 
         # External relationships are treated a bit special in item-matrices:
@@ -103,7 +99,7 @@ class ItemMatrix(TraceableBaseNode):
                     covered = self._fill_target_cells(app, rights, target_ids)
                     self._store_row(rows, left, rights, covered, self['onlycovered'])
 
-        self._fill_table_body(tbody, rows, self['group'])
+        tgroup += self._build_table_body(rows, self['group'])
 
         count_total = len(rows.covered) + len(rows.uncovered)
         count_covered = len(rows.covered)
@@ -126,14 +122,17 @@ class ItemMatrix(TraceableBaseNode):
         self.replace_self(top_node)
 
     @staticmethod
-    def _fill_table_body(tbody, rows, group):
-        """ Fills the table body with rows
+    def _build_table_body(rows, group):
+        """ Creates the table body and fills it with rows, grouping when desired
 
         Args:
-            tbody (nodes.tbody): Table body to extend
             rows (Rows): Rows namedtuple object
-            group (str): Optional group option
+            group (str): Group option, falsy to disable grouping, 'top' or 'bottom' otherwise
+
+        Returns:
+            nodes.tbody: Filled table body
         """
+        tbody = nodes.tbody()
         if not group:
             tbody += rows.sorted
         elif group == 'top':
@@ -142,6 +141,7 @@ class ItemMatrix(TraceableBaseNode):
         elif group == 'bottom':
             tbody += rows.covered
             tbody += rows.uncovered
+        return tbody
 
     def add_all_targets(self, rights, targets_with_ids, app):
         """ Adds links to internal targets
