@@ -9,7 +9,7 @@ if not environ.get('DISPLAY'):
     mpl.use('Agg')
 import matplotlib.pyplot as plt  # pylint: disable=wrong-import-order
 
-from mlx.traceability import report_warning
+from mlx.traceability_exception import report_warning
 from mlx.traceable_base_directive import TraceableBaseDirective
 from mlx.traceable_base_node import TraceableBaseNode
 from mlx.traceable_item import TraceableItem
