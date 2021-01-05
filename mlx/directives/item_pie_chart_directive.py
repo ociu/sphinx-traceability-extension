@@ -9,7 +9,7 @@ if not environ.get('DISPLAY'):
     mpl.use('Agg')
 import matplotlib.pyplot as plt  # pylint: disable=wrong-import-order
 
-from mlx.traceability import report_warning
+from mlx.traceability_exception import report_warning
 from mlx.traceable_base_directive import TraceableBaseDirective
 from mlx.traceable_base_node import TraceableBaseNode
 from mlx.traceable_item import TraceableItem
@@ -207,9 +207,7 @@ class ItemPieChart(TraceableBaseNode):
         """
         labels = list(chart_labels)
         sizes = list(chart_labels.values())
-        explode = [0] * len(labels)
-        uncoverd_index = labels.index(self['label_set'][0])
-        explode[uncoverd_index] = 0.05  # slightly detaches slice of first state, default is "uncovered"
+        explode = self._get_explode_values(labels, self['label_set'])
 
         fig, axes = plt.subplots()
         axes.pie(sizes, explode=explode, labels=labels, autopct=pct_wrapper(sizes), startangle=90)
@@ -230,6 +228,26 @@ class ItemPieChart(TraceableBaseNode):
         image_node['uri'] = rel_file_path
         image_node['candidates'] = '*'  # look at uri value for source path, relative to the srcdir folder
         return image_node
+
+    @staticmethod
+    def _get_explode_values(labels, label_set):
+        """ Gets a list of values indicating how far to detach each slice of the pie chart
+
+        Only the first configured state gets detached slightly; default is "uncovered"
+
+        Args:
+            labels (list): Slice labels (str)
+            label_set (list): All labels as configured by the label_set option
+
+        Returns:
+            list: List of numbers for each slice indicating how far to detach it
+        """
+        explode = [0] * len(labels)
+        uncovered_label = label_set[0]
+        if uncovered_label in labels:
+            uncovered_index = labels.index(uncovered_label)
+            explode[uncovered_index] = 0.05
+        return explode
 
 
 class ItemPieChartDirective(TraceableBaseDirective):
