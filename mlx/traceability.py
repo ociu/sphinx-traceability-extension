@@ -18,6 +18,7 @@ from sphinx.errors import NoUri
 from docutils import nodes
 from docutils.parsers.rst import directives
 
+from mlx.__traceability_version__ import version
 from mlx.traceable_attribute import TraceableAttribute
 from mlx.traceable_base_node import TraceableBaseNode
 from mlx.traceable_item import TraceableItem
@@ -613,3 +614,5 @@ def setup(app):
     app.add_role('item', XRefRole(nodeclass=PendingItemXref,
                                   innernodeclass=nodes.emphasis,
                                   warn_dangling=True))
+
+    return {'version': version}
