@@ -124,6 +124,19 @@ Item reference: :item:`r001`
 
 :item:`Item reference with alternative text<r001>`
 
+.. parsed-literal::
+
+   This is literal text, to show
+   that items can also be used in
+   literals, such as code:
+
+      Item reference: :item:`r001`
+
+      :item:`Item reference with alternative text<r001>`
+
+   Item links should be generated using parsed literal directive.
+
+
 
 Indices and tables
 ==================
