@@ -426,8 +426,6 @@ def are_related(env, source, target, relationships):
 
 def setup(app):
 
-    print("HOLAAAAAAAAAAAAAAAAA")
-
     # Create default relationships dictionary. Can be customized in conf.py
     app.add_config_value('traceability_relationships',
                          {'fulfills': 'fulfilled_by',
