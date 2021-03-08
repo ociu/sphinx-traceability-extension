@@ -25,7 +25,15 @@ sys.path.insert(0, os.path.abspath('../sphinxcontrib'))
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest', 'sphinx.ext.coverage', 'sphinx.ext.ifconfig', 'sphinx.ext.viewcode', 'sphinx.ext.graphviz', 'traceability']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest',
+              'sphinx.ext.coverage', 'sphinx.ext.ifconfig', 'sphinx.ext.viewcode',
+              'sphinx.ext.graphviz', 'traceability']
+
+# NOTE: current configuration file uses local traceability.py file.
+# In order to use the pip package, just add the `sphinxcontrib` namespace
+# in extensions array and setup function:
+# `traceability` --> `sphinxcontrib.traceability`
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

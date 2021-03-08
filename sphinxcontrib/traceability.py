@@ -5,7 +5,10 @@ from docutils import nodes
 from docutils.parsers.rst import Directive, directives
 from sphinx.roles import XRefRole
 from sphinx.util.nodes import make_refnode
-from sphinx.environment import NoUri
+try:
+    from sphinx.errors import NoUri
+except ImportError:
+    from sphinx.environment import NoUri
 from jinja2 import Template
 from textwrap import dedent
 import re
@@ -422,6 +425,8 @@ def are_related(env, source, target, relationships):
 # Extension setup
 
 def setup(app):
+
+    print("HOLAAAAAAAAAAAAAAAAA")
 
     # Create default relationships dictionary. Can be customized in conf.py
     app.add_config_value('traceability_relationships',
