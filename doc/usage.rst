@@ -509,6 +509,13 @@ functionality of the regular *item* directive.
 
     .. checklist-item:: PLAN-UNIT_TESTS Have you added unit tests for regression detection?
 
+.. note::
+
+    The IDs of these checklist-items should not start with an underscore or an asterisk to support markup in the PR/MR
+    description. More details in `PR #203`_.
+
+.. _`PR #203`: https://github.com/melexis/sphinx-traceability-extension/pull/203
+
 
 Setting the additional attribute's value
 ========================================
