@@ -371,6 +371,11 @@ linked via the ``:intermediate:`` RQT-items:
     Python-style regular expression used to select intermediate items, meaning items that have to be linked to both
     the source and target items.
 
+:intermediatetitle: *optional*, *single argument*
+
+    When given, an extra column that lists the intermediate item(s) per source item will be added between the columns
+    that list sources and the linked targets. The argument will be used as title for this new column.
+
 :type: *required*, *multiple arguments (space-separated)*
 
     The *type* option must contain at least two relationships, separated by a ``|`` character. The relationships on
