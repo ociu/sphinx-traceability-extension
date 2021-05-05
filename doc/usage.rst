@@ -365,6 +365,14 @@ linked via the ``:intermediate:`` RQT-items:
         :intermediate: RQT-
         :target: TEST-
         :type: fulfills | validated_by
+        :intermediatetitle: Intermediate
+
+:type: *required*, *multiple arguments (space-separated)*
+
+    The *type* option must contain at least two relationships, separated by a ``|`` character. The relationships on
+    the lefthand side of this separator are used to link the *source* items to the *intermediate* items. The ones on
+    the righthand side are used to link the *intermediate* items to the *target* items.
+    External relationships are not compatible with this feature (yet).
 
 :intermediate: *optional*, *single argument*
 
@@ -375,13 +383,6 @@ linked via the ``:intermediate:`` RQT-items:
 
     When given, an extra column that lists the intermediate item(s) per source item will be added between the columns
     that list sources and the linked targets. The argument will be used as title for this new column.
-
-:type: *required*, *multiple arguments (space-separated)*
-
-    The *type* option must contain at least two relationships, separated by a ``|`` character. The relationships on
-    the lefthand side of this separator are used to link the *source* items to the *intermediate* items. The ones on
-    the righthand side are used to link the *intermediate* items to the *target* items.
-    External relationships are not compatible with this feature (yet).
 
 .. _traceability_usage_2d_matrix:
 
