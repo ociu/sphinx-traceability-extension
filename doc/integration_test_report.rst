@@ -346,11 +346,22 @@ Traceability from integration tests to requirements
 Traceability via intermediate items
 -----------------------------------
 
-.. item-matrix::
+.. item-matrix:: Design to test via hidden requirements
     :source: DESIGN-
     :intermediate: RQT-
     :target: UTEST ITEST
     :sourcetitle: design items
+    :targettitle: unit tests, integration tests
+    :type: fulfills | validated_by
+    :group: bottom
+    :nocaptions:
+
+.. item-matrix:: Design to test via shown requirements
+    :source: DESIGN-
+    :intermediate: RQT-
+    :target: UTEST ITEST
+    :sourcetitle: design items
+    :intermediatetitle: requirements
     :targettitle: unit tests, integration tests
     :type: fulfills | validated_by
     :group: bottom
