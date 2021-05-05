@@ -365,11 +365,7 @@ linked via the ``:intermediate:`` RQT-items:
         :intermediate: RQT-
         :target: TEST-
         :type: fulfills | validated_by
-
-:intermediate: *optional*, *single argument*
-
-    Python-style regular expression used to select intermediate items, meaning items that have to be linked to both
-    the source and target items.
+        :intermediatetitle: Intermediate
 
 :type: *required*, *multiple arguments (space-separated)*
 
@@ -377,6 +373,16 @@ linked via the ``:intermediate:`` RQT-items:
     the lefthand side of this separator are used to link the *source* items to the *intermediate* items. The ones on
     the righthand side are used to link the *intermediate* items to the *target* items.
     External relationships are not compatible with this feature (yet).
+
+:intermediate: *optional*, *single argument*
+
+    Python-style regular expression used to select intermediate items, meaning items that have to be linked to both
+    the source and target items.
+
+:intermediatetitle: *optional*, *single argument*
+
+    When given, an extra column that lists the intermediate item(s) per source item will be added between the columns
+    that list sources and the linked targets. The argument will be used as title for this new column.
 
 .. _traceability_usage_2d_matrix:
 

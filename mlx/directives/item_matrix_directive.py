@@ -17,6 +17,7 @@ def group_choice(argument):
 
 class ItemMatrix(TraceableBaseNode):
     '''Matrix for cross referencing documentation items'''
+    LinkedItems = namedtuple("LinkedItems", "intermediates targets")
 
     def perform_replacement(self, app, collection):
         """
@@ -27,11 +28,11 @@ class ItemMatrix(TraceableBaseNode):
             app: Sphinx application object to use.
             collection (TraceableCollection): Collection for which to generate the nodes.
         """
-
         # The 'target' attribute might be empty, in which case a catch-all is implied. In this case, we set
         # number_of_columns to 2 (one source, one target). In other cases, it's the number of target settings + 1 source
-        # column
-        number_of_columns = max(2, len(self['target']) + 1)
+        # column + 1 intermediate column if a title has been configured for it
+        show_intermediate = bool(self['intermediatetitle']) and bool(self['intermediate'])
+        number_of_columns = max(2, len(self['target']) + 1) + int(show_intermediate)
         Rows = namedtuple('Rows', "sorted covered uncovered")
         source_ids = collection.get_items(self['source'], self['filter-attributes'])
         targets_with_ids = []
@@ -45,8 +46,10 @@ class ItemMatrix(TraceableBaseNode):
 
         # Column and heading setup
         tgroup += [nodes.colspec(colwidth=5) for _ in range(number_of_columns)]
-        headings = [nodes.entry('', nodes.paragraph('', title))
-                    for title in [self['sourcetitle'], *self['targettitle']]]
+        titles = [self['sourcetitle'], *self['targettitle']]
+        if show_intermediate:
+            titles.insert(1, self['intermediatetitle'].strip())
+        headings = [nodes.entry('', nodes.paragraph('', title)) for title in titles]
         tgroup += nodes.thead('', nodes.row('', *headings))
         table += tgroup
 
@@ -77,7 +80,8 @@ class ItemMatrix(TraceableBaseNode):
             if mapping_via_intermediate:
                 covered = source_id in mapping_via_intermediate
                 if covered:
-                    self.add_all_targets(rights, mapping_via_intermediate[source_id], app)
+                    self.add_all_targets(rights, mapping_via_intermediate[source_id], app,
+                                         show_intermediate=show_intermediate)
             else:
                 has_external_target = self.add_external_targets(rights, source_item, external_relationships, app)
                 has_internal_target = self.add_internal_targets(rights, source_id, targets_with_ids, relationships,
@@ -143,14 +147,19 @@ class ItemMatrix(TraceableBaseNode):
             tbody += rows.uncovered
         return tbody
 
-    def add_all_targets(self, rights, targets_with_ids, app):
-        """ Adds links to internal targets
+    def add_all_targets(self, rights, linked_items, app, show_intermediate=False):
+        """ Adds links to internal targets and, when configured, links to intermediates first
 
-            rights (list): List of empty cells (node.entry) to replace with target link(s)
-            targets_with_ids (list): List of linked target item IDs (set) per target
+            rights (list): List of empty cells (node.entry) to replace with target links and, when enabled, links to
+                intermediates first
+            linked_items (LinkedItems): Namedtuple that contains all IDs of intermediate and target items
             app (sphinx.application.Sphinx): Sphinx application object
+            show_intermediate (bool): True to add a column for intermediate item(s) per source item
         """
-        for idx, target_ids in enumerate(targets_with_ids):
+        if show_intermediate:
+            for intermediate_id in linked_items.intermediates:
+                rights[0] += self.make_internal_item_ref(app, intermediate_id)
+        for idx, target_ids in enumerate(linked_items.targets, start=int(show_intermediate)):
             for target_id in target_ids:
                 rights[idx] += self.make_internal_item_ref(app, target_id)
 
@@ -208,7 +217,8 @@ class ItemMatrix(TraceableBaseNode):
             collection (TraceableCollection): Collection of TraceableItems
 
         Returns:
-            dict: Mapping of source IDs as key with a list of linked target item IDs (set) per target as value
+            dict: Mapping of source IDs as key with as value a namedtuple that contains intermediate
+                and target item IDs (set)
         """
         links_with_relationships = []
         for relationships_str in self['type'].split(' | '):
@@ -221,8 +231,8 @@ class ItemMatrix(TraceableBaseNode):
         for idx, rel in enumerate(links_with_relationships[0]):
             links_with_relationships[0][idx] = collection.get_reverse_relation(rel)
 
-        source_to_targets_map = {}
-        for intermediate_id in collection.get_items(self['intermediate'], sort=False):
+        source_to_links_map = {}
+        for intermediate_id in collection.get_items(self['intermediate'], sort=bool(self['intermediatetitle'])):
             intermediate_item = collection.get_item(intermediate_id)
 
             potential_source_ids = set()
@@ -248,25 +258,26 @@ class ItemMatrix(TraceableBaseNode):
                 actual_targets.append(linked_target_ids)
 
             if covered:
-                self._store_targets(source_to_targets_map, potential_source_ids, actual_targets)
-        return source_to_targets_map
+                self._store_targets(source_to_links_map, potential_source_ids, actual_targets, intermediate_id)
+        return source_to_links_map
 
-    @staticmethod
-    def _store_targets(source_to_targets_map, source_ids, targets_with_ids):
+    def _store_targets(self, source_to_links_map, source_ids, targets_with_ids, intermediate_id):
         """ Extends given mapping with target IDs per target as value for each source ID as key
 
         Args:
-            source_to_targets_map (dict): Mapping of source IDs as key with a list of linked target item IDs (set) per
-                target as value
+            source_to_links_map (dict): Mapping of source IDs as key with as value a namedtuple that contains
+                intermediate and target item IDs (set)
             source_ids (set): Source IDs to store targets for
             targets_with_ids (list): List of linked target item IDs (set) per target
+            intermediate_id (str): ID of intermediate item that links the given source items to the given target items
         """
         for source_id in source_ids:
-            if source_id not in source_to_targets_map:
-                source_to_targets_map[source_id] = targets_with_ids
+            if source_id not in source_to_links_map:
+                source_to_links_map[source_id] = self.LinkedItems([intermediate_id], targets_with_ids)
             else:
+                source_to_links_map[source_id].intermediates.append(intermediate_id)
                 for idx, target_ids in enumerate(targets_with_ids):
-                    source_to_targets_map[source_id][idx].update(target_ids)
+                    source_to_links_map[source_id].targets[idx].update(target_ids)
 
     @staticmethod
     def _store_row(rows, left, rights, covered, onlycovered):
@@ -344,6 +355,7 @@ class ItemMatrixDirective(TraceableBaseDirective):
         'intermediate': directives.unchanged,
         'targettitle': directives.unchanged,
         'sourcetitle': directives.unchanged,
+        'intermediatetitle': directives.unchanged,
         'type': directives.unchanged,  # a string with relationship types separated by space
         'sourcetype': directives.unchanged,  # a string with relationship types separated by space
         'group': group_choice,
@@ -372,13 +384,14 @@ class ItemMatrixDirective(TraceableBaseDirective):
         self.process_options(
             item_matrix_node,
             {
-                'target':       {'default': ['']},
-                'intermediate': {'default': ''},
-                'source':       {'default': ''},
-                'targettitle':  {'default': ['Target'], 'delimiter': ','},
-                'sourcetitle':  {'default': 'Source'},
-                'type':         {'default': ''},
-                'sourcetype':   {'default': []},
+                'target':            {'default': ['']},
+                'intermediate':      {'default': ''},
+                'source':            {'default': ''},
+                'targettitle':       {'default': ['Target'], 'delimiter': ','},
+                'sourcetitle':       {'default': 'Source'},
+                'intermediatetitle': {'default': ''},
+                'type':              {'default': ''},
+                'sourcetype':        {'default': []},
             },
         )
 
