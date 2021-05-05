@@ -31,7 +31,7 @@ class ItemMatrix(TraceableBaseNode):
         # The 'target' attribute might be empty, in which case a catch-all is implied. In this case, we set
         # number_of_columns to 2 (one source, one target). In other cases, it's the number of target settings + 1 source
         # column + 1 intermediate column if a title has been configured for it
-        show_intermediate = bool(self['intermediatetitle'])
+        show_intermediate = bool(self['intermediatetitle']) and bool(self['intermediate'])
         number_of_columns = max(2, len(self['target']) + 1) + int(show_intermediate)
         Rows = namedtuple('Rows', "sorted covered uncovered")
         source_ids = collection.get_items(self['source'], self['filter-attributes'])
