@@ -309,7 +309,7 @@ limitations in doing so:
     The list of relationships that all source items should have. This option is unrelated to the *target* option
     and is solely used to filter source items - in addition to the *source* filter.
 
-:status: *optional*, *multiple arguments (space-separated)*
+:<<attribute>>: *optional*, *multiple arguments (space-separated)*
 
     Python-style regular expression used to filter the source items (left column) based on their attributes.
     The attribute value is **not** used as a filter on the *target* part.
