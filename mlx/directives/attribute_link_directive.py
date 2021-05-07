@@ -60,6 +60,7 @@ class AttributeLinkDirective(TraceableBaseDirective):
                 'filter': {'default': r"\S+"},
             },
         )
+        node['filter'] = node['filter'].replace('\n', '').strip()
         self.add_found_attributes(node)
 
         return [node]
