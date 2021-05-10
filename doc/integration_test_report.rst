@@ -355,6 +355,7 @@ Traceability via intermediate items
     :type: fulfills | validated_by
     :group: bottom
     :nocaptions:
+    :stats:
 
 .. item-matrix:: Design to test via shown requirements
     :source: DESIGN-
@@ -366,6 +367,20 @@ Traceability via intermediate items
     :type: fulfills | validated_by
     :group: bottom
     :nocaptions:
+    :stats:
+
+.. item-matrix:: Fully covered design items
+    :source: DESIGN-
+    :intermediate: RQT-
+    :target: UTEST ITEST
+    :sourcetitle: design items
+    :intermediatetitle: requirements
+    :targettitle: unit tests, integration tests
+    :type: fulfills | validated_by
+    :group: bottom
+    :nocaptions:
+    :stats:
+    :coveredintermediates:
 
 Item attribute matrix
 =====================

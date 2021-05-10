@@ -89,6 +89,9 @@ Requirements for mlx.traceability
 
     The plugin shall be able to allow configurability of the order of items' attributes.
 
+.. item:: RQT-DUMMY Dummy requirement that is not covered by a test
+    :fulfilled_by: DESIGN-ATTRIBUTES DESIGN-ITEMIZE
+
 -------------------
 Traceability matrix
 -------------------
