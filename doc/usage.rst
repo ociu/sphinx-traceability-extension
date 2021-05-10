@@ -387,7 +387,7 @@ linked via the ``:intermediate:`` RQT-items:
 
 :coveredintermediates: *optional*, *flag*
     When enabled, all sources that have one or more intermediates that are uncovered remain uncovered, i.e. **all**
-    intermediates must be covered to for a source for it to be covered.
+    intermediates must be covered for the linked source to be covered.
 
 .. _traceability_usage_2d_matrix:
 
