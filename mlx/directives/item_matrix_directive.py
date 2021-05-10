@@ -232,6 +232,7 @@ class ItemMatrix(TraceableBaseNode):
             links_with_relationships[0][idx] = collection.get_reverse_relation(rel)
 
         source_to_links_map = {}
+        excluded_source_ids = set()
         for intermediate_id in collection.get_items(self['intermediate'], sort=bool(self['intermediatetitle'])):
             intermediate_item = collection.get_item(intermediate_id)
 
@@ -240,6 +241,7 @@ class ItemMatrix(TraceableBaseNode):
                 potential_source_ids.update(intermediate_item.iter_targets(reverse_rel, sort=False))
             # apply :source: filter
             potential_source_ids = potential_source_ids.intersection(source_ids)
+            potential_source_ids = potential_source_ids.difference(excluded_source_ids)
             if not potential_source_ids:
                 continue
 
@@ -247,6 +249,8 @@ class ItemMatrix(TraceableBaseNode):
             for forward_rel in links_with_relationships[1]:
                 potential_target_ids.update(intermediate_item.iter_targets(forward_rel, sort=False))
             if not potential_target_ids:
+                if self['coveredintermediates']:
+                    excluded_source_ids.update(potential_source_ids)
                 continue
             # apply :target: filter
             covered = False
@@ -259,6 +263,10 @@ class ItemMatrix(TraceableBaseNode):
 
             if covered:
                 self._store_targets(source_to_links_map, potential_source_ids, actual_targets, intermediate_id)
+            elif self['coveredintermediates']:
+                excluded_source_ids.update(potential_source_ids)
+        for source_id in excluded_source_ids:
+            source_to_links_map.pop(source_id, None)
         return source_to_links_map
 
     def _store_targets(self, source_to_links_map, source_ids, targets_with_ids, intermediate_id):
@@ -360,6 +368,7 @@ class ItemMatrixDirective(TraceableBaseDirective):
         'sourcetype': directives.unchanged,  # a string with relationship types separated by space
         'group': group_choice,
         'onlycovered': directives.flag,
+        'coveredintermediates': directives.flag,
         'stats': directives.flag,
         'nocaptions': directives.flag,
     }
@@ -417,6 +426,7 @@ class ItemMatrixDirective(TraceableBaseDirective):
         self.check_relationships(item_matrix_node['sourcetype'], env)
 
         self.check_option_presence(item_matrix_node, 'onlycovered')
+        self.check_option_presence(item_matrix_node, 'coveredintermediates')
         self.check_option_presence(item_matrix_node, 'stats')
 
         self.check_caption_flags(item_matrix_node, app.config.traceability_matrix_no_captions)

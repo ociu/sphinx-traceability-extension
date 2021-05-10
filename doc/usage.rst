@@ -366,6 +366,7 @@ linked via the ``:intermediate:`` RQT-items:
         :target: TEST-
         :type: fulfills | validated_by
         :intermediatetitle: Intermediate
+        :coveredintermediates:
 
 :type: *required*, *multiple arguments (space-separated)*
 
@@ -383,6 +384,10 @@ linked via the ``:intermediate:`` RQT-items:
 
     When given, an extra column that lists the intermediate item(s) per source item will be added between the columns
     that list sources and the linked targets. The argument will be used as title for this new column.
+
+:coveredintermediates: *optional*, *flag*
+    When enabled, all sources that have one or more intermediates that are uncovered remain uncovered, i.e. **all**
+    intermediates must be covered to for a source for it to be covered.
 
 .. _traceability_usage_2d_matrix:
 
