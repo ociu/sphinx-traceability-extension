@@ -234,7 +234,7 @@ class TraceableItem(TraceableBaseClass):
         Args:
             attr (str): Name of the attribute.
         Returns:
-            (str/None) Value matching the given attribute key, or None if attribute does not exist.
+            str/None: Value matching the given attribute key, or None if attribute does not exist.
         '''
         if attr in self.attributes:
             return self.attributes[attr]
@@ -246,7 +246,7 @@ class TraceableItem(TraceableBaseClass):
         Args:
             attr (list): List of names of the attribute
         Returns:
-            (list) List of values matching the given attributes, or an empty list if no attributes exist
+            list: List of values of the given attributes, None is used as value for each attribute that does not exist
         '''
         values = []
         for attr in attrs:
