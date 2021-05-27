@@ -384,9 +384,9 @@ class TraceableItem(TraceableBaseClass):
         # Item should not be a placeholder
         if self.is_placeholder():
             raise TraceabilityException('item {item} is not defined'.format(item=self.get_id()), self.get_document())
-        # Item's attributes should be valid
+        # Item's attributes should be valid, empty string is allowed
         for attribute in self.iter_attributes():
-            if not self.attributes[attribute]:
+            if self.attributes[attribute] is None:
                 raise TraceabilityException('item {item} has invalid attribute value for {attribute}'
                                             .format(item=self.get_id(), attribute=attribute))
         # Targets should have no duplicates
