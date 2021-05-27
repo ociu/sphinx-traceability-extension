@@ -234,12 +234,11 @@ class TraceableItem(TraceableBaseClass):
         Args:
             attr (str): Name of the attribute.
         Returns:
-            (str) Value matching the given attribute key, or '' if attribute does not exist.
+            (str/None) Value matching the given attribute key, or None if attribute does not exist.
         '''
-        value = ''
         if attr in self.attributes:
-            value = self.attributes[attr]
-        return value
+            return self.attributes[attr]
+        return None
 
     def get_attributes(self, attrs):
         ''' Gets the values of a list of attributes from the traceable item.
