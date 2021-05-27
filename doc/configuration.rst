@@ -54,7 +54,7 @@ Stringification of attributes
 
 Python variable *traceability_attribute_to_string* can be defined in order to override the
 default configuration of the traceability plugin.
-It is a *set* of attribute stringifications: the *key* is the name of the attribute, while
+It is a *dictionary* of attribute stringifications: the *key* is the name of the attribute, while
 the *value* holds the string representation (as to be rendered in html) of the attribute name.
 
 Example of attribute stringification:
@@ -74,8 +74,8 @@ Valid relationships
 
 Python variable *traceability_relationsips* can be defined in order to override the
 default configuration of the traceability plugin.
-It is a *set* of relationship pairs: the *key* is the name of the forward relationship, while the *value* holds the
-name of the corresponding reverse relationship. Both can only be lowercase.
+It is a *dictionary* of relationship pairs: the *key* is the name of the forward relationship, while the *value* holds
+the name of the corresponding reverse relationship. Both can only be lowercase.
 
 Relationships with prefix *ext_* are treated in a different way: they are handled as external relationships and don't
 need a reverse relationship.
@@ -97,8 +97,8 @@ Stringification of relationships
 
 Python variable *traceability_relationship_to_string* can be defined in order to override the
 default configuration of the traceability plugin.
-It is a *set* of relationship stringifications: the *key* is the name of the (forward or reverse) relationship, while
-the *value* holds the string representation (as to be rendered in html) of the relationship.
+It is a *dictionary* of relationship stringifications: the *key* is the name of the (forward or reverse) relationship,
+while the *value* holds the string representation (as to be rendered in html) of the relationship.
 
 Example of internal and external relationship stringification:
 
@@ -117,8 +117,8 @@ External relationship to URL translation
 ----------------------------------------
 
 External relationships need to be translated to URL's while rendering. For each defined external relationship,
-an entry in the Python *set* named *traceability_external_relationship_to_url* is needed. The URL generation
-is templated using the *fieldx* keyword, where x is a number incrementing from 1 onwards for each value in the URL
+an entry in the *dictionary* named *traceability_external_relationship_to_url* is needed. The URL generation
+is templated using the *fieldN* keyword, where N is a number incrementing from 1 onwards for each value in the URL
 that needs to be replaced.
 
 Example configuration of URL translation of external relationship using 2 fields:
@@ -269,22 +269,23 @@ The actual content (RST content with images, formulas, etc) of the item is curre
 Callback per item (advanced)
 ----------------------------
 
-The plugin allows parsing and modifying documentation objects 'behind the scenes' using a callback. The callback
+The plugin allows parsing and modifying documentation objects *behind the scenes* using a callback. The callback
 has this prototype:
 
 .. code-block:: python
 
-    def traceability_my_callback_per_item(name, all_items):
-        '''
-        Custom callback on items
+    def traceability_my_callback_per_item(name, collection):
+        ''' Custom callback on items
 
-        :param name: Name (id) of the item currently being parsed
-        :param all_items: Set of all items that are parsed so far
+        Args:
+            name (str): Name (id) of the item currently being parsed
+            collection (TraceableCollection): Collection of all items that have been parsed so far
         '''
-        return
+        pass
 
 The callback is executed while parsing the documentation item from your rst-file. Note that not all items are
-available at the time this callback executes, the *all_items* parameter is a growing set of documentation objects.
+available at the time this callback executes, the *collection* parameter is a growing collection of documentation
+objects.
 
 Example of no callback per item:
 
