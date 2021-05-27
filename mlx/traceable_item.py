@@ -158,7 +158,7 @@ class TraceableItem(TraceableBaseClass):
             sort (bool): True if the relations should be sorted naturally, False if no sorting is needed
 
         Returns:
-            (list) List of targets to other traceable item(s), naturally sorted by default
+            list: List of targets to other traceable item(s), naturally sorted by default
         '''
         targets = []
         if explicit and relation in self.explicit_relations:
@@ -176,7 +176,7 @@ class TraceableItem(TraceableBaseClass):
             sort (bool): True if the relations should be sorted naturally, False if no sorting is needed
 
         Returns:
-            (list) List containing available relations in the item, naturally sorted by default
+            list: List containing available relations in the item, naturally sorted by default
         '''
         relations = list(self.explicit_relations) + list(self.implicit_relations)
         if sort:
@@ -244,7 +244,7 @@ class TraceableItem(TraceableBaseClass):
         Args:
             attr (list): List of names of the attribute
         Returns:
-            list: List of values of the given attributes, None is used as value for each attribute that does not exist
+            list: List of values of the given attributes, '' is used as value for each attribute that does not exist
         '''
         return [self.get_attribute(attr) for attr in attrs]
 
@@ -254,7 +254,7 @@ class TraceableItem(TraceableBaseClass):
         Sorted as configured by an attribute-sort directive, with the remaining attributes naturally sorted.
 
         Returns:
-            (list) Sorted list containing available attributes in the item.
+            list: Sorted list containing available attributes in the item.
         '''
         sorted_attributes = [attr for attr in self.attribute_order if attr in self.attributes]
         sorted_attributes.extend(natsorted(set(self.attributes).difference(set(self.attribute_order))))
@@ -267,7 +267,7 @@ class TraceableItem(TraceableBaseClass):
             explicit (bool)
 
         Returns:
-            (str): String representation of the item.
+            str: String representation of the item.
         '''
         retval = TraceableItem.STRING_TEMPLATE.format(identification=self.get_id())
         retval += '\tPlaceholder: {placeholder}\n'.format(placeholder=self.is_placeholder())
@@ -302,7 +302,7 @@ class TraceableItem(TraceableBaseClass):
             regex (str): Regex to match the given item against.
 
         Returns:
-            (bool) True if the given regex matches the item identification.
+            bool: True if the given regex matches the item identification.
         '''
         return re.match(regex, self.get_id())
 
@@ -313,7 +313,7 @@ class TraceableItem(TraceableBaseClass):
             attributes (dict): Dictionary with attribute-regex pairs to match the given item against.
 
         Returns:
-            (bool) True if the given attributes match the item attributes.
+            bool: True if the given attributes match the item attributes.
         '''
         for attr in attributes:
             if not re.match(attributes[attr], self.get_attribute(attr)):
@@ -328,7 +328,7 @@ class TraceableItem(TraceableBaseClass):
             target_id (str): Identifier of the target item.
 
         Returns:
-            (bool) True if given item is related through the given relationships, False otherwise.
+            bool: True if given item is related through the given relationships, False otherwise.
         '''
         for relation in relations:
             if target_id in self.iter_targets(relation, explicit=True, implicit=True, sort=False):
@@ -342,7 +342,7 @@ class TraceableItem(TraceableBaseClass):
             relations (list): List of relations.
 
         Returns:
-            (bool) True if the item has every relationship in given list of list is empty, False otherwise.
+            bool: True if the item has every relationship in given list of list is empty, False otherwise.
         '''
         own_relations = self.iter_relations(sort=False)
         for relation in relations:
@@ -354,7 +354,7 @@ class TraceableItem(TraceableBaseClass):
         ''' Exports item to a dictionary.
 
         Returns:
-            (dict) Dictionary representation of the object.
+            dict: Dictionary representation of the object.
         '''
         data = {}
         if not self.is_placeholder():
