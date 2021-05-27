@@ -236,9 +236,7 @@ class TraceableItem(TraceableBaseClass):
         Returns:
             str/None: Value matching the given attribute key, or None if attribute does not exist.
         '''
-        if attr in self.attributes:
-            return self.attributes[attr]
-        return None
+        return self.attributes.get(attr, None)
 
     def get_attributes(self, attrs):
         ''' Gets the values of a list of attributes from the traceable item.
@@ -248,10 +246,7 @@ class TraceableItem(TraceableBaseClass):
         Returns:
             list: List of values of the given attributes, None is used as value for each attribute that does not exist
         '''
-        values = []
-        for attr in attrs:
-            values.append(self.get_attribute(attr))
-        return values
+        return [self.get_attribute(attr) for attr in attrs]
 
     def iter_attributes(self):
         ''' Iterates over available attributes.
