@@ -234,9 +234,9 @@ class TraceableItem(TraceableBaseClass):
         Args:
             attr (str): Name of the attribute.
         Returns:
-            str/None: Value matching the given attribute key, or None if attribute does not exist.
+            str: Value matching the given attribute key, or '' if attribute does not exist.
         '''
-        return self.attributes.get(attr, None)
+        return self.attributes.get(attr, '')
 
     def get_attributes(self, attrs):
         ''' Gets the values of a list of attributes from the traceable item.
@@ -372,18 +372,12 @@ class TraceableItem(TraceableBaseClass):
 
         Raises:
             TraceabilityException: Item is not defined.
-            TraceabilityException: Item has an invalid attribute value.
             TraceabilityException: Duplicate target found for item.
         '''
         super(TraceableItem, self).self_test()
         # Item should not be a placeholder
         if self.is_placeholder():
             raise TraceabilityException('item {item} is not defined'.format(item=self.get_id()), self.get_document())
-        # Item's attributes should be valid, empty string is allowed
-        for attribute in self.iter_attributes():
-            if self.attributes[attribute] is None:
-                raise TraceabilityException('item {item} has invalid attribute value for {attribute}'
-                                            .format(item=self.get_id(), attribute=attribute))
         # Targets should have no duplicates
         for relation in self.iter_relations(sort=False):
             tgts = self.iter_targets(relation, sort=False)
