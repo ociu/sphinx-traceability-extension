@@ -372,12 +372,19 @@ class TraceableItem(TraceableBaseClass):
 
         Raises:
             TraceabilityException: Item is not defined.
+            TraceabilityException: Item has an invalid attribute value.
             TraceabilityException: Duplicate target found for item.
         '''
         super(TraceableItem, self).self_test()
         # Item should not be a placeholder
         if self.is_placeholder():
             raise TraceabilityException('item {item} is not defined'.format(item=self.get_id()), self.get_document())
+        # Item's attributes should be valid, empty string is allowed
+        for attribute in self.iter_attributes():
+            value = self.attributes[attribute]
+            if value is None or not TraceableItem.defined_attributes[attribute].can_accept(value):
+                raise TraceabilityException('item {item} has invalid attribute value for {attribute}'
+                                            .format(item=self.get_id(), attribute=attribute))
         # Targets should have no duplicates
         for relation in self.iter_relations(sort=False):
             tgts = self.iter_targets(relation, sort=False)
