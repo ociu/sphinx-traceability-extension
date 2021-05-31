@@ -30,4 +30,4 @@ jobs:
       run: |
         tox -e py -v
       env:
-        TOXENV:check,sphinx2.1,sphinx-latest,codecov
+        TOXENV: check,sphinx2.1,sphinx-latest,codecov
