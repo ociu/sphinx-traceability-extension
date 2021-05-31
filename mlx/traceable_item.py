@@ -204,7 +204,7 @@ class TraceableItem(TraceableBaseClass):
             value (str): Value of the attribute.
             overwrite (bool): Overwrite existing attribute value, if any.
         '''
-        if not attr or attr not in TraceableItem.defined_attributes:
+        if not attr or value is None or attr not in TraceableItem.defined_attributes:
             raise TraceabilityException('item {item} has invalid attribute ({attr}={value})'.format(item=self.get_id(),
                                                                                                     attr=attr,
                                                                                                     value=value),
