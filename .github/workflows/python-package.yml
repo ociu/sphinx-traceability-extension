@@ -34,7 +34,7 @@ jobs:
     - name: Run Tox
       run: tox -v
       env:
-        TOXENV: check,sphinx2.1,sphinx-latest,codecov
+        TOXENV: py,check,sphinx2.1,sphinx-latest,codecov
 
   deploy:
 
