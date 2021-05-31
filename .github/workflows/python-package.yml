@@ -28,6 +28,6 @@ jobs:
         sudo apt-get install plantuml
     - name: Run Tox
       run: |
-        tox -e py -v
+        tox -v
       env:
-        TOXENV: check,sphinx2.1,sphinx-latest,codecov
+        TOXENV: ${{ matrix.python-version }},check,sphinx2.1,sphinx-latest,codecov
