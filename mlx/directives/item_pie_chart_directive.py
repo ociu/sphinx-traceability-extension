@@ -65,7 +65,7 @@ class ItemPieChart(TraceableBaseNode):
                                                                    list(self.linked_attributes.values()))
         p_node = nodes.paragraph()
         p_node += nodes.Text(statistics)
-        p_node += self.build_pie_chart(chart_labels, env)
+        top_node += self.build_pie_chart(chart_labels, env)
         top_node += p_node
         self.replace_self(top_node)
 
