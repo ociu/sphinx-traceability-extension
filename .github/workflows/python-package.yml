@@ -30,4 +30,5 @@ jobs:
       run: |
         tox -v
       env:
-        TOXENV: ${{ matrix.python-version }},check,sphinx2.1,sphinx-latest,codecov
+        TOXPYTHON: python${{ matrix.python-version }}
+        TOXENV: check,sphinx2.1,sphinx-latest,codecov
