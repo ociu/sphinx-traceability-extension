@@ -446,7 +446,7 @@ def _parse_description(description, attr_values, merge_request_id, regex):
     query_results = {}
     for line in description.split('\n'):
         # catch the content of checkbox and the item ID after the checkbox
-        cli_match = match(r"\s*[\*\-]\s+[*_`~]*\[(?P<checkbox>[\sx])\]\s+(?P<target_id>{})".format(regex), line)
+        cli_match = match(r"\s*[\*\-]\s+\[(?P<checkbox>[\sx])\]\s+[*_`~]*(?P<target_id>{})".format(regex), line)
         if cli_match:
             if cli_match.group('checkbox') == 'x':
                 item_info = ItemInfo(attr_values[0], merge_request_id)
@@ -485,6 +485,7 @@ def setup(app):
             'attendees': '^([A-Z]{3}[, ]*)+$',
             'assignee': '^.*$',
             'effort': r'^([\d\.]+(mo|[wdhm]) ?)+$',
+            'non_functional': '^.{0}$',
         },
         'env',
     )
@@ -501,6 +502,7 @@ def setup(app):
             'attendees': 'Attendees',
             'assignee': 'Assignee',
             'effort': 'Effort estimation',
+            'non_functional': 'Non-functional',
         },
         'env',
     )

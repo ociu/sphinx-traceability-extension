@@ -21,9 +21,7 @@ class ItemList(TraceableBaseNode):
             ul_node = nodes.bullet_list()
             for i in item_ids:
                 bullet_list_item = nodes.list_item()
-                p_node = nodes.paragraph()
-                p_node.append(self.make_internal_item_ref(app, i))
-                bullet_list_item.append(p_node)
+                bullet_list_item.append(self.make_internal_item_ref(app, i))
                 ul_node.append(bullet_list_item)
             top_node += ul_node
         self.replace_self(top_node)
