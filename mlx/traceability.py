@@ -485,6 +485,7 @@ def setup(app):
             'attendees': '^([A-Z]{3}[, ]*)+$',
             'assignee': '^.*$',
             'effort': r'^([\d\.]+(mo|[wdhm]) ?)+$',
+            'non_functional': '^.{0}$',
         },
         'env',
     )
@@ -501,6 +502,7 @@ def setup(app):
             'attendees': 'Attendees',
             'assignee': 'Assignee',
             'effort': 'Effort estimation',
+            'non_functional': 'Non-functional',
         },
         'env',
     )

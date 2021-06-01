@@ -34,7 +34,7 @@ Valid attributes
 
 Python variable *traceability_attributes* can be defined in order to override the
 default configuration of the traceability plugin.
-It is a *set* of attribute pairs: the *key* is the name of the attribute (can only be lowercase),
+It is a *dictionary* of attribute pairs: the *key* is the name of the attribute (can only be lowercase),
 while the *value* holds the regular expression to which the attribute-value should comply.
 
 Example of attributes and their regular expression:
@@ -44,6 +44,7 @@ Example of attributes and their regular expression:
     traceability_attributes = {
         'value': '^.*$',
         'asil': '^(QM|[ABCD])$',
+        'non_functional': '^.{0}$',  # empty string
     }
 
 .. _traceability_config_attribute2string:

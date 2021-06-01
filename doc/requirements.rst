@@ -89,6 +89,13 @@ Requirements for mlx.traceability
 
     The plugin shall be able to allow configurability of the order of items' attributes.
 
+.. item:: RQT-PERFORMANCE The plugin shall be performant
+    :depends_on: RQT-TRACEABILITY
+    :non_functional:
+
+    The plugin shall be optimized for performance to minimize its impact on the documentation's build time.
+    For example, unneeded sorting should be avoided.
+
 -------------------
 Traceability matrix
 -------------------
