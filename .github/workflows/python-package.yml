@@ -1,9 +1,6 @@
 name: Python package
 
-on:
-  push:
-  release:
-    types: [created]
+on: push
 
 jobs:
   test:
