@@ -1,9 +1,6 @@
 name: Python package
 
-on:
-  push:
-  release:
-    types: [created]
+on: push
 
 jobs:
   test:
@@ -13,7 +10,6 @@ jobs:
       fail-fast: false
       matrix:
         python-version: [3.5, 3.6, 3.7, 3.8, 3.9]
-
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
@@ -35,9 +31,9 @@ jobs:
 
   deploy:
 
+    if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
     needs: test
     runs-on: ubuntu-latest
-    if: ${{ github.event.release.created }}
     steps:
     - name: Disable jekyll
       run: |
