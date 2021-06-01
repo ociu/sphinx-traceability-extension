@@ -35,6 +35,7 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v2
     - name: Disable jekyll
       run: |
         mkdir -p doc/_build/html/
