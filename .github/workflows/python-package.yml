@@ -28,12 +28,13 @@ jobs:
       run: tox -v
       env:
         TOXENV: py,sphinx2.1,sphinx-latest
-    if: matrix.python-version == 3.9
     - name: Linting and Codecov
+      if: matrix.python-version == 3.9
       run: tox -v
       env:
         TOXENV: check,codecov
     - name: Upload HTML documentation
+      if: matrix.python-version == 3.9
       uses: actions/upload-artifact@v2
       with:
         name: html-doc
