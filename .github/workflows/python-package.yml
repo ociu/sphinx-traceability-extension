@@ -24,15 +24,22 @@ jobs:
         sudo apt-get install -y latexmk texlive-latex-extra
         sudo apt-get install -y graphviz
         sudo apt-get install -y plantuml
-    - name: Run Tox
-      run: tox -v
-      env:
-        TOXENV: py,check,sphinx2.1,sphinx-latest,codecov
+    - name: Run test
+      run: tox -e py
+    - name: Build documentation with different Sphinx versions
+      run: tox -e sphinx2.1,sphinx-latest
+    - name: Codecov
+      if: matrix.python-version == 3.9
+      run: tox -e codecov
+    - name: Static checks
+      if: matrix.python-version == 3.9
+      run: tox -e check
     - name: Upload HTML documentation
+      if: matrix.python-version == 3.9
       uses: actions/upload-artifact@v2
       with:
-        name: html_doc
-        path: doc/_build/html/
+        name: html-doc
+        path: doc/_build/html
 
   deploy:
 
@@ -44,7 +51,8 @@ jobs:
     - name: Download HTML documentation from job 'test'
       uses: actions/download-artifact@v2
       with:
-        name: html_doc
+        name: html-doc
+        path: doc/_build/html
     - name: Disable jekyll
       run: touch doc/_build/html/.nojekyll
     - name: Deploy documentation
