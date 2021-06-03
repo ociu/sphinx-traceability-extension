@@ -36,8 +36,8 @@ jobs:
     - name: Upload HTML documentation
       uses: actions/upload-artifact@v2
       with:
-        name: html_doc
-        path: doc/_build/html/
+        name: html-doc
+        path: doc/_build/html
 
   deploy:
 
@@ -49,9 +49,12 @@ jobs:
     - name: Download HTML documentation from job 'test'
       uses: actions/download-artifact@v2
       with:
-        name: html_doc
+        name: html-doc
     - name: Disable jekyll
-      run: touch doc/_build/html/.nojekyll
+      run: |
+        ls
+        mkdir -p doc/_build/html/
+        touch doc/_build/html/.nojekyll
     - name: Deploy documentation
       uses: JamesIves/github-pages-deploy-action@4.1.3
       with:
