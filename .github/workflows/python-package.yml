@@ -24,10 +24,15 @@ jobs:
         sudo apt-get install -y latexmk texlive-latex-extra
         sudo apt-get install -y graphviz
         sudo apt-get install -y plantuml
-    - name: Run Tox
+    - name: Build documentation with different Sphinx versions
       run: tox -v
       env:
-        TOXENV: py,check,sphinx2.1,sphinx-latest,codecov
+        TOXENV: py,sphinx2.1,sphinx-latest
+    if: matrix.python-version == 3.9
+    - name: Linting and Codecov
+      run: tox -v
+      env:
+        TOXENV: check,codecov
     - name: Upload HTML documentation
       uses: actions/upload-artifact@v2
       with:
