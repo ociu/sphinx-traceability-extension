@@ -300,9 +300,9 @@ limitations in doing so:
 
     The list of relationships that should be used to filter the target columns. The relationships considered for
     filtering are from the "Source" items to the "Target" items.
-    When multiple arguments are provided the target column will show items that match *any* of the given relationships
-    provided. The same filtering is applied to all "Target" columns in the matrix.
-    When omitted all possible relations are considered **except for external relations**.
+    When multiple arguments are provided, the target column will show items that match *any* of the given relationships
+    provided, i.e. the same filtering is applied to all "Target" columns in the matrix.
+    When omitted, all possible relations are considered **except for external relations**.
 
 :sourcetype: *optional*, *multiple arguments (space-separated)*
 
