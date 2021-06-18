@@ -180,6 +180,7 @@ A flat list of documentation items can be generated using a Python regular expre
         :filter: SWRQT
         :status: Appr
         :nocaptions:
+        :showcontents:
 
 where *SWRQT* (*filter* argument) can be replaced by any Python regular expression. Documentation items matching
 their ID to the given regular expression end up in the list.
@@ -187,8 +188,11 @@ their ID to the given regular expression end up in the list.
 where *status* can be replaced by any configured attribute, and *Appr* can be replaced by any Python regular
 expression. Documentation items where the *status* attribute matches the given regular expression end up in the list.
 
-By default, the caption for every item in the list is shown. By providing the *nocaptions* flag, the
+By default, the caption of every item in the list is shown. By providing the *nocaptions* flag, the
 caption can be omitted. This gives a smaller list, but also less details.
+
+By default, the contents of every item in the list is hidden. By providing the *showcontents* flag, the
+contents can be shown. This can significantly lengthen the list.
 
 .. _traceability_usage_item_attributes_matrix:
 

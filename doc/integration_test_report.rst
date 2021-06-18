@@ -217,11 +217,12 @@ List all items
     :nocaptions:
 
 
-List all items beginning with ``r00``
--------------------------------------
+List all items beginning with ``r00`` (show contents)
+-----------------------------------------------------
 
 .. item-list::
     :filter: ^r00
+    :showcontents:
 
 List system requirements (beginning with SYS)
 ---------------------------------------------

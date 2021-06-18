@@ -54,6 +54,12 @@ $(document).ready(function () {
         );
     });
 
+    // style item contents in item-list by rendering newlines and adding indent
+    $('.item-contents').each(function (i) {
+        $(this).css('white-space', 'pre-wrap');
+        $(this).css('padding-left', '1em');
+    });
+
     $('p.admonition-title').each(function (i) {
         $(this).children('a').first().denyPermalinkStyling($(this));
     });
