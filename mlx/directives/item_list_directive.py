@@ -22,6 +22,12 @@ class ItemList(TraceableBaseNode):
             for i in item_ids:
                 bullet_list_item = nodes.list_item()
                 bullet_list_item.append(self.make_internal_item_ref(app, i))
+                if self['showcontents']:
+                    contents = collection.get_item(i).get_content()
+                    if contents:
+                        p_node = nodes.paragraph(text=contents)
+                        p_node['classes'].append('item-contents')
+                        bullet_list_item.append(p_node)
                 ul_node.append(bullet_list_item)
             top_node += ul_node
         self.replace_self(top_node)
@@ -37,6 +43,7 @@ class ItemListDirective(TraceableBaseDirective):
          :filter: regexp
          :<<attribute>>: regexp
          :nocaptions:
+         :showcontents:
 
     """
     # Optional argument: title (whitespace allowed)
@@ -46,6 +53,7 @@ class ItemListDirective(TraceableBaseDirective):
         'class': directives.class_option,
         'filter': directives.unchanged,
         'nocaptions': directives.flag,
+        'showcontents': directives.flag,
     }
     # Content disallowed
     has_content = False
@@ -70,6 +78,8 @@ class ItemListDirective(TraceableBaseDirective):
         )
 
         self.add_found_attributes(item_list_node)
+
+        self.check_option_presence(item_list_node, 'showcontents')
 
         self.check_caption_flags(item_list_node, app.config.traceability_list_no_captions)
 
