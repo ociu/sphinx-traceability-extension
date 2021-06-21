@@ -325,6 +325,7 @@ Traceability from external sources
     :sourcetitle: external items
     :targettitle: internal items
     :type: ext_toolname
+    :onlycaptions:
 
 Traceability from integration tests to requirements
 ---------------------------------------------------

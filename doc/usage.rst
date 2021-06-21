@@ -265,6 +265,7 @@ A traceability matrix of documentation items can be generated using:
         :group: bottom
         :onlycovered:
         :nocaptions:
+        :onlycaptions:
         :stats:
 
 Documentation items matching their ID to the given *source* regular expression end up in the leftmost column of the
@@ -333,6 +334,10 @@ limitations in doing so:
 
     By default, the caption for every item in the table is shown. By providing the *nocaptions* flag, the
     caption can be omitted. This gives a smaller table, but also less details.
+
+:onlycaptions:
+
+    If you only care about the captions and want to hide the item IDs, set the *onlycaptions* flag instead.
 
 :stats: *optional*, *flag*
 
