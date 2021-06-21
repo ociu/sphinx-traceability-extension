@@ -352,6 +352,7 @@ class ItemMatrixDirective(TraceableBaseDirective):
          :onlycovered:
          :stats:
          :nocaptions:
+         :onlycaptions:
     """
     # Optional argument: title (whitespace allowed)
     optional_arguments = 1
@@ -371,6 +372,7 @@ class ItemMatrixDirective(TraceableBaseDirective):
         'coveredintermediates': directives.flag,
         'stats': directives.flag,
         'nocaptions': directives.flag,
+        'onlycaptions': directives.flag,
     }
     # Content disallowed
     has_content = False
