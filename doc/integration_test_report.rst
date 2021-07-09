@@ -249,6 +249,13 @@ List all items with ASIL and Draft/Approved attribute
     :status: (Draft|Approved)
     :asil: (QM|[ABCD])
 
+List all RQT-items with the non_functional attribute
+----------------------------------------------------
+
+.. item-list:: All non-functional requirements
+    :filter: RQT-
+    :non_functional: ^.{0}$
+
 Item matrix
 ===========
 
