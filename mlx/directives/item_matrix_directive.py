@@ -34,7 +34,7 @@ class ItemMatrix(TraceableBaseNode):
         show_intermediate = bool(self['intermediatetitle']) and bool(self['intermediate'])
         number_of_columns = max(2, len(self['target']) + 1) + int(show_intermediate)
         Rows = namedtuple('Rows', "sorted covered uncovered")
-        source_ids = collection.get_items(self['source'], self['filter-attributes'])
+        source_ids = collection.get_items(self['source'], attributes=self['filter-attributes'])
         targets_with_ids = []
         for target_regex in self['target']:
             targets_with_ids.append(collection.get_items(target_regex))
