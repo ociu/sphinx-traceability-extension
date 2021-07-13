@@ -332,6 +332,26 @@ In the example below the special item has ID *DOC-NOTIFICATION*.
         'undefined-reference': 'DOC-NOTIFICATION',
     }
 
+
+.. _traceability_optional_mandatory:
+
+-------------------------------------------------
+Item callbacks, set optional attributes mandatory
+-------------------------------------------------
+
+When using the traceability plugin callback functionality on each item, a combination of 2 attributes
+`non_functional` and `functional` in an item can be made mandatory in the example below.
+
+.. code-block:: python
+
+    item = collection.get_item(name)
+    # When the item is not marked as either functional or non-functional, report a warning
+    if not (('functional' in item.attributes) ^ ('non_functional' in item.attributes)):
+        report_warning("Requirement item {!r} must have either the 'functional' or 'non_functional' attribute"
+                       .format(name), docname=item.docname, lineno=item.lineno)
+
+This example gives a glimpse of what can be achieved in callbacks on items.
+
 .. _traceability_default_config:
 
 --------------
