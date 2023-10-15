@@ -58,6 +58,24 @@ A configuration variable, ``traceability_relationships``, can be used to
 extend and customize the set of available relationships. See
 `Configuration`_ for details.
 
+New directive names can be easily added in the configuration file with
+the standard Sphinx function ``app.add_directive``. They will be equivalent
+to ``item`` but have two big benefits:
+
+- Better document readibility using meaningful names. For example, the 
+  previous software requrirement could be directly written as::
+  
+    .. requirement:: SW_REQ_001 
+       :addresses: SYS_REQ_001 SYS_REQ_002
+       :tested_by: SW_TEST_005
+       :allocated_to: SW_CSU_004
+       ...
+     
+- Custom templates can be defined for them. This adds a lot of flexibility.
+
+See `Advanced configuration`_ for more details and example configuration
+code.
+
 ::
 
   .. item-list:: title
@@ -133,13 +151,47 @@ standard UML relationships):
 Advanced configuration
 ----------------------
 
+In order to add new directive names, a ``setup`` function
+should be added to the configuration file with one call to
+``app.add_directive`` per directive. Example:
+
+.. code:: python
+
+  def setup(app):
+
+      from traceability import ItemDirective
+      app.add_directive('requirement', ItemDirective)
+      app.add_directive('test-case', ItemDirective)
+      ...
+
+
 By default, items are written as term/definition tuples, but this is
 fully customizable by defining ``traceability_item_template``
 configuration variable.  It uses `Jinja2 templating language
 <http://jinja.pocoo.org/docs/dev/templates/>`_.
 
-.. note:: using this template mechanism is not trivial. A good
-          knowledge of Jinja2 is required.
+The template can be customized for each different ``item`` based
+directive names. Example:
+
+.. code:: python
+
+   traceability_item_template = """
+       {% if type == 'requirement' %}
+       :superscript:`[{{ id }}` {{ caption }}:
+       {{ content }} :subscript:`{{ id }}]`
+       {% else %}
+       {{ id }}
+       {%- if caption %}
+           **{{ caption }}**
+       {% endif %}
+           {{ content|indent(4) }}
+       {% endif %}
+       """
+
+Code above makes the ``requirement`` directive be shown as its caption
+& content surrounded with  tags ``[<id>`` at the beginning and
+``<id>]`` at the end. The rest will be generated as term/definition
+tuples, optionally showing its caption.
 
 
 Examples
