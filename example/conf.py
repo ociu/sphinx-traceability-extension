@@ -304,7 +304,9 @@ traceability_relationships = {
     'trace': 'traced_by',
     'fulfills': 'fulfilled_by',
     'implements': 'implemented_by',
-    'validates': 'validated_by'
+    'validates': 'validated_by',
+    'covers': 'covered_by',
+    'depends_on': 'impacts_on'
 }
 
 traceability_item_template = """
@@ -312,10 +314,7 @@ traceability_item_template = """
     :superscript:`[{{ id }}` {{ caption }}:
     {{ content }} :subscript:`{{ id }}]`
     {% else %}
-    {{ id }}
-    {%- if caption %}
-        **{{ caption }}**
-    {% endif %}
+    `{{ id }}`{% if caption %} **{{ caption }}**{% endif %}
         {{ content|indent(4) }}
     {% endif %}
     """

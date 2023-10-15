@@ -57,11 +57,9 @@ This text is not part of any item
    
 .. item:: r007 Depends on all with stereotypes
    :class: terciary
-   :trace: <<covers>>    r001
-           <<depends_on>>
-           r002
-           <<fulfills>>  r003
-           r005
+   :covers: r001
+   :depends_on: r002
+   :fulfills: r003 r005
 	
    To demonstrate stereotype usage in relationships
 
@@ -88,12 +86,12 @@ List all items beginning with ``r00``
 List system requirements (beginning with SYS)
 
 .. item-list::
-   :filter: ^SYS
+   :filter: SYS
 
 List all well-formed SYS and SRS requirements
 
 .. item-list::
-   :filter: ^S[YR]S_\d
+   :filter: S[YR]S_\d
 
 Item matrix
 ===========
@@ -114,6 +112,8 @@ Traceability from SSS to SRS
 .. item-matrix:: SSS to SRS
    :target: SRS
    :source: SYS
+   :target-title: Software requirements
+   :source-title: System requirements
    :type:   fulfilled_by
 
 
@@ -121,6 +121,11 @@ Links and references
 ====================
 
 Item reference: :item:`r001`
+
+Reference to a non-existing item: :item:`r0001`
+
+Reference to a non-existing title: :ref:`non existing title`
+
 
 :item:`Item reference with alternative text<r001>`
 

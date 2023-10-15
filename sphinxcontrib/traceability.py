@@ -4,6 +4,7 @@ from __future__ import print_function
 from docutils import nodes
 from docutils.parsers.rst import Directive, directives
 from sphinx.roles import XRefRole
+from sphinx.util import logging
 from sphinx.util.nodes import make_refnode
 try:
     from sphinx.errors import NoUri
@@ -12,6 +13,8 @@ except ImportError:
 from jinja2 import Template
 from textwrap import dedent
 import re
+
+logger = logging.getLogger(__name__)
 
 # -----------------------------------------------------------------------------
 # Declare new node types (based on others): item, item_list, item_matrix
@@ -181,6 +184,8 @@ class ItemMatrixDirective(Directive):
     option_spec = {'class': directives.class_option,
                    'target': directives.unchanged,
                    'source': directives.unchanged,
+                   'target-title': directives.unchanged,
+                   'source-title': directives.unchanged,
                    'type': directives.unchanged}
     # Content disallowed
     has_content = False
@@ -205,6 +210,12 @@ class ItemMatrixDirective(Directive):
             item_matrix_node['type'] = self.options['type'].split()
         else:
             item_matrix_node['type'] = []
+
+        # Process titles
+        item_matrix_node['source-title'] = self.options.get('source-title',
+                                                            'Source')
+        item_matrix_node['target-title'] = self.options.get('target-title',
+                                                            'Target')
 
         return [item_matrix_node]
 
@@ -236,7 +247,7 @@ def process_item_nodes(app, doctree, fromdocname):
     """
     env = app.builder.env
 
-    all_items = sorted(env.traceability_all_items, key=naturalsortkey)
+    all_items = sorted(env.traceability_all_items)
 
     # Item matrix:
     # Create table with related items, printing their target references.
@@ -249,8 +260,8 @@ def process_item_nodes(app, doctree, fromdocname):
         tgroup += [left_colspec, right_colspec]
         tgroup += nodes.thead('', nodes.row(
             '',
-            nodes.entry('', nodes.paragraph('', 'Source')),
-            nodes.entry('', nodes.paragraph('', 'Target'))))
+            nodes.entry('', nodes.paragraph('', node['source-title'])),
+            nodes.entry('', nodes.paragraph('', node['target-title']))))
         tbody = nodes.tbody()
         tgroup += tbody
         table += tgroup
@@ -316,8 +327,8 @@ def process_item_nodes(app, doctree, fromdocname):
                 pass
 
         else:
-            env.warn_node(
-                'Traceability: item %s not found' % node['reftarget'], node)
+            logger.warning('undefined item: %s' % node['reftarget'],
+                           location = node, type = 'ref', subtype = 'item')
 
         node.replace_self(new_node)
 
@@ -393,12 +404,6 @@ def make_item_ref(app, env, fromdocname, item_info):
     return para
 
 
-def naturalsortkey(s):
-    """Natural sort order"""
-    return [int(part) if part.isdigit() else part
-            for part in re.split('([0-9]+)', s)]
-
-
 def are_related(env, source, target, relationships):
     """
     Returns ``True`` if ``source`` and ``target`` items are related
@@ -462,3 +467,4 @@ def setup(app):
     app.add_role('item', XRefRole(nodeclass=pending_item_xref,
                                   innernodeclass=nodes.emphasis,
                                   warn_dangling=True))
+
