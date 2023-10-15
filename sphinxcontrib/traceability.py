@@ -294,11 +294,9 @@ def process_item_nodes(app, doctree, fromdocname):
         for item in all_items:
             if re.match(node['filter'], item):
                 bullet_list_item = nodes.list_item()
-                paragraph = nodes.paragraph()
-                paragraph.append(
+                bullet_list_item.append(
                     make_item_ref(app, env, fromdocname,
                                   env.traceability_all_items[item]))
-                bullet_list_item.append(paragraph)
                 content.append(bullet_list_item)
 
         node.replace_self(content)
