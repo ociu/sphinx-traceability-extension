@@ -3,10 +3,14 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+
 Welcome to Example's documentation!
 ===================================
 
-Contents:
+.. raw:: latex
+
+   \listoftables
+
 
 .. toctree::
    :maxdepth: 1
@@ -115,6 +119,21 @@ Traceability from SSS to SRS
    :target-title: Software requirements
    :source-title: System requirements
    :type:   fulfilled_by
+
+
+.. list-table:: Title
+   :widths: 25 25 50
+   :header-rows: 1
+
+   * - Heading row 1, column 1
+     - Heading row 1, column 2
+     - Heading row 1, column 3
+   * - Row 1, column 1
+     -
+     - Row 1, column 3
+   * - Row 2, column 1
+     - Row 2, column 2
+     - Row 2, column 3
 
 
 Links and references

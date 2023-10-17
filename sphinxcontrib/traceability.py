@@ -135,13 +135,13 @@ class ItemListDirective(Directive):
 
     Syntax::
 
-      .. item-list:: title
+      .. item-list::
          :filter: regexp
 
     """
-    # Optional argument: title (whitespace allowed)
-    optional_arguments = 1
-    final_argument_whitespace = True
+    required_arguments = 0
+    optional_arguments = 0
+    final_argument_whitespace = False
     # Options
     option_spec = {'class': directives.class_option,
                    'filter': directives.unchanged}
@@ -150,10 +150,6 @@ class ItemListDirective(Directive):
 
     def run(self):
         item_list_node = item_list('')
-
-        # Process title (optional argument)
-        if len(self.arguments) > 0:
-            item_list_node['title'] = self.arguments[0]
 
         # Process ``filter`` option
         if 'filter' in self.options:
@@ -252,8 +248,11 @@ def process_item_nodes(app, doctree, fromdocname):
     # Item matrix:
     # Create table with related items, printing their target references.
     # Only source and target items matching respective regexp shall be included
-    for node in doctree.traverse(item_matrix):
+    for index, node in enumerate(doctree.traverse(item_matrix), start = 1):
         table = nodes.table()
+        if 'title' in node:
+            table += nodes.title('',node['title'])
+            table['ids'] = [f'item-matrix-{index}']
         tgroup = nodes.tgroup()
         left_colspec = nodes.colspec(colwidth=5)
         right_colspec = nodes.colspec(colwidth=5)

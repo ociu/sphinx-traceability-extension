@@ -192,7 +192,7 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
   ('index', 'Example.tex', u'Example Documentation',
-   u'Oscar Ciudad', 'manual'),
+   u'Oscar Ciudad', 'howto'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
