@@ -69,9 +69,29 @@ This text is not part of any item
 
 
 .. requirement:: r100 A requirement using the ``requirement`` type
+   :fulfills: r003 r005
 
    This item has been defined using other directive. It easily extends
    rst semantics
+
+.. requirement:: r101 Other requirement using the ``requirement`` type
+
+   Example to show that there is no trouble in nesting items, it is
+   completely allowed.
+
+   Text before nesting requirements.
+
+      .. requirement:: r101.1 Nested, indented requirement
+
+         Nested requirement content. Also indented.
+
+   .. requirement:: r101.2 Other nested, but not indented requirement
+
+      Other nested requirement content. Not indented in this
+      case. Indentation (visual) and nesting (logical) are not
+      necessarily related.
+
+   Text after nesting requirements.
 
 
 Item list
@@ -121,7 +141,7 @@ Traceability from SSS to SRS
    :type:   fulfilled_by
 
 
-.. list-table:: Title
+.. list-table:: A normal table
    :widths: 25 25 50
    :header-rows: 1
 
