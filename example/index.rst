@@ -62,14 +62,13 @@ This text is not part of any item
 .. item:: r007 Depends on all with stereotypes
    :class: terciary
    :covers: r001
-   :depends_on: r002
-   :fulfills: r003 r005
+   :depends_on: r002 non-existing
+   :fulfills: r003 r005 non-existing
 	
    To demonstrate stereotype usage in relationships
 
 
 .. requirement:: r100 A requirement using the ``requirement`` type
-   :fulfills: r003 r005
 
    This item has been defined using other directive. It easily extends
    rst semantics
@@ -164,7 +163,6 @@ Item reference: :item:`r001`
 Reference to a non-existing item: :item:`r0001`
 
 Reference to a non-existing title: :ref:`non existing title`
-
 
 :item:`Item reference with alternative text<r001>`
 

@@ -368,6 +368,23 @@ def initialize_environment(app):
     update_available_item_relationships(app)
 
 
+def check_items(app, env):
+    """
+    Check that all target items in relationships do exist
+    """
+    items = env.traceability_all_items
+
+    for source in items:
+        for relationship in list(env.relationships.keys()):
+            for target in items[source][relationship]:
+                if target not in items:
+                    logger.error ( '%s %s undefined item: %s' %
+                                    (source, relationship, target),
+                                    location = items[source]['docname'],
+                                    type = 'ref',
+                                    subtype = 'item')
+
+
 # -----------------------------------------------------------------------------
 # Utility functions
 
@@ -460,6 +477,7 @@ def setup(app):
     app.connect('doctree-resolved', process_item_nodes)
     app.connect('env-purge-doc', purge_items)
     app.connect('builder-inited', initialize_environment)
+    app.connect('env-updated', check_items)
 
     app.add_role('item', XRefRole(nodeclass=pending_item_xref,
                                   innernodeclass=nodes.emphasis,
