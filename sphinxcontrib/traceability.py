@@ -114,6 +114,14 @@ class ItemDirective(Directive):
                 else:
                     env.traceability_all_items[targetid][rel] = []
 
+            # Add data options to item, as standad option_spec elements
+            for data in env.data:
+                if data in self.options:
+                    env.traceability_all_items[targetid][data] = \
+                        self.options[data]
+                    print("DATA: %s.%s = %s" % 
+                          (targetid, data, self.options[data]))
+
         else:
             # Duplicate items not allowed. Duplicate will even not be shown
             messages = [self.state.document.reporter.error(
@@ -346,6 +354,7 @@ def update_available_item_relationships(app):
     """
     env = app.builder.env
     env.relationships = {}
+    env.data = []
 
     for rel in list(app.config.traceability_relationships.keys()):
         env.relationships[rel] = app.config.traceability_relationships[rel]
@@ -353,6 +362,11 @@ def update_available_item_relationships(app):
 
     for rel in sorted(list(env.relationships.keys())):
         ItemDirective.option_spec[rel] = directives.unchanged
+
+    # Update option_spec with data options also
+    for data in list(app.config.traceability_data.keys()):
+        env.data.append(data)
+        ItemDirective.option_spec.update(app.config.traceability_data)
 
 
 def initialize_environment(app):
@@ -445,15 +459,9 @@ def are_related(env, source, target, relationships):
 
 def setup(app):
 
-    # Create default relationships dictionary. Can be customized in conf.py
-    app.add_config_value('traceability_relationships',
-                         {'fulfills': 'fulfilled_by',
-                          'depends_on': 'impacts_on',
-                          'implements': 'implemented_by',
-                          'realizes': 'realized_by',
-                          'validates': 'validated_by',
-                          'trace': 'backtrace'},
-                         'env')
+    # Create default dictionaries. Should be filled in conf.py
+    app.add_config_value('traceability_relationships', {}, 'env')
+    app.add_config_value('traceability_data', {}, 'env')
 
     # Customizable templates
     app.add_config_value('traceability_item_template',
