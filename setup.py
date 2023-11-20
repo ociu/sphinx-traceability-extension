@@ -4,13 +4,13 @@ from setuptools import setup, find_packages
 
 project_url = 'https://github.com/ociu/sphinx-traceability-extension'
 
-requires = ['Sphinx>=0.6']
+requires = ['Sphinx>=2.0']
 
 setup(
     name='sphinxcontrib-traceability',
-    version='0.1.4',
+    version='0.1.5',
     url=project_url,
-    download_url=project_url + '/archive/v0.1.4.tar.gz',
+    download_url=project_url + '/archive/v0.1.5.tar.gz',
     license='GNU General Public License v3 (GPLv3)',
     author='Oscar Ciudad',
     author_email='oscar@jacho.net',
@@ -26,12 +26,14 @@ setup(
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2.6',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.2',
-        'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
         'Topic :: Documentation',
         'Topic :: Documentation :: Sphinx',
         'Topic :: Utilities',
