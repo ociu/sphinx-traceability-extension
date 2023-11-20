@@ -309,16 +309,65 @@ traceability_relationships = {
     'depends_on': 'impacts_on'
 }
 
+# Data diccionary used to define attributes (not relationships) of an
+# item . Keys are the names of data options for the item and its value
+# is the conversion function to apply, exactly as standard Sphinx
+# option_spec dictionary. See
+# https://docutils.sourceforge.io/docs/howto/rst-directives.html.
+from docutils.parsers.rst import directives
+
+def status_option(argument):
+    return directives.choice(argument,
+                             ('reviewed', 'validated', 'accepted'))
+
+traceability_data = {
+    'functional': directives.flag,
+    'status': status_option,
+    'comment': directives.unchanged,
+    'coordinates': directives.positive_int_list,
+    'mandatory': directives.unchanged_required,
+    'custom': lambda a: list(a),
+    'fixed': lambda a: "ALWAYS THE SAME"
+}
+
+
+all_rels = sorted(list(traceability_relationships.keys()) +
+                  list(traceability_relationships.values()))
+
+all_data = sorted(list(traceability_data.keys()))
+
+rel_template = """
+    {% if X  -%}
+    :X: {% for i in X  %}:item:`{{ i }}`{% if not loop.last %}, {% endif %} {% endfor %}
+    {%- endif %}
+"""
+all_rel_template = ""
+for rel in all_rels:
+    all_rel_template += rel_template.replace("X", rel)
+
+data_template = """
+    {% if X -%}
+    :X: {{ X }}
+    {%- endif %}
+"""
+all_data_template = ""
+for data in all_data:
+    all_data_template += data_template.replace("X", data)
+
 traceability_item_template = """
-    {% if type == 'requirement' %}
+    {%- if type == 'requirement' -%}
     :superscript:`[{{ id }}` {{ caption }}:
     {{ content }} :subscript:`{{ id }}]`
-    {% else %}
+    {% else -%}
     `{{ id }}`{% if caption %} **{{ caption }}**{% endif %}
         {{ content|indent(4) }}
     {% endif %}
     """
 
+traceability_item_template +=  all_rel_template + all_data_template
+
+def traceability_conversion(items, rels, data):
+    return True
 
 def setup(app):
 

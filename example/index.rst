@@ -92,6 +92,17 @@ This text is not part of any item
 
    Text after nesting requirements.
 
+.. requirement:: r200 Requirement with metadata
+   :fulfills: r100 r101 r101.1 r101.2
+   :status: reviewed
+   :comment: this is a multiline comment.
+   :coordinates: 1, 2, 3, 4, 5
+   :mandatory: YES
+   :custom: split this!!
+   :fixed: no matter what I put here, content will be "ALWAYS THE SAME"
+
+   Metadata is stored inside the item. It can be printed or
+   not, depending on the template used.
 
 Item list
 =========
