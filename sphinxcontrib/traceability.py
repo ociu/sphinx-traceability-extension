@@ -1,4 +1,22 @@
 # -*- coding: utf-8 -*-
+"""Sphinx Traceability Extension
+
+Copyright (c) 2013-2023 Oscar Ciudad
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at
+your option) any later version.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+"""
 
 from __future__ import print_function
 from docutils import nodes
@@ -119,7 +137,7 @@ class ItemDirective(Directive):
                 if data in self.options:
                     env.traceability_all_items[targetid][data] = \
                         self.options[data]
-                    print("DATA: %s.%s = %s" % 
+                    logger.verbose("%s.%s = %s" % 
                           (targetid, data, self.options[data]))
 
         else:
@@ -130,9 +148,11 @@ class ItemDirective(Directive):
 
         # Render template
         template = Template(dedent(env.config.traceability_item_template))
-        self.state_machine.insert_input(
-            template.render(**env.traceability_all_items[targetid]).split('\n'),
+        rendered = template.render(**env.traceability_all_items[targetid])
+        self.state_machine.insert_input(rendered.split('\n'),
             self.state_machine.document.attributes['source'])
+
+        logger.verbose(rendered)
 
         return [targetnode] + messages
 
@@ -461,7 +481,7 @@ def setup(app):
 
     # Create default dictionaries. Should be filled in conf.py
     app.add_config_value('traceability_relationships', {}, 'env')
-    app.add_config_value('traceability_data', {}, 'env')
+    app.add_config_value('traceability_data', {}, '')
 
     # Customizable templates
     app.add_config_value('traceability_item_template',
