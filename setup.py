@@ -8,9 +8,9 @@ requires = ['Sphinx>=2.0']
 
 setup(
     name='sphinxcontrib-traceability',
-    version='0.1.5',
+    version='0.2.0',
     url=project_url,
-    download_url=project_url + '/archive/v0.1.5.tar.gz',
+    download_url=project_url + '/archive/v0.2.0.tar.gz',
     license='GNU General Public License v3 (GPLv3)',
     author='Oscar Ciudad',
     author_email='oscar@jacho.net',
